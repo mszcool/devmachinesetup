@@ -583,19 +583,5 @@ if( $cloneRepos ) {
     cd "$codeBaseDir\codeplex"
     git clone https://git01.codeplex.com/mszcooldemos
     git clone https://git01.codeplex.com/geres2
-
-
-    #
-    # DPE TED Clone Repositories
-    #
-    cd "$codeBaseDir\dpeted"
-    ***REMOVED***
-    ***REMOVED***
-    ***REMOVED***
-    ***REMOVED***
-    ***REMOVED***
-    ***REMOVED***
-    ***REMOVED***
-    ***REMOVED***
     
 }
