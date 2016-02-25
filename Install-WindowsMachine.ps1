@@ -54,7 +54,7 @@ $vsixInstallerCommandGeneralArgs = " /q /a "
 
 if( ($dev) -and ($dev2) )
 {
-    throw "You cannot run developer tools installation phase 1 and 2 at the same time since phase 2 requires parts from phase 2 in the shell-path, already!"
+    throw "You cannot run developer tools installation phase 1 and 2 at the same time since phase 2 requires parts from phase 1 in the shell-path, already!"
 }
 
 #
