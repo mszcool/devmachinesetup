@@ -583,19 +583,5 @@ if( $cloneRepos ) {
     cd "$codeBaseDir\codeplex"
     git clone https://git01.codeplex.com/mszcooldemos
     git clone https://git01.codeplex.com/geres2
-
-
-    #
-    # DPE TED Clone Repositories
-    #
-    cd "$codeBaseDir\dpeted"
-    git config credential.helper 'cache --timeout=600'
-    git clone https://dpeted.visualstudio.com/DefaultCollection/TED%20Globally%20Engaged/_git/Stroeer Stroeer2015Strat
-    git clone https://dpeted.visualstudio.com/DefaultCollection/TED%20Strategic%20Engagements/_git/ConnectedCar ConnectedCar2015Strat
-    git clone https://dpeted.visualstudio.com/DefaultCollection/TED%20App%20Foundation/_git/GERES-.NET GeRes2
-    git clone https://dpeted.visualstudio.com/DefaultCollection/TED%20Globally%20Engaged/_git/HybridCloudForDevs
-    git clone https://dpeted.visualstudio.com/DefaultCollection/TED%20Globally%20Engaged/_git/AMS%20Time%20Machine AMS-Time-Machine
-    git clone https://dpeted.visualstudio.com/DefaultCollection/TED%20Globally%20Engaged/_git/ChoiceFS%20SQL%20AlwaysOn%20Cross%20Region ChoiceFS-SQL-AlwaysOn-Cross-Region
-    git clone https://dpeted.visualstudio.com/DefaultCollection/TED%20Globally%20Engaged/_git/Honeywell-PolarSSL.NET
     
 }
