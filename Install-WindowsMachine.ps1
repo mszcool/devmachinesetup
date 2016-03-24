@@ -200,7 +200,12 @@ if( $ittools )
 
     #### choco install -y virtualbox -version 4.3.12
 
-    choco install -y mobaxterm -version 8.3
+    #### Switched from MobaXTerm to Royal TS with XMing for X11 forwarding from Linux-machines
+    #### choco install -y mobaxterm -version 8.3
+
+    choco install -y royalts
+    
+    choco install -y xming
 }
 
 
