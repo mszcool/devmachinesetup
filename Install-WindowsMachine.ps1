@@ -142,7 +142,7 @@ if( $tools ) {
 
     choco install -y adobereader
 
-    choco install -y sublimetext2
+    ##old## choco install -y sublimetext2
 
     choco install -y paint.net
 
@@ -153,6 +153,10 @@ if( $tools ) {
     choco install -y markdown-edit
 
     choco install -y jre8
+    
+    choco install -y goodsync
+    
+    choco install -y mousewithoutborders 
 
     ##old## choco install -y PDFCreator -Version 1.7.3.20140611
 
@@ -206,6 +210,8 @@ if( $ittools )
     choco install -y royalts
     
     choco install -y xming
+    
+    choco install -y visualstudiocode
 }
 
 
@@ -226,7 +232,7 @@ if( $dev )
 
     choco install -y webpi 
 
-    choco install -y git
+    choco install -y git.install
 
     choco install -y windbg 
 
@@ -245,6 +251,15 @@ if( $dev )
     choco install -y redis-desktop-manager
     
     ## http://www.microsoft.com/en-us/download/details.aspx?id=42536
+    
+    choco install -y docker
+    
+    choco install -y docker-machine
+    
+    choco install -y docker-compose
+    
+    choco install -y cloudfoundry-cli
+     
 }
 
 
@@ -296,9 +311,9 @@ if( $dev2 )
 
     npm install -g moment
 
+    webpicmd /Install /Products:AzureNodeSDK /AcceptEula
+    
     webpicmd /Install /Products:DACFX /AcceptEula
-
-    webpicmd /Install /Products:WindowsAzurePowershell /AcceptEula
 
     webpicmd /Install /Products:AzureNodeSDK /AcceptEula
 
@@ -306,10 +321,10 @@ if( $dev2 )
 
     webpicmd /Install /Products:AzurePython34SDK /AcceptEula
 
-    webpicmd /Install /Products:WATK-Package-WindowsAzureTrainingKit /AcceptEula
-
-    webpicmd /Install /Products:MicrosoftDPE-Package-AzureReadiness-DevCamp /AcceptEula
-
+    webpicmd /Install /Products:WindowsAzurePowershell /AcceptEula
+    
+    webpicmd /Install /Products:WindowsAzurePowershellGet /AcceptEula
+    
     if($vsVersion -eq "2013") {
 
         webpicmd /Install /Products:OfficeToolsForVS2013Update1 /AcceptEula
@@ -328,11 +343,32 @@ if( $dev2 )
 
         webpicmd /Install /Products:OfficeToolsForVS2015 /AcceptEula
 
-        webpicmd /Install /Products:Vs2015AzurePack /AcceptEula
+        webpicmd /Install /Products:VWDOrVs2015AzurePack /AcceptEula
+        
+        webpicmd /Install /Products:VWDOrVs2015AzurePack.2.8 /AcceptEula
+        
+        webpicmd /Install /Products:VWDOrVs2015AzurePack.2.9 /AcceptEula
 
         webpicmd /Install /Products:HDInsightVS2015Tools /AcceptEula
 
+        webpicmd /Install /Products:DataFactoryVS2015Tools /AcceptEula
+        
+        webpicmd /Install /Products:DataLakeVS2015Msi /AcceptEula
+        
+        webpicmd /Install /Products:HDInsightVS2015Msi /AcceptEula
     }
+    
+    webpicmd /Install /Products:AzureQuickStarts_1_6_0 /AcceptEula
+
+    webpicmd /Install /Products:SQLCE /AcceptEula
+    
+    webpicmd /Install /Products:SQLCEforWM /AcceptEula
+    
+    webpicmd /Install /Products:SQLCE_4_0 /AcceptEula
+    
+    webpicmd /Install /Products:SQLCLRTypes /AcceptEula
+    
+    webpicmd /Install /Products:SQLLocalDB /AcceptEula
 }
 
 
