@@ -305,14 +305,10 @@ if($installOtherIDE) {
 
 if( $dev2 )
 {
-    npm install -g azure
-
-    npm install -g azure-cli
-
     npm install -g moment
 
     webpicmd /Install /Products:AzureNodeSDK /AcceptEula
-    
+        
     webpicmd /Install /Products:DACFX /AcceptEula
 
     webpicmd /Install /Products:AzureNodeSDK /AcceptEula
@@ -320,6 +316,8 @@ if( $dev2 )
     webpicmd /Install /Products:AzurePython27SDK /AcceptEula
 
     webpicmd /Install /Products:AzurePython34SDK /AcceptEula
+    
+    webpicmd /Install /Products:WindowsAzureXPlatCLI /AcceptEula
 
     webpicmd /Install /Products:WindowsAzurePowershell /AcceptEula
     
