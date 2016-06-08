@@ -574,6 +574,7 @@ if( $cloneRepos ) {
     CreatePathIfNotExists -pathName "$codeBaseDir\github\mszcool"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\Azure"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\JMayrbaeurl"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\OfficeDev"
    
     cd "$codeBaseDir\github\mszcool"
     git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
@@ -582,6 +583,12 @@ if( $cloneRepos ) {
     git clone https://github.com/mszcool/TrafficManager201501Sample.git
     git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
     git clone https://github.com/mszcool/AzureBatchTesseractSample.git
+    git clone https://github.com/mszcool/devmachinesetup.git
+    git clone https://github.com/mszcool/bosh-azure-cpi-release.git
+    git clone https://github.com/mszcool/simpleconsolefx.git
+    git clone https://github.com/mszcool/msgraphcli.git
+    git clone https://github.com/mszcool/NServiceBus.AzureServiceBus-SB1.1-WinSrv.git
+    
 
     cd "$codeBaseDir\github\Azure"
     git clone https://github.com/Azure/AzureQuickStartsProjects.git
@@ -607,6 +614,12 @@ if( $cloneRepos ) {
     git clone https://github.com/Azure/elastic-db-tools.git
     git clone https://github.com/Azure/azure-mobile-services-quickstarts.git
 
+    cd "$codeBaseDir\github\OfficeDev"
+    git clone https://github.com/OfficeDev/O365-AspNetMVC-Microsoft-Graph-Connect.git
+    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Connect
+    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Snippets
+    git clone https://github.com/OfficeDev/Office-Add-in-Nodejs-ServerAuth.git
+    
     cd "$codeBaseDir\github\JMayrbaeurl"
     git clone https://github.com/JMayrbaeurl/AbfallkalenderBisamberg.git
     git clone https://github.com/JMayrbaeurl/azure-log4j.git
