@@ -141,6 +141,8 @@ if( $tools ) {
     choco install -y filezilla 
 
     choco install -y adobereader
+    
+    choco install -y adobedigitaleditions
 
     ##old## choco install -y sublimetext2
 
