@@ -589,7 +589,6 @@ if( $cloneRepos ) {
     git clone https://github.com/mszcool/msgraphcli.git
     git clone https://github.com/mszcool/NServiceBus.AzureServiceBus-SB1.1-WinSrv.git
     
-
     cd "$codeBaseDir\github\Azure"
     git clone https://github.com/Azure/AzureQuickStartsProjects.git
     git clone https://github.com/Azure/azure-sql-database-samples.git
