@@ -132,18 +132,22 @@ if( $tools ) {
 
     choco install -y 7zip
 
-    choco install -y firefox -installArgs l=en-US
+    # Not needed, anymore
+    ##choco install -y firefox -installArgs l=en-US
 
     choco install -y googlechrome
 
-    choco install -y cdburnerxp 
+    # Not needed, anymore
+    ##choco install -y cdburnerxp 
 
     choco install -y filezilla 
 
     choco install -y adobereader
     
-    choco install -y adobedigitaleditions
+    # Replaced OverDrive Media Console Store App
+    ##choco install -y adobedigitaleditions
 
+    # Replaced by Visual Studio Code as main editor
     ##old## choco install -y sublimetext2
 
     choco install -y paint.net
@@ -152,7 +156,8 @@ if( $tools ) {
 
     choco install -y vlc
 
-    choco install -y markdown-edit
+    # Replaced by MarkDown.UWP and Visual Studio Code as main editors
+    ##choco install -y markdown-edit
 
     choco install -y jre8
     
@@ -202,6 +207,8 @@ if( $ittools )
 
     choco install -y OpenSSL.Light
 
+    choco install win32-openssh
+    
     #### choco install -y virtualbox
 
     #### choco install -y virtualbox -version 4.3.12
@@ -223,6 +230,7 @@ if( $ittools )
 
 if( $dev )
 {
+    choco install emacs
 
     choco install -y jdk8
 
@@ -236,6 +244,10 @@ if( $dev )
 
     choco install -y git.install
 
+    choco install gitextensions
+
+    choco install poshgit 
+
     choco install -y windbg 
 
     choco install -y fiddler4
@@ -244,7 +256,7 @@ if( $dev )
 
     choco install -y CloudBerryExplorer.AzureStorage
 
-    choco install -y AzureStorageExplorer 
+    ## choco install -y AzureStorageExplorer 
 
     choco install -y linqpad4
 
@@ -292,7 +304,6 @@ if($installOtherIDE) {
              -OutFile $stsZipPath
     }
     $shell = New-Object -ComObject Shell.Application
-    $currentPath = Get-Location
     $stsZipFile = $shell.NameSpace($stsZipPath)
     CreatePathIfNotExists("C:\tools\sts")
     foreach($item in $stsZipFile.items()) {
