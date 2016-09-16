@@ -140,8 +140,6 @@ if( $tools ) {
     # Not needed, anymore
     ##choco install -y cdburnerxp 
 
-    choco install -y filezilla 
-
     choco install -y adobereader
     
     # Replaced OverDrive Media Console Store App
@@ -154,6 +152,8 @@ if( $tools ) {
 
     choco install -y skype 
 
+    choco install -y whatsapp 
+
     choco install -y vlc
 
     # Replaced by MarkDown.UWP and Visual Studio Code as main editors
@@ -163,7 +163,7 @@ if( $tools ) {
     
     choco install -y goodsync
     
-    choco install -y mousewithoutborders 
+    ####choco install -y mousewithoutborders 
 
     ##old## choco install -y PDFCreator -Version 1.7.3.20140611
 
@@ -207,7 +207,7 @@ if( $ittools )
 
     choco install -y OpenSSL.Light
 
-    choco install win32-openssh
+    choco install -y win32-openssh
     
     #### choco install -y virtualbox
 
@@ -218,9 +218,15 @@ if( $ittools )
 
     choco install -y royalts
     
-    choco install -y xming
+    # Replaced by vcxsrv which works way better than xming
+    ####choco install -y xming
+
+    choco install -y vcxsrv
     
     choco install -y visualstudiocode
+
+    choco install -y filezilla 
+
 }
 
 
@@ -230,7 +236,7 @@ if( $ittools )
 
 if( $dev )
 {
-    choco install emacs
+    choco install -y emacs
 
     choco install -y jdk8
 
@@ -244,9 +250,9 @@ if( $dev )
 
     choco install -y git.install
 
-    choco install gitextensions
+    choco install -y gitextensions
 
-    choco install poshgit 
+    choco install -y poshgit 
 
     choco install -y windbg 
 
@@ -254,7 +260,8 @@ if( $dev )
 
     choco install -y ilspy 
 
-    choco install -y CloudBerryExplorer.AzureStorage
+    # Replaced by Azure xPlat storage explorer
+    ####choco install -y CloudBerryExplorer.AzureStorage
 
     ## choco install -y AzureStorageExplorer 
 
@@ -273,6 +280,8 @@ if( $dev )
     choco install -y docker-compose
     
     choco install -y cloudfoundry-cli
+
+    choco install -y vagrant
      
 }
 
@@ -285,7 +294,7 @@ if($installVs) {
     if($vsVersion -eq "2013") {
         choco install -y visualstudiocommunity2013 
     } else {
-        choco install visualstudio2015community -version 14.0.23107.0
+        choco install -y visualstudio2015community -version 14.0.23107.0
     }
 }
 
@@ -293,22 +302,26 @@ if($installOtherIDE) {
     
     choco install -y intellijidea-community
 
+    choco install -y springtoolsuite
+
+    # 
+    # NOTE: below is not needed, anymore, since Chocolatey has STS in the package gallery, now
     #
     # Extract Spring Tool Suite Eclipse and copy to standard working directory
     #
-    Write-Host ""
-    Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
-    $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
-    if(!(Test-Path -Path $stsZipPath)) {
-        wget "http://dist.springsource.com/release/STS/3.7.1.RELEASE/dist/e4.5/spring-tool-suite-3.7.1.RELEASE-e4.5.1-win32-x86_64.zip" `
-             -OutFile $stsZipPath
-    }
-    $shell = New-Object -ComObject Shell.Application
-    $stsZipFile = $shell.NameSpace($stsZipPath)
-    CreatePathIfNotExists("C:\tools\sts")
-    foreach($item in $stsZipFile.items()) {
-        $shell.Namespace("C:\tools\sts").CopyHere($item)
-    }
+    # Write-Host ""
+    # Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
+    # $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
+    # if(!(Test-Path -Path $stsZipPath)) {
+    #     wget "http://dist.springsource.com/release/STS/3.7.1.RELEASE/dist/e4.5/spring-tool-suite-3.7.1.RELEASE-e4.5.1-win32-x86_64.zip" `
+    #          -OutFile $stsZipPath
+    # }
+    # $shell = New-Object -ComObject Shell.Application
+    # $stsZipFile = $shell.NameSpace($stsZipPath)
+    # CreatePathIfNotExists("C:\tools\sts")
+    # foreach($item in $stsZipFile.items()) {
+    #     $shell.Namespace("C:\tools\sts").CopyHere($item)
+    # }
 }
 
 
@@ -390,7 +403,10 @@ if( $dev2 )
 if( $data )
 {
 
-    choco install -y MsSqlServerManagementStudio2014Express
+    # Replaced by newer package for SQL 2016 below
+    ####choco install -y MsSqlServerManagementStudio2014Express
+
+    choco install sql-server-management-studio
 
     choco install -y mysql.workbench 
 
@@ -409,7 +425,8 @@ if( $data )
 
 if( $dataSrv ) {
     
-    choco install -y MsSqlServer2014Express
+    # Note: did not find an updated package for SQL 2016, yet
+    ####choco install -y MsSqlServer2014Express
 
     choco install -y mysql 
 
