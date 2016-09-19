@@ -128,26 +128,24 @@ if( $installChoco )
 
 if( $tools ) {
 
+    # UWP Alternative: PassKeep
     choco install -y keepass.install
 
-    choco install -y 7zip
+    # UWP Alternative: 7z ZIP RAR
+    ##choco install -y 7zip
 
-    # Not needed, anymore
-    ##choco install -y firefox -installArgs l=en-US
+    # UWP Alternative: Foxit Mobile PDF
+    ##choco install -y adobereader
+
+    # UWP Alternative: MarkDown.UWP | Broader Alternative: Visual Studio Code as main editors
+    ##choco install -y markdown-edit
+
+    choco install -y adobedigitaleditions
 
     choco install -y googlechrome
 
-    # Not needed, anymore
-    ##choco install -y cdburnerxp 
-
-    choco install -y adobereader
+    choco install -y cdburnerxp 
     
-    # Replaced OverDrive Media Console Store App
-    ##choco install -y adobedigitaleditions
-
-    # Replaced by Visual Studio Code as main editor
-    ##old## choco install -y sublimetext2
-
     choco install -y paint.net
 
     choco install -y skype 
@@ -156,20 +154,26 @@ if( $tools ) {
 
     choco install -y vlc
 
-    # Replaced by MarkDown.UWP and Visual Studio Code as main editors
-    ##choco install -y markdown-edit
-
     choco install -y jre8
     
     choco install -y goodsync
     
     ####choco install -y mousewithoutborders 
 
+    # Built-in to Windows
     ##old## choco install -y PDFCreator -Version 1.7.3.20140611
 
+    # Using Visual Studio Code for these purposes
     ##old## choco install -y notepadplusplus
 
+    # Using Visual Studio Code with markdown-it for blogging
     ##old## choco install -y WindowsLiveWriter 
+
+    # Using Edge and Chrome as main browsers
+    ##old## choco install -y firefox -installArgs l=en-US
+
+    # Replaced by Visual Studio Code as main editor
+    ##old## choco install -y sublimetext2
 
 }
 
