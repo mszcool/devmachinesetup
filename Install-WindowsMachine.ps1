@@ -140,23 +140,23 @@ if( $tools ) {
     # UWP Alternative: MarkDown.UWP | Broader Alternative: Visual Studio Code as main editors
     ##choco install -y markdown-edit
 
-    choco install -y adobedigitaleditions
+    choco install -y --ignorechecksum adobedigitaleditions
 
     choco install -y googlechrome
 
-    choco install -y cdburnerxp 
+    choco install -y  --allowemptychecksum cdburnerxp 
     
-    choco install -y paint.net
+    choco install -y  --allowemptychecksum paint.net
 
     choco install -y skype 
 
     choco install -y whatsapp 
 
-    choco install -y vlc
+    choco install -y  --allowemptychecksum vlc
 
     choco install -y jre8
     
-    choco install -y goodsync
+    choco install -y --ignorechecksum goodsync
     
     ####choco install -y mousewithoutborders 
 
@@ -189,29 +189,31 @@ if( $ittools )
 
     choco install -y curl
 
-    choco install -y rdcman 
+    # Replaced by Royal TS
+    ##old## choco install -y rdcman 
 
-    choco install -y winmerge 
+    choco install -y --allowemptychecksum winmerge 
 
     choco install -y wireshark 
 
     #### choco install -y microsoft-message-analyzer 
 
-    choco install -y putty
+    choco install -y  --allowemptychecksum putty
 
     choco install -y sysinternals
 
-    choco install -y ffmpeg 
+    choco install -y --allowemptychecksum ffmpeg 
 
-    choco install -y winscp
+    choco install -y  --allowemptychecksum winscp
 
     choco install -y golang
 
-    choco install -y jq
+    choco install -y  --allowemptychecksum jq
 
-    choco install -y OpenSSL.Light
+    choco install -y  --allowemptychecksum OpenSSL.Light
 
-    choco install -y win32-openssh
+    # Did cause issues on my machine - falling back to SSH in Linux Subsystem for Windows
+    ####choco install -y win32-openssh
     
     #### choco install -y virtualbox
 
@@ -220,12 +222,12 @@ if( $ittools )
     #### Switched from MobaXTerm to Royal TS with XMing for X11 forwarding from Linux-machines
     #### choco install -y mobaxterm -version 8.3
 
-    choco install -y royalts
+    choco install -y  --allowemptychecksum royalts
     
     # Replaced by vcxsrv which works way better than xming
     ####choco install -y xming
 
-    choco install -y vcxsrv
+    choco install -y  --allowemptychecksum vcxsrv
     
     choco install -y visualstudiocode
 
@@ -250,30 +252,30 @@ if( $dev )
 
     choco install -y php 
 
-    choco install -y webpi 
+    choco install -y  --allowemptychecksum webpi 
 
     choco install -y git.install
 
-    choco install -y gitextensions
+    choco install -y  --allowemptychecksum gitextensions
 
     choco install -y poshgit 
 
-    choco install -y windbg 
+    choco install -y --allowemptychecksum windbg 
 
     choco install -y fiddler4
 
-    choco install -y ilspy 
+    choco install -y --allowemptychecksum ilspy 
 
     # Replaced by Azure xPlat storage explorer
     ####choco install -y CloudBerryExplorer.AzureStorage
 
     ## choco install -y AzureStorageExplorer 
 
-    choco install -y linqpad4
+    choco install -y  --allowemptychecksum linqpad4
 
-    choco install -y redis-64 
+    choco install -y  --allowemptychecksum redis-64 
 
-    choco install -y redis-desktop-manager
+    choco install -y  --allowemptychecksum redis-desktop-manager
     
     ## http://www.microsoft.com/en-us/download/details.aspx?id=42536
     
@@ -306,26 +308,26 @@ if($installOtherIDE) {
     
     choco install -y intellijidea-community
 
-    choco install -y springtoolsuite
+    ## not working ## choco install -y springtoolsuite
 
     # 
     # NOTE: below is not needed, anymore, since Chocolatey has STS in the package gallery, now
     #
     # Extract Spring Tool Suite Eclipse and copy to standard working directory
     #
-    # Write-Host ""
-    # Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
-    # $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
-    # if(!(Test-Path -Path $stsZipPath)) {
-    #     wget "http://dist.springsource.com/release/STS/3.7.1.RELEASE/dist/e4.5/spring-tool-suite-3.7.1.RELEASE-e4.5.1-win32-x86_64.zip" `
-    #          -OutFile $stsZipPath
-    # }
-    # $shell = New-Object -ComObject Shell.Application
-    # $stsZipFile = $shell.NameSpace($stsZipPath)
-    # CreatePathIfNotExists("C:\tools\sts")
-    # foreach($item in $stsZipFile.items()) {
-    #     $shell.Namespace("C:\tools\sts").CopyHere($item)
-    # }
+    Write-Host ""
+    Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
+    $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
+    if(!(Test-Path -Path $stsZipPath)) {
+        wget "http://dist.springsource.com/release/STS/3.8.0.RELEASE/dist/e4.6/spring-tool-suite-3.8.0.RELEASE-e4.6-win32-x86_64.zip" `
+             -OutFile $stsZipPath
+    }
+    $shell = New-Object -ComObject Shell.Application
+    $stsZipFile = $shell.NameSpace($stsZipPath)
+    CreatePathIfNotExists("C:\tools\sts")
+    foreach($item in $stsZipFile.items()) {
+        $shell.Namespace("C:\tools\sts").CopyHere($item)
+    }
 }
 
 
@@ -410,15 +412,15 @@ if( $data )
     # Replaced by newer package for SQL 2016 below
     ####choco install -y MsSqlServerManagementStudio2014Express
 
-    choco install sql-server-management-studio
+    choco install -y sql-server-management-studio
 
-    choco install -y mysql.workbench 
+    choco install -y --allowemptychecksum mysql.workbench 
 
-    choco install -y SQLite 
+    choco install -y --allowemptychecksum SQLite 
 
-    choco install -y sqlite.shell 
+    choco install -y --allowemptychecksum sqlite.shell 
 
-    choco install -y sqliteadmin 
+    choco install -y --allowemptychecksum sqliteadmin 
 
 }
 
