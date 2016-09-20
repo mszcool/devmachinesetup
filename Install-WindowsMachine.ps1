@@ -609,8 +609,13 @@ if( $cloneRepos ) {
 
     CreatePathIfNotExists -pathName "$codeBaseDir\github\mszcool"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\Azure"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\AzureAD"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\JMayrbaeurl"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\OfficeDev"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\CloudFoundry"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\dx"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\HDInsight"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\mezmicrosoft-ml"
    
     cd "$codeBaseDir\github\mszcool"
     git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
@@ -624,30 +629,70 @@ if( $cloneRepos ) {
     git clone https://github.com/mszcool/simpleconsolefx.git
     git clone https://github.com/mszcool/msgraphcli.git
     git clone https://github.com/mszcool/NServiceBus.AzureServiceBus-SB1.1-WinSrv.git
+    git clone https://github.com/mszcool/azureAdMultiTenantServicePrincipal.git
+    git clone https://github.com/mszcool/azureSpBasedInstanceMetadata.git
     
     cd "$codeBaseDir\github\Azure"
-    git clone https://github.com/Azure/AzureQuickStartsProjects.git
-    git clone https://github.com/Azure/azure-sql-database-samples.git
     git clone https://github.com/Azure/api-management-samples.git
-    git clone https://github.com/Azure/azure-webjobs-sdk-samples.git
-    git clone https://github.com/Azure/BillingCodeSamples.git
-    git clone https://github.com/Azure/Azure-Media-Services-Explorer.git
     git clone https://github.com/Azure/azure-batch-samples.git
-    git clone https://github.com/Azure/azure-resource-manager-schemas.git
-    git clone https://github.com/Azure/azure-quickstart-templates.git
-    git clone https://github.com/Azure/azure-service-bus-samples.git
-    git clone https://github.com/Azure/azure-media-services-samples.git
-    git clone https://github.com/Azure/api-management-samples.git
-    git clone https://github.com/Azure/identity-management-samples.git
-    git clone https://github.com/Azure/AzureAD-BYOA-Provisioning-Samples.git
     git clone https://github.com/Azure/Azure-DataFactory.git
-    git clone https://github.com/Azure/azure-mobile-engagement-samples.git
-    git clone https://github.com/Azure/azure-notificationhubs-samples.git
-    git clone https://github.com/Azure/azure-webjobs-quickstart.git
-    git clone https://github.com/Azure/Azure-vpn-config-samples.git
+    git clone https://github.com/Azure/Azure-Media-Services-Explorer.git
+    git clone https://github.com/Azure/azure-media-services-samples.git
     git clone https://github.com/Azure/azure-mobile-apps-quickstarts.git
-    git clone https://github.com/Azure/elastic-db-tools.git
+    git clone https://github.com/Azure/azure-mobile-engagement-samples.git
     git clone https://github.com/Azure/azure-mobile-services-quickstarts.git
+    git clone https://github.com/Azure/azure-notificationhubs-samples.git
+    git clone https://github.com/Azure/azure-quickstart-templates.git
+    git clone https://github.com/Azure/azure-resource-manager-schemas.git
+    git clone https://github.com/Azure/azure-service-bus-samples.git
+    git clone https://github.com/Azure/azure-sql-database-samples.git
+    git clone https://github.com/Azure/azure-stream-analytics.git
+    git clone https://github.com/Azure/Azure-vpn-config-samples.git
+    git clone https://github.com/Azure/azure-webjobs-quickstart.git
+    git clone https://github.com/Azure/azure-webjobs-sdk-samples.git
+    git clone https://github.com/Azure/AzureAD-BYOA-Provisioning-Samples.git
+    git clone https://github.com/Azure/AzureQuickStartsProjects.git
+    git clone https://github.com/Azure/BillingCodeSamples.git
+    git clone https://github.com/Azure/elastic-db-tools.git
+    git clone https://github.com/Azure/identity-management-samples.git
+    
+    cd "$codeBaseDir\github\AzureAD"
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIDConnect-nodejs.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-Daemon-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/WebApp-OpenIDConnect-NodeJS.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-SinglePageApp-AngularJS-NodeJS.git
+    git clone https://github.com/AzureADQuickStarts/NativeClient-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/WebApp-OpenIdConnect-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-NativeClient-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIDConnect-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/NativeClient-iOS.git
+    git clone https://github.com/AzureADQuickStarts/NativeClient-WindowsStore.git
+    git clone https://github.com/AzureADQuickStarts/NativeClient-MultiTarget-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/WebAPI-Bearer-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-NativeClient-Android.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-NativeClient-iOS.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIDConnect-nodejs.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-WebAPI-OpenIDConnect-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/AppModelv2-SinglePageApp-AngularJS-DotNet.git
+    git clone https://github.com/AzureADQuickStarts/NativeClient-MultiTarget-Cordova.git
+
+    cd "$codeBaseDir\github\HDInsight"
+    git clone https://github.com/hdinsight/eventhubs-client.git
+    git clone https://github.com/hdinsight/eventhubs-sample-event-producer.git
+    git clone https://github.com/hdinsight/hdinsight-spark-examples.git
+    git clone https://github.com/hdinsight/hdinsight-storm-examples.git
+    git clone https://github.com/hdinsight/spark-streaming-data-persistence-examples.git
+
+    cd "$codeBaseDir\github\CloudFoundry"
+    git clone https://github.com/cloudfoundry-incubator/bosh-azure-cpi-release.git
+    git clone https://github.com/cf-platform-eng/bosh-azure-template.git
+    git clone https://github.com/cloudfoundry/bosh-lite
+
+    cd "$codeBaseDir\github\dx"
+    git clone https://github.com/dx-ted-emea/bigdata-labs.git
+    git clone https://github.com/dx-ted-emea/iot-labs.git
+    git clone https://github.com/MicrosoftDX/AzureLens.git
+    git clone https://github.com/MicrosoftDX/AMSOpsTool.git
 
     cd "$codeBaseDir\github\OfficeDev"
     git clone https://github.com/OfficeDev/O365-AspNetMVC-Microsoft-Graph-Connect.git
@@ -659,10 +704,11 @@ if( $cloneRepos ) {
     git clone https://github.com/JMayrbaeurl/AbfallkalenderBisamberg.git
     git clone https://github.com/JMayrbaeurl/azure-log4j.git
     git clone https://github.com/JMayrbaeurl/GotoZurich2013JavaOnAzureSample.git
-    
-    cd "$codeBaseDir\github"
-    git clone https://github.com/dahlbyk/posh-git.git
 
+    cd "$codeBaseDir\github\mezmicrosoft-ml"
+    git clone https://github.com/mezmicrosoft/Introduction_to_RTVS_toturial.git
+    git clone https://github.com/mezmicrosoft/Microsoft_R_Server.git
+    git clone https://github.com/mezmicrosoft/Sample_Experiments.git
 
     #
     # Codeplex (legacy stuff)
