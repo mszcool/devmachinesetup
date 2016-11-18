@@ -657,24 +657,26 @@ if( $cloneRepos ) {
     git clone https://github.com/Azure/identity-management-samples.git
     
     cd "$codeBaseDir\github\AzureAD"
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIDConnect-nodejs.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-Daemon-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/WebApp-OpenIDConnect-NodeJS.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-SinglePageApp-AngularJS-NodeJS.git
-    git clone https://github.com/AzureADQuickStarts/NativeClient-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/WebApp-OpenIdConnect-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-NativeClient-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIDConnect-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/NativeClient-iOS.git
-    git clone https://github.com/AzureADQuickStarts/NativeClient-WindowsStore.git
-    git clone https://github.com/AzureADQuickStarts/NativeClient-MultiTarget-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/WebAPI-Bearer-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-NativeClient-Android.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-NativeClient-iOS.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-OpenIDConnect-nodejs.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-WebApp-WebAPI-OpenIDConnect-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/AppModelv2-SinglePageApp-AngularJS-DotNet.git
-    git clone https://github.com/AzureADQuickStarts/NativeClient-MultiTarget-Cordova.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-graphapi-console.git
+    git clone https://github.com/Azure-Samples/active-directory-java-graphapi-web.git
+    git clone https://github.com/Azure-Samples/active-directory-angularjs-singlepageapp-dotnet-webapi.git
+    git clone https://github.com/Azure-Samples/active-directory-android.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-webapi-openidconnect-aspnetcore.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapi-onbehalfof.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-headless.git
+    git clone https://github.com/Azure-Samples/active-directory-cordova-graphapi.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-webapi-oauth2-useridentity.git
+    git clone https://github.com/Azure-Samples/active-directory-java-native-headless.git
+    git clone https://github.com/Azure-Samples/active-directory-xamarin-native-v2.git
+    git clone https://github.com/Azure-Samples/active-directory-node-webapi.git
+    git clone https://github.com/Azure-Samples/active-directory-python-graphapi-oauth2-0-access.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-uwp-wam.git
+    git clone https://github.com/Azure-Samples/active-directory-java-webapp-openidconnect.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-multitarget.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-graphapi-diffquery.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-multitenant-openidconnect.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-roleclaims.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-web-single-sign-out.git
 
     cd "$codeBaseDir\github\HDInsight"
     git clone https://github.com/hdinsight/eventhubs-client.git
