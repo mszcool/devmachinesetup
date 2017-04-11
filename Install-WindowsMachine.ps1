@@ -4,6 +4,9 @@ Param
     $tools,
 
     [Switch]
+    $consumerTools,
+
+    [Switch]
     $ittools,
 
     [Switch]
@@ -19,20 +22,30 @@ Param
     $dataSrv,
 
     [Switch]
-    $vsext,
-
-    [Switch]
     $installChoco,
 
+    [Switch]
+    $installOsComponents,
+
     [Parameter(Mandatory=$False)]
-    [ValidateSet("2013", "2015")]
-    $vsVersion = "2015",
+    [ValidateSet("2013", "2015", "2017")]
+    $vsVersion = "2017",
+
+    [Parameter(Mandatory=$False)]
+    [ValidateSet("Community", "Professional", "Enterprise")]
+    $vsEdition = "Community",
 
     [Switch]
     $installVs,
 
     [Switch]
     $installOtherIDE,
+
+    [Switch]
+    $vsext,
+
+    [Switch]
+    $vscodeext,
 
     [Switch]
     $cloneRepos,
@@ -46,7 +59,35 @@ Param
 # 
 $vsixInstallerCommand2013 = "C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\VsixInstaller.exe"
 $vsixInstallerCommand2015 = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe"
+$vsixInstallerCommand2017 = "C:\Program Files (x86)\Microsoft Visual Studio\2017\$vsEdition\Common7\IDE\VsixInstaller.exe"
 $vsixInstallerCommandGeneralArgs = " /q /a "
+
+#
+# Installing Operating System Components as well as chocolatey itself
+#
+if( $installOsComponents ) 
+{
+    Set-ExecutionPolicy unrestricted
+
+    Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+
+    Enable-WindowsOptionalFeature -FeatureName NetFx3 -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName WCF-Services45 -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName WCF-TCP-PortSharing45 -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName NetFx4-AdvSrvs -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName NetFx4Extended-ASPNET45 -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName Windows-Identity-Foundation -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName Containers -Online -NoRestart
+    Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
+
+    Write-Information ""
+    Write-Information "Installation of OS components completed, please restart your computer once ready!"
+    Write-Information ""
+
+    Exit
+}
+
 
 #
 # Simple Parameter validation
@@ -80,9 +121,12 @@ function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
     if($vsVersion -eq "2015") {
         $vsixInstallerCommand = $vsixInstallerCommand2015
     }
+    if($vsVersion -eq "2017") {
+        $vsixInstallerCommand = $vsixInstallerCommand2017
+    }
 
     # Download the extension
-    wget $extensionUrl -OutFile $extensionFileName
+    Invoke-WebRequest $extensionUrl -OutFile $extensionFileName
 
     # Quiet Install of the Extension
     $proc = Start-Process -FilePath "$vsixInstallerCommand" -ArgumentList ($vsixInstallerCommandGeneralArgs + $extensionFileName) -PassThru
@@ -99,26 +143,14 @@ function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
 #
 # Create the working directory structure
 #
-CreatePathIfNotExists -pathName "$codeBaseDir"
-CreatePathIfNotExists -pathName "$codeBaseDir\github"
-CreatePathIfNotExists -pathName "$codeBaseDir\codeplex"
-CreatePathIfNotExists -pathName "$codeBaseDir\mszCool"
-CreatePathIfNotExists -pathName "$codeBaseDir\marioszp"
-CreatePathIfNotExists -pathName "$codeBaseDir\dpeted"
-
-
-#
-# Chocolatey Installation script
-# Pre-Requisites:
-# - Microsoft Office latest version
-# - Visual Studio 2013 latest version
-#
-
-if( $installChoco )
+if( $cloneRepos ) 
 {
-    Set-ExecutionPolicy unrestricted
-
-    iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+    CreatePathIfNotExists -pathName "$codeBaseDir"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github"
+    CreatePathIfNotExists -pathName "$codeBaseDir\codeplex"
+    CreatePathIfNotExists -pathName "$codeBaseDir\mszCool"
+    CreatePathIfNotExists -pathName "$codeBaseDir\marioszp"
+    CreatePathIfNotExists -pathName "$codeBaseDir\dpeted"
 }
 
 
@@ -128,53 +160,37 @@ if( $installChoco )
 
 if( $tools ) {
 
-    # UWP Alternative: PassKeep
     choco install -y keepass.install
 
-    # UWP Alternative: 7z ZIP RAR
-    ##choco install -y 7zip
+    choco install -y 7zip
 
-    # UWP Alternative: Foxit Mobile PDF
-    ##choco install -y adobereader
-
-    # UWP Alternative: MarkDown.UWP | Broader Alternative: Visual Studio Code as main editors
-    ##choco install -y markdown-edit
-
-    choco install -y --ignorechecksum adobedigitaleditions
+    choco install -y adobereader
 
     choco install -y googlechrome
 
-    choco install -y  --allowemptychecksum cdburnerxp 
-    
-    choco install -y  --allowemptychecksum paint.net
+    choco install -y firefox -installArgs l=en-US
 
-    choco install -y skype 
+    choco install -y jre8
+
+}
+
+
+#
+# [consumerTools] Tools only needed for end-user related machines (not machines focused on dev-only)
+#
+
+if( $consumerTools ) {
 
     choco install -y whatsapp 
 
+    choco install -y slack
+
+    choco install -y microsoft-teams
+
     choco install -y  --allowemptychecksum vlc
 
-    choco install -y jre8
-    
     choco install -y --ignorechecksum goodsync
     
-    ####choco install -y mousewithoutborders 
-
-    # Built-in to Windows
-    ##old## choco install -y PDFCreator -Version 1.7.3.20140611
-
-    # Using Visual Studio Code for these purposes
-    ##old## choco install -y notepadplusplus
-
-    # Using Visual Studio Code with markdown-it for blogging
-    ##old## choco install -y WindowsLiveWriter 
-
-    # Using Edge and Chrome as main browsers
-    ##old## choco install -y firefox -installArgs l=en-US
-
-    # Replaced by Visual Studio Code as main editor
-    ##old## choco install -y sublimetext2
-
 }
 
 
@@ -189,47 +205,23 @@ if( $ittools )
 
     choco install -y curl
 
-    # Replaced by Royal TS
-    ##old## choco install -y rdcman 
-
     choco install -y --allowemptychecksum winmerge 
 
     choco install -y wireshark 
-
-    #### choco install -y microsoft-message-analyzer 
 
     choco install -y  --allowemptychecksum putty
 
     choco install -y sysinternals
 
-    choco install -y --allowemptychecksum ffmpeg 
-
     choco install -y  --allowemptychecksum winscp
-
-    choco install -y golang
 
     choco install -y  --allowemptychecksum jq
 
     choco install -y  --allowemptychecksum OpenSSL.Light
 
-    # Did cause issues on my machine - falling back to SSH in Linux Subsystem for Windows
-    ####choco install -y win32-openssh
-    
-    #### choco install -y virtualbox
-
-    #### choco install -y virtualbox -version 4.3.12
-
-    #### Switched from MobaXTerm to Royal TS with XMing for X11 forwarding from Linux-machines
-    #### choco install -y mobaxterm -version 8.3
-
     choco install -y  --allowemptychecksum royalts
     
-    # Replaced by vcxsrv which works way better than xming
-    ####choco install -y xming
-
     choco install -y  --allowemptychecksum vcxsrv
-    
-    choco install -y visualstudiocode
 
     choco install -y filezilla 
 
@@ -242,7 +234,9 @@ if( $ittools )
 
 if( $dev )
 {
-    choco install -y emacs
+    choco install -y visualstudiocode
+
+    choco install -y golang
 
     choco install -y jdk8
 
@@ -252,7 +246,7 @@ if( $dev )
 
     choco install -y php 
 
-    choco install -y  --allowemptychecksum webpi 
+    choco install -y --allowemptychecksum webpi 
 
     choco install -y git.install
 
@@ -266,29 +260,26 @@ if( $dev )
 
     choco install -y --allowemptychecksum ilspy 
 
-    # Replaced by Azure xPlat storage explorer
-    ####choco install -y CloudBerryExplorer.AzureStorage
-
-    ## choco install -y AzureStorageExplorer 
-
     choco install -y  --allowemptychecksum linqpad4
 
     choco install -y  --allowemptychecksum redis-64 
+    
+    choco install -y docker-for-windows
 
-    choco install -y  --allowemptychecksum redis-desktop-manager
-    
-    ## http://www.microsoft.com/en-us/download/details.aspx?id=42536
-    
-    choco install -y docker
-    
-    choco install -y docker-machine
-    
-    choco install -y docker-compose
-    
     choco install -y cloudfoundry-cli
 
+    choco install -y kubernetes-cli
+
     choco install -y vagrant
-     
+
+    choco install -y nuget.commandline
+
+    choco install -y maven
+
+    choco install -y sbt
+
+    choco install -y ngrok.portable
+
 }
 
 
@@ -299,8 +290,22 @@ if( $dev )
 if($installVs) {
     if($vsVersion -eq "2013") {
         choco install -y visualstudiocommunity2013 
-    } else {
+    } 
+    elseif($vsVersion -eq "2015") {
         choco install -y visualstudio2015community -version 14.0.23107.0
+    } 
+    elseif($vsVersion -eq "2017") {
+        switch ($vsEdition) {
+            "Community" {
+                choco install visualstudio2017community -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+            }
+            "Professional" {
+                choco install visualstudio2017professional -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+            }            
+            "Enterprise" {
+                choco install visualstudio2017enterprise -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+            }
+        }
     }
 }
 
@@ -319,8 +324,8 @@ if($installOtherIDE) {
     Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
     $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
     if(!(Test-Path -Path $stsZipPath)) {
-        wget "http://dist.springsource.com/release/STS/3.8.0.RELEASE/dist/e4.6/spring-tool-suite-3.8.0.RELEASE-e4.6-win32-x86_64.zip" `
-             -OutFile $stsZipPath
+        Invoke-WebRequest "http://dist.springsource.com/release/STS/3.8.0.RELEASE/dist/e4.6/spring-tool-suite-3.8.0.RELEASE-e4.6-win32-x86_64.zip" `
+                          -OutFile $stsZipPath
     }
     $shell = New-Object -ComObject Shell.Application
     $stsZipFile = $shell.NameSpace($stsZipPath)
@@ -339,21 +344,15 @@ if( $dev2 )
 {
     npm install -g moment
 
-    webpicmd /Install /Products:AzureNodeSDK /AcceptEula
-        
-    webpicmd /Install /Products:DACFX /AcceptEula
+    npm install -g bower
 
-    webpicmd /Install /Products:AzureNodeSDK /AcceptEula
+    npm install -g gulp
 
-    webpicmd /Install /Products:AzurePython27SDK /AcceptEula
+    pip install azure
 
-    webpicmd /Install /Products:AzurePython34SDK /AcceptEula
-    
-    webpicmd /Install /Products:WindowsAzureXPlatCLI /AcceptEula
+    pip install --user azure-cli
 
-    webpicmd /Install /Products:WindowsAzurePowershell /AcceptEula
-    
-    webpicmd /Install /Products:WindowsAzurePowershellGet /AcceptEula
+    Install-Module -Name AzureRM -Force -SkipPublisherCheck -Confirm 
     
     if($vsVersion -eq "2013") {
 
@@ -388,17 +387,6 @@ if( $dev2 )
         webpicmd /Install /Products:HDInsightVS2015Msi /AcceptEula
     }
     
-    webpicmd /Install /Products:AzureQuickStarts_1_6_0 /AcceptEula
-
-    webpicmd /Install /Products:SQLCE /AcceptEula
-    
-    webpicmd /Install /Products:SQLCEforWM /AcceptEula
-    
-    webpicmd /Install /Products:SQLCE_4_0 /AcceptEula
-    
-    webpicmd /Install /Products:SQLCLRTypes /AcceptEula
-    
-    webpicmd /Install /Products:SQLLocalDB /AcceptEula
 }
 
 
@@ -409,18 +397,13 @@ if( $dev2 )
 if( $data )
 {
 
-    # Replaced by newer package for SQL 2016 below
-    ####choco install -y MsSqlServerManagementStudio2014Express
-
     choco install -y sql-server-management-studio
 
-    choco install -y --allowemptychecksum mysql.workbench 
+    choco install -y --allowemptychecksum dbeaver 
 
     choco install -y --allowemptychecksum SQLite 
 
     choco install -y --allowemptychecksum sqlite.shell 
-
-    choco install -y --allowemptychecksum sqliteadmin 
 
 }
 
@@ -431,8 +414,7 @@ if( $data )
 
 if( $dataSrv ) {
     
-    # Note: did not find an updated package for SQL 2016, yet
-    ####choco install -y MsSqlServer2014Express
+    choco install sql-server-express -version 13.0.1601.5
 
     choco install -y mysql 
 
@@ -498,11 +480,6 @@ if( $vsext -and ($vsVersion -eq "2013") ) {
 
 if( $vsext -and ($vsVersion -eq "2015") ) {
 
-    # CodeMaid
-    # https://visualstudiogallery.msdn.microsoft.com/76293c4d-8c16-4f4a-aee6-21f83a571496
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/76293c4d-8c16-4f4a-aee6-21f83a571496/file/9356/31/CodeMaid_v0.8.0.vsix" `
-                       -extensionFileName "CodeMaid.vsix" -vsVersion $vsVersion
-    
     # Indent Guides
     # https://visualstudiogallery.msdn.microsoft.com/e792686d-542b-474a-8c55-630980e72c30
     InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/e792686d-542b-474a-8c55-630980e72c30/file/48932/20/IndentGuide%20v14.vsix" `
@@ -596,6 +573,102 @@ if( $vsext -and ($vsVersion -eq "2015") ) {
                        
 }
 
+if( $vsext -and ($vsVersion -eq "2015") ) {
+
+    # Productivity Power Tools
+    # https://marketplace.visualstudio.com/items?itemName=GitHub.GitHubExtensionforVisualStudio
+    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/75be44fb-0794-4391-8865-c3279527e97d/file/159055/36/GitHub.VisualStudio.vsix" `
+                       -extensionFileName "GitHubExtensionsForVS.vsix" -vsVersion $vsVersion
+
+    # Snippet Designer
+    # https://marketplace.visualstudio.com/items?itemName=vs-publisher-2795.SnippetDesigner
+    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/b08b0375-139e-41d7-af9b-faee50f68392/file/5131/16/SnippetDesigner.vsix" `
+                       -extensionFileName "SnippetDesigner.vsix" -vsVersion $vsVersion
+
+    # Web Essentials 2017
+    # https://marketplace.visualstudio.com/items?itemName=MadsKristensen.WebExtensionPack2017
+    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/a5a27916-2099-4c5b-a3ff-6a46e4b01298/file/236262/11/Web%20Essentials%202017%20v1.5.8.vsix" `
+                       -extensionFileName "WebEssentials2017.vsix" -vsVersion $vsVersion
+
+    # Productivity Power Tools 2017
+    # https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.ProductivityPowerPack2017
+    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/11693073-e58a-45b3-8818-b2cf5d925af7/file/244442/4/ProductivityPowerTools2017.vsix" `
+                       -extensionFileName "ProductivityPowertools2017.vsix" -vsVersion $vsVersion
+
+    # Power Commands 2017
+    # https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.PowerCommandsforVisualStudio
+    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/80f73460-89cd-4d93-bccb-f70530943f82/file/242896/4/PowerCommands.vsix" `
+                       -extensionFileName "PowerCommands2017.vsix" -vsVersion $vsVersion
+
+    # Power Shell Tools 2017
+    # https://marketplace.visualstudio.com/items?itemName=AdamRDriscoll.PowerShellToolsforVisualStudio2017-18561
+    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/8389e80d-9e40-4fc1-907c-a07f7842edf2/file/257196/1/PowerShellTools.15.0.vsix" `
+                       -extensionFileName "PowerShellTools2017.vsix" -vsVersion $vsVersion
+
+}
+
+if ( $vscodeext ) {
+
+    code --install-extension DavidAnson.vscode-markdownlint
+
+    code --install-extension DotJoshJohnson.xml
+
+    code --install-extension eg2.tslint
+
+    code --install-extension eg2.vscode-npm-script
+
+    code --install-extension johnpapa.Angular1
+
+    code --install-extension johnpapa.Angular2
+    
+    code --install-extension lukehoban.Go
+    
+    code --install-extension mohsen1.prettify-json
+    
+    code --install-extension ms-mssql.mssql
+    
+    code --install-extension ms-vscode.cpptools
+    
+    code --install-extension ms-vscode.csharp
+    
+    code --install-extension ms-vscode.mono-debug
+    
+    code --install-extension ms-vscode.PowerShell
+    
+    code --install-extension ms-vscode.Theme-MarkdownKit
+    
+    code --install-extension ms-vscode.Theme-MaterialKit
+    
+    code --install-extension ms-vsts.team
+
+    code --install-extension ms-vscode.node-debug
+    
+    code --install-extension install msazurermtools.azurerm-vscode-tools
+    
+    code --install-extension msjsdiag.debugger-for-chrome
+
+    code --install-extension msjsdiag.debugger-for-edge
+    
+    code --install-extension install PeterJausovec.vscode-docker
+
+    code --install-extension install tht13.python
+
+    code --install-extension install ms-vscode.typescript-javascript-grammar
+
+    code --install-extension install codezombiech.gitignore
+    
+    code --install-extension redhat.java
+    
+    code --install-extension vsmobile.cordova-tools
+
+    code --install-extension Angular.ng-template
+
+    code --install-extension sivarajanraju.vs-code-office-ui-fabric
+
+    code --install-extension knom.office-mailapp-manifestuploader
+
+}
+
 
 #
 # cloneRepos
@@ -618,19 +691,23 @@ if( $cloneRepos ) {
     CreatePathIfNotExists -pathName "$codeBaseDir\github\mezmicrosoft-ml"
    
     cd "$codeBaseDir\github\mszcool"
-    git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
-    git clone https://github.com/mszcool/UniversalApps-Modularity.git
-    git clone https://github.com/mszcool/AzureFiles2014Sample.git
-    git clone https://github.com/mszcool/TrafficManager201501Sample.git
-    git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
-    git clone https://github.com/mszcool/AzureBatchTesseractSample.git
-    git clone https://github.com/mszcool/devmachinesetup.git
-    git clone https://github.com/mszcool/bosh-azure-cpi-release.git
-    git clone https://github.com/mszcool/simpleconsolefx.git
-    git clone https://github.com/mszcool/msgraphcli.git
-    git clone https://github.com/mszcool/NServiceBus.AzureServiceBus-SB1.1-WinSrv.git
+
+    git clone https://github.com/mszcool/azure-quickstart-templates.git
     git clone https://github.com/mszcool/azureAdMultiTenantServicePrincipal.git
+    git clone https://github.com/mszcool/AzureBatchTesseractSample.git
+    git clone https://github.com/mszcool/AzureFiles2014Sample.git
     git clone https://github.com/mszcool/azureSpBasedInstanceMetadata.git
+    git clone https://github.com/mszcool/bosh-azure-cpi-release.git
+    git clone https://github.com/mszcool/cfMultiCloudSample.git
+    git clone https://github.com/mszcool/devmachinesetup.git
+    git clone https://github.com/mszcool/msgraphcli.git
+    git clone https://github.com/mszcool/mszcoolAzureBillingAddIn.git
+    git clone https://github.com/mszcool/mszcoolPowerOnDemand.git
+    git clone https://github.com/mszcool/NServiceBus.AzureServiceBus-SB1.1-WinSrv.git
+    git clone https://github.com/mszcool/simpleconsolefx.git
+    git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
+    git clone https://github.com/mszcool/TrafficManager201501Sample.git
+    git clone https://github.com/mszcool/UniversalApps-Modularity.git
     
     cd "$codeBaseDir\github\Azure"
     git clone https://github.com/Azure/api-management-samples.git
@@ -677,6 +754,8 @@ if( $cloneRepos ) {
     git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-multitenant-openidconnect.git
     git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-roleclaims.git
     git clone https://github.com/Azure-Samples/active-directory-dotnet-web-single-sign-out.git
+    git clone https://github.com/AzureAD/azure-activedirectory-library-for-js.git
+    git clone https://github.com/AzureAD/microsoft-authentication-library-for-dotnet.git
 
     cd "$codeBaseDir\github\HDInsight"
     git clone https://github.com/hdinsight/eventhubs-client.git
@@ -698,9 +777,19 @@ if( $cloneRepos ) {
 
     cd "$codeBaseDir\github\OfficeDev"
     git clone https://github.com/OfficeDev/O365-AspNetMVC-Microsoft-Graph-Connect.git
-    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Connect
-    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Snippets
+    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Connect.git
+    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Snippets.git
     git clone https://github.com/OfficeDev/Office-Add-in-Nodejs-ServerAuth.git
+    git clone https://github.com/OfficeDev/CodeLabs-Office.git
+    git clone https://github.com/OfficeDev/Excel-Add-in-Bind-To-Table.git
+    git clone https://github.com/OfficeDev/O365-AspNetMVC-Microsoft-Graph-Connect.git
+    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Connect.git
+    git clone https://github.com/OfficeDev/O365-UWP-Microsoft-Graph-Snippets.git
+    git clone https://github.com/OfficeDev/Office-Add-in-Nodejs-ServerAuth.git
+    git clone https://github.com/OfficeDev/office-js-docs.git
+    git clone https://github.com/OfficeDev/PowerPoint-Add-in-Microsoft-Graph-ASPNET-InsertChart.git
+    git clone https://github.com/OfficeDev/Word-Add-in-Angular2-StyleChecker.git
+    git clone https://github.com/OfficeDev/Word-Add-in-AngularJS-Client-OAuth.git
     
     cd "$codeBaseDir\github\JMayrbaeurl"
     git clone https://github.com/JMayrbaeurl/AbfallkalenderBisamberg.git
