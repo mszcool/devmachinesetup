@@ -1,10 +1,13 @@
 Param
 (
     [Switch]
+    $prepOS,
+
+    [Switch]
     $tools,
 
     [Switch]
-    $consumerTools,
+    $userTools,
 
     [Switch]
     $ittools,
@@ -22,10 +25,7 @@ Param
     $dataSrv,
 
     [Switch]
-    $installChoco,
-
-    [Switch]
-    $installOsComponents,
+    $installVs,
 
     [Parameter(Mandatory=$False)]
     [ValidateSet("2013", "2015", "2017")]
@@ -36,16 +36,13 @@ Param
     $vsEdition = "Community",
 
     [Switch]
-    $installVs,
-
-    [Switch]
-    $installOtherIDE,
-
-    [Switch]
     $vsext,
 
     [Switch]
     $vscodeext,
+
+    [Switch]
+    $installOtherIDE,
 
     [Switch]
     $cloneRepos,
@@ -54,18 +51,11 @@ Param
     $codeBaseDir = "C:\Code"
 )
 
-#
-# General constants
-# 
-$vsixInstallerCommand2013 = "C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\VsixInstaller.exe"
-$vsixInstallerCommand2015 = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe"
-$vsixInstallerCommand2017 = "C:\Program Files (x86)\Microsoft Visual Studio\2017\$vsEdition\Common7\IDE\VsixInstaller.exe"
-$vsixInstallerCommandGeneralArgs = " /q /a "
 
 #
-# Installing Operating System Components as well as chocolatey itself
+# [prepOS] Installing Operating System Components as well as chocolatey itself. Needs to happen before ANY other runs!
 #
-if( $installOsComponents ) 
+if( $prepOS ) 
 {
     Set-ExecutionPolicy unrestricted
 
@@ -92,11 +82,11 @@ if( $installOsComponents )
 #
 # Simple Parameter validation
 #
-
 if( ($dev) -and ($dev2) )
 {
     throw "You cannot run developer tools installation phase 1 and 2 at the same time since phase 2 requires parts from phase 1 in the shell-path, already!"
 }
+
 
 #
 # Function to create a path if it does not exist
@@ -110,6 +100,11 @@ function CreatePathIfNotExists($pathName) {
 #
 # Function to install VSIX extensions
 #
+$vsixInstallerCommand2013 = "C:\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\VsixInstaller.exe"
+$vsixInstallerCommand2015 = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\VSIXInstaller.exe"
+$vsixInstallerCommand2017 = "C:\Program Files (x86)\Microsoft Visual Studio\2017\$vsEdition\Common7\IDE\VsixInstaller.exe"
+$vsixInstallerCommandGeneralArgs = " /q /a "
+
 function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
     
     Write-Host "Installing extension " $extensionFileName
@@ -141,20 +136,6 @@ function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
 
 
 #
-# Create the working directory structure
-#
-if( $cloneRepos ) 
-{
-    CreatePathIfNotExists -pathName "$codeBaseDir"
-    CreatePathIfNotExists -pathName "$codeBaseDir\github"
-    CreatePathIfNotExists -pathName "$codeBaseDir\codeplex"
-    CreatePathIfNotExists -pathName "$codeBaseDir\mszCool"
-    CreatePathIfNotExists -pathName "$codeBaseDir\marioszp"
-    CreatePathIfNotExists -pathName "$codeBaseDir\dpeted"
-}
-
-
-#
 # [tools] Tools needed on every machine
 #
 
@@ -176,10 +157,9 @@ if( $tools ) {
 
 
 #
-# [consumerTools] Tools only needed for end-user related machines (not machines focused on dev-only)
+# [userTools] Tools only needed for end-user related machines (not machines focused on dev-only)
 #
-
-if( $consumerTools ) {
+if( $userTools ) {
 
     choco install -y whatsapp 
 
@@ -197,7 +177,6 @@ if( $consumerTools ) {
 # 
 # [ittools] IT-oriented tools
 #
-
 if( $ittools )
 {
 
@@ -231,7 +210,6 @@ if( $ittools )
 #
 # [dev] Developer Tools needed on every dev-machine
 #
-
 if( $dev )
 {
     choco install -y visualstudiocode
@@ -284,9 +262,8 @@ if( $dev )
 
 
 #
-# [installVs] and [installOtherIDE]
+# [installVs] Installing a version of Visual Studio (based on Chocolatey)
 #
-
 if($installVs) {
     if($vsVersion -eq "2013") {
         choco install -y visualstudiocommunity2013 
@@ -309,6 +286,9 @@ if($installVs) {
     }
 }
 
+#
+# Installing other IDEs, mainly Java-based
+#
 if($installOtherIDE) {
     
     choco install -y intellijidea-community
@@ -339,7 +319,6 @@ if($installOtherIDE) {
 #
 # [dev2] Developer Tools Phase 2 - needs to run after Phase 1 and installing IDEs before
 #
-
 if( $dev2 )
 {
     npm install -g moment
@@ -393,7 +372,6 @@ if( $dev2 )
 #
 # [data] Database Platform Tools
 #
-
 if( $data )
 {
 
@@ -411,7 +389,6 @@ if( $data )
 #
 # [dataSrv] Database Server Platforms
 #
-
 if( $dataSrv ) {
     
     choco install sql-server-express -version 13.0.1601.5
@@ -426,10 +403,10 @@ if( $dataSrv ) {
 
 }
 
+
 #
 # Visual Studio Extensions
 #
-
 if( $vsext -and ($vsVersion -eq "2013") ) {
 
     # Web Essentials
@@ -573,7 +550,7 @@ if( $vsext -and ($vsVersion -eq "2015") ) {
                        
 }
 
-if( $vsext -and ($vsVersion -eq "2015") ) {
+if( $vsext -and ($vsVersion -eq "2017") ) {
 
     # Productivity Power Tools
     # https://marketplace.visualstudio.com/items?itemName=GitHub.GitHubExtensionforVisualStudio
@@ -607,6 +584,10 @@ if( $vsext -and ($vsVersion -eq "2015") ) {
 
 }
 
+
+#
+# Visual Studio Code Extensions
+#
 if ( $vscodeext ) {
 
     code --install-extension DavidAnson.vscode-markdownlint
@@ -671,15 +652,23 @@ if ( $vscodeext ) {
 
 
 #
-# cloneRepos
+# cloneRepos, cloning all my most important Git repositories
 #
-
 if( $cloneRepos ) {
-    
+
+    #
+    # Creating my code directories
+    #    
+    CreatePathIfNotExists -pathName "$codeBaseDir"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github"
+    CreatePathIfNotExists -pathName "$codeBaseDir\codeplex"
+    CreatePathIfNotExists -pathName "$codeBaseDir\mszCool"
+    CreatePathIfNotExists -pathName "$codeBaseDir\marioszp"
+    CreatePathIfNotExists -pathName "$codeBaseDir\dpeted"
+
     #
     # Github clone repositories 
     #
-
     CreatePathIfNotExists -pathName "$codeBaseDir\github\mszcool"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\Azure"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\AzureAD"
