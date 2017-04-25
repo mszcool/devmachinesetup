@@ -16,9 +16,6 @@ Param
     $dev,
 
     [Switch]
-    $dev2,
-
-    [Switch]
     $data,
 
     [Switch]
@@ -52,6 +49,19 @@ Param
 )
 
 
+
+#
+# Simple Parameter validation
+#
+if( $prepOS -and ($tools -or $ittools -or $userTools -or $dev -or $data -or $dataSrv -or $installOtherIDE -or $installVs -or $cloneRepos -or $vsext) ) {
+    throw "Running the script with -prepOS does not allow you to use any other switches. First run -prepOS and then run with any other allowed combination of switches!"
+}
+
+if( $dev -and $installVs )
+{
+    throw "Visual Studio and developer tools need to be installed separately. First run with -installVs and then run with -dev!"
+}
+
 #
 # [prepOS] Installing Operating System Components as well as chocolatey itself. Needs to happen before ANY other runs!
 #
@@ -76,15 +86,6 @@ if( $prepOS )
     Write-Information ""
 
     Exit
-}
-
-
-#
-# Simple Parameter validation
-#
-if( ($dev) -and ($dev2) )
-{
-    throw "You cannot run developer tools installation phase 1 and 2 at the same time since phase 2 requires parts from phase 1 in the shell-path, already!"
 }
 
 
@@ -207,11 +208,73 @@ if( $ittools )
 }
 
 
+
+
+#
+# [installVs] Installing a version of Visual Studio (based on Chocolatey)
+#
+if($installVs) {
+    if($vsVersion -eq "2013") {
+        choco install -y visualstudiocommunity2013 
+    } 
+    elseif($vsVersion -eq "2015") {
+        choco install -y visualstudio2015community -version 14.0.23107.0
+    } 
+    elseif($vsVersion -eq "2017") {
+        switch ($vsEdition) {
+            "Community" {
+                choco install visualstudio2017community -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+            }
+            "Professional" {
+                choco install visualstudio2017professional -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+            }            
+            "Enterprise" {
+                choco install visualstudio2017enterprise -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+            }
+        }
+    }
+}
+
+
+#
+# Installing other IDEs, mainly Java-based
+#
+if($installOtherIDE) {
+    
+    choco install -y intellijidea-community
+
+    ## not working ## choco install -y springtoolsuite
+
+    # 
+    # NOTE: below is not needed, anymore, since Chocolatey has STS in the package gallery, now
+    #
+    # Extract Spring Tool Suite Eclipse and copy to standard working directory
+    #
+    Write-Host ""
+    Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
+    $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
+    if(!(Test-Path -Path $stsZipPath)) {
+        Invoke-WebRequest "http://dist.springsource.com/release/STS/3.8.0.RELEASE/dist/e4.6/spring-tool-suite-3.8.0.RELEASE-e4.6-win32-x86_64.zip" `
+                          -OutFile $stsZipPath
+    }
+    $shell = New-Object -ComObject Shell.Application
+    $stsZipFile = $shell.NameSpace($stsZipPath)
+    CreatePathIfNotExists("C:\tools\sts")
+    foreach($item in $stsZipFile.items()) {
+        $shell.Namespace("C:\tools\sts").CopyHere($item)
+    }
+}
+
+
 #
 # [dev] Developer Tools needed on every dev-machine
 #
 if( $dev )
 {
+    #
+    # Phase #1 will install the the basic tools and runtimes
+    #
+
     choco install -y visualstudiocode
 
     choco install -y golang
@@ -258,69 +321,12 @@ if( $dev )
 
     choco install -y ngrok.portable
 
-}
-
-
-#
-# [installVs] Installing a version of Visual Studio (based on Chocolatey)
-#
-if($installVs) {
-    if($vsVersion -eq "2013") {
-        choco install -y visualstudiocommunity2013 
-    } 
-    elseif($vsVersion -eq "2015") {
-        choco install -y visualstudio2015community -version 14.0.23107.0
-    } 
-    elseif($vsVersion -eq "2017") {
-        switch ($vsEdition) {
-            "Community" {
-                choco install visualstudio2017community -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
-            }
-            "Professional" {
-                choco install visualstudio2017professional -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
-            }            
-            "Enterprise" {
-                choco install visualstudio2017enterprise -y --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
-            }
-        }
-    }
-}
-
-#
-# Installing other IDEs, mainly Java-based
-#
-if($installOtherIDE) {
-    
-    choco install -y intellijidea-community
-
-    ## not working ## choco install -y springtoolsuite
-
-    # 
-    # NOTE: below is not needed, anymore, since Chocolatey has STS in the package gallery, now
     #
-    # Extract Spring Tool Suite Eclipse and copy to standard working directory
+    # Phase #2 Will use the runtimes/tools above to install additional packages
     #
-    Write-Host ""
-    Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
-    $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
-    if(!(Test-Path -Path $stsZipPath)) {
-        Invoke-WebRequest "http://dist.springsource.com/release/STS/3.8.0.RELEASE/dist/e4.6/spring-tool-suite-3.8.0.RELEASE-e4.6-win32-x86_64.zip" `
-                          -OutFile $stsZipPath
-    }
-    $shell = New-Object -ComObject Shell.Application
-    $stsZipFile = $shell.NameSpace($stsZipPath)
-    CreatePathIfNotExists("C:\tools\sts")
-    foreach($item in $stsZipFile.items()) {
-        $shell.Namespace("C:\tools\sts").CopyHere($item)
-    }
-}
 
+    RefreshEnv.cmd      # Ships with chocolatey and re-loads environment variables in the current session
 
-#
-# [dev2] Developer Tools Phase 2 - needs to run after Phase 1 and installing IDEs before
-#
-if( $dev2 )
-{
     npm install -g moment
 
     npm install -g bower
@@ -331,7 +337,11 @@ if( $dev2 )
 
     pip install --user azure-cli
 
-    Install-Module -Name AzureRM -Force -SkipPublisherCheck -Confirm 
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+
+    Install-Module -Name AzureRM -Force -SkipPublisherCheck 
+
+    Invoke-WebRequest 'https://howtowhale.github.io/dvm/downloads/latest/install.ps1' -UseBasicParsing | Invoke-Expression
     
     if($vsVersion -eq "2013") {
 
@@ -365,7 +375,7 @@ if( $dev2 )
         
         webpicmd /Install /Products:HDInsightVS2015Msi /AcceptEula
     }
-    
+
 }
 
 
@@ -408,6 +418,9 @@ if( $dataSrv ) {
 # Visual Studio Extensions
 #
 if( $vsext -and ($vsVersion -eq "2013") ) {
+
+    # Refreshing the environment path variables
+    RefreshEnv.cmd
 
     # Web Essentials
     InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/56633663-6799-41d7-9df7-0f2a504ca361/file/105627/39/WebEssentials2013.vsix" `
@@ -456,6 +469,9 @@ if( $vsext -and ($vsVersion -eq "2013") ) {
 }
 
 if( $vsext -and ($vsVersion -eq "2015") ) {
+
+    # Refreshing the environment path variables
+    RefreshEnv.cmd
 
     # Indent Guides
     # https://visualstudiogallery.msdn.microsoft.com/e792686d-542b-474a-8c55-630980e72c30
@@ -552,6 +568,9 @@ if( $vsext -and ($vsVersion -eq "2015") ) {
 
 if( $vsext -and ($vsVersion -eq "2017") ) {
 
+    # Refreshing the environment path variables
+    RefreshEnv.cmd
+
     # Productivity Power Tools
     # https://marketplace.visualstudio.com/items?itemName=GitHub.GitHubExtensionforVisualStudio
     InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/75be44fb-0794-4391-8865-c3279527e97d/file/159055/36/GitHub.VisualStudio.vsix" `
@@ -589,6 +608,11 @@ if( $vsext -and ($vsVersion -eq "2017") ) {
 # Visual Studio Code Extensions
 #
 if ( $vscodeext ) {
+
+    # Refreshing the environment path variables
+    RefreshEnv.cmd
+
+    # Start installing all extensions
 
     code --install-extension DavidAnson.vscode-markdownlint
 
@@ -630,13 +654,13 @@ if ( $vscodeext ) {
 
     code --install-extension msjsdiag.debugger-for-edge
     
-    code --install-extension install PeterJausovec.vscode-docker
+    ##code --install-extension install PeterJausovec.vscode-docker
 
-    code --install-extension install tht13.python
+    ##code --install-extension install tht13.python
 
-    code --install-extension install ms-vscode.typescript-javascript-grammar
+    ##code --install-extension install ms-vscode.typescript-javascript-grammar
 
-    code --install-extension install codezombiech.gitignore
+    ##code --install-extension install codezombiech.gitignore
     
     code --install-extension redhat.java
     
@@ -655,6 +679,9 @@ if ( $vscodeext ) {
 # cloneRepos, cloning all my most important Git repositories
 #
 if( $cloneRepos ) {
+
+    # Refreshing the environment path variables
+    RefreshEnv.cmd
 
     #
     # Creating my code directories
@@ -779,6 +806,7 @@ if( $cloneRepos ) {
     git clone https://github.com/OfficeDev/PowerPoint-Add-in-Microsoft-Graph-ASPNET-InsertChart.git
     git clone https://github.com/OfficeDev/Word-Add-in-Angular2-StyleChecker.git
     git clone https://github.com/OfficeDev/Word-Add-in-AngularJS-Client-OAuth.git
+    git clone https://github.com/mandren/Excel-CustomXMLPart-Demo.git
     
     cd "$codeBaseDir\github\JMayrbaeurl"
     git clone https://github.com/JMayrbaeurl/AbfallkalenderBisamberg.git
