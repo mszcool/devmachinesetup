@@ -705,9 +705,9 @@ if( $cloneRepos ) {
     CreatePathIfNotExists -pathName "$codeBaseDir\github\dx"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\HDInsight"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\mezmicrosoft-ml"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\solarized"
    
     cd "$codeBaseDir\github\mszcool"
-
     git clone https://github.com/mszcool/azure-quickstart-templates.git
     git clone https://github.com/mszcool/azureAdMultiTenantServicePrincipal.git
     git clone https://github.com/mszcool/AzureBatchTesseractSample.git
@@ -817,6 +817,12 @@ if( $cloneRepos ) {
     git clone https://github.com/mezmicrosoft/Introduction_to_RTVS_toturial.git
     git clone https://github.com/mezmicrosoft/Microsoft_R_Server.git
     git clone https://github.com/mezmicrosoft/Sample_Experiments.git
+
+    cd "$codeBaseDir\github\solarized"
+    git clone https://github.com/altercation/solarized.git
+    git clone https://github.com/leddt/visualstudio-colors-solarized.git
+    git clone https://github.com/shanselman/cmd-colors-solarized.git
+    git clone https://github.com/tpenguinltg/windows-solarized.git
 
     #
     # Codeplex (legacy stuff)
