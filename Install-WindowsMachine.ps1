@@ -16,6 +16,9 @@ Param
     $dev,
 
     [Switch]
+    $nohyperv,
+
+    [Switch]
     $data,
 
     [Switch]
@@ -77,9 +80,12 @@ if( $prepOS )
     Enable-WindowsOptionalFeature -FeatureName NetFx4-AdvSrvs -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName NetFx4Extended-ASPNET45 -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName Windows-Identity-Foundation -Online -NoRestart
-    Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
-    Enable-WindowsOptionalFeature -FeatureName Containers -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
+
+    if( ! $nohyperv ) {
+        Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
+        Enable-WindowsOptionalFeature -FeatureName Containers -Online -NoRestart
+    }
 
     Write-Information ""
     Write-Information "Installation of OS components completed, please restart your computer once ready!"
@@ -168,7 +174,7 @@ if( $userTools ) {
 
     choco install -y microsoft-teams
 
-    choco install -y  --allowemptychecksum vlc
+    choco install -y --allowemptychecksum vlc
 
     choco install -y --ignorechecksum goodsync
     
@@ -304,8 +310,23 @@ if( $dev )
     choco install -y  --allowemptychecksum linqpad4
 
     choco install -y  --allowemptychecksum redis-64 
-    
-    choco install -y docker-for-windows
+
+    if ( $nohyperv ) {
+
+        choco install -y virtualbox
+
+        choco install -y docker
+        
+        choco install -y docker-machine
+        
+        choco install -y docker-compose
+
+    }
+    else {
+
+        choco install -y docker-for-windows
+
+    }    
 
     choco install -y cloudfoundry-cli
 
