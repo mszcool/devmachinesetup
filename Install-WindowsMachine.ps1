@@ -72,6 +72,9 @@ if( $prepOS )
 {
     Set-ExecutionPolicy unrestricted
 
+    # Enable Console Prompting for PowerShell
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name "ConsolePrompting" -Value $True
+
     Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
 
     Enable-WindowsOptionalFeature -FeatureName NetFx3 -Online -NoRestart
@@ -94,6 +97,20 @@ if( $prepOS )
     Exit
 }
 
+#
+# Function for refreshing environment variables
+#
+function RefreshEnvironment() {
+    foreach($envLevel in "Machine","User") {
+        [Environment]::GetEnvironmentVariables($envLevel).GetEnumerator() | ForEach-Object {
+            # For Path variables, append the new values, if they're not already in there
+            if($_.Name -match 'Path$') { 
+               $_.Value = ($((Get-Content "Env:$($_.Name)") + ";$($_.Value)") -Split ';' | Select-Object -Unique) -Join ';'
+            }
+            $_
+         } | Set-Content -Path { "Env:$($_.Name)" }
+    }
+}
 
 #
 # Function to create a path if it does not exist
@@ -195,25 +212,23 @@ if( $ittools )
 
     choco install -y wireshark 
 
-    choco install -y  --allowemptychecksum putty
+    choco install -y --allowemptychecksum putty
 
     choco install -y sysinternals
 
-    choco install -y  --allowemptychecksum winscp
+    choco install -y --allowemptychecksum winscp
 
-    choco install -y  --allowemptychecksum jq
+    choco install -y --allowemptychecksum jq
 
-    choco install -y  --allowemptychecksum OpenSSL.Light
+    choco install -y --allowemptychecksum OpenSSL.Light
 
-    choco install -y  --allowemptychecksum royalts
+    choco install -y --allowemptychecksum royalts
     
-    choco install -y  --allowemptychecksum vcxsrv
+    choco install -y --allowemptychecksum vcxsrv
 
     choco install -y filezilla 
 
 }
-
-
 
 
 #
@@ -309,8 +324,6 @@ if( $dev )
 
     choco install -y  --allowemptychecksum linqpad4
 
-    choco install -y  --allowemptychecksum redis-64 
-
     if ( $nohyperv ) {
 
         choco install -y virtualbox
@@ -346,7 +359,7 @@ if( $dev )
     # Phase #2 Will use the runtimes/tools above to install additional packages
     #
 
-    RefreshEnv.cmd      # Ships with chocolatey and re-loads environment variables in the current session
+    RefreshEnvironment      # Ships with chocolatey and re-loads environment variables in the current session
 
     npm install -g moment
 
@@ -441,7 +454,7 @@ if( $dataSrv ) {
 if( $vsext -and ($vsVersion -eq "2013") ) {
 
     # Refreshing the environment path variables
-    RefreshEnv.cmd
+    RefreshEnvironment
 
     # Web Essentials
     InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/56633663-6799-41d7-9df7-0f2a504ca361/file/105627/39/WebEssentials2013.vsix" `
@@ -492,7 +505,7 @@ if( $vsext -and ($vsVersion -eq "2013") ) {
 if( $vsext -and ($vsVersion -eq "2015") ) {
 
     # Refreshing the environment path variables
-    RefreshEnv.cmd
+    RefreshEnvironment
 
     # Indent Guides
     # https://visualstudiogallery.msdn.microsoft.com/e792686d-542b-474a-8c55-630980e72c30
@@ -590,7 +603,7 @@ if( $vsext -and ($vsVersion -eq "2015") ) {
 if( $vsext -and ($vsVersion -eq "2017") ) {
 
     # Refreshing the environment path variables
-    RefreshEnv.cmd
+    RefreshEnvironment
 
     # Productivity Power Tools
     # https://marketplace.visualstudio.com/items?itemName=GitHub.GitHubExtensionforVisualStudio
@@ -631,7 +644,7 @@ if( $vsext -and ($vsVersion -eq "2017") ) {
 if ( $vscodeext ) {
 
     # Refreshing the environment path variables
-    RefreshEnv.cmd
+    RefreshEnvironment
 
     # Start installing all extensions
 
@@ -702,7 +715,7 @@ if ( $vscodeext ) {
 if( $cloneRepos ) {
 
     # Refreshing the environment path variables
-    RefreshEnv.cmd
+    RefreshEnvironment
 
     #
     # Creating my code directories
