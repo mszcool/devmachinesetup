@@ -41,8 +41,9 @@ Param
     [Switch]
     $vscodeext,
 
-    [Switch]
-    $installOtherIDE,
+    [Parameter(Mandatory=$False)]
+    [ValidateSet("none", "intelliJ", "eclipse-sts", "all")]
+    $installOtherIDE = "none",
 
     [Switch]
     $cloneRepos,
@@ -203,6 +204,9 @@ if( $userTools ) {
 #
 if( $ittools )
 {
+    choco install -y conemu 
+ 
+    choco install -y mousewithoutborders
 
     choco install -y vim 
 
@@ -260,30 +264,35 @@ if($installVs) {
 #
 # Installing other IDEs, mainly Java-based
 #
-if($installOtherIDE) {
+if($installOtherIDE -ne "none") {
     
-    choco install -y intellijidea-community
+    # IntelliJ IDEA Install Begin
+    if( ($installOtherIDE -eq "intellij") -or ($installOtherIDE -eq "all") ) {
+        
+        choco install -y intellijidea-community
 
-    ## not working ## choco install -y springtoolsuite
+    }
+    # IntelliJ IDEA Install End
 
-    # 
-    # NOTE: below is not needed, anymore, since Chocolatey has STS in the package gallery, now
-    #
-    # Extract Spring Tool Suite Eclipse and copy to standard working directory
-    #
-    Write-Host ""
-    Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
-    $stsZipPath = ($PWD.Path + "\spring-tool-suite-3.6.2.RELEASE-e4.4.1-win32-x86_64.zip")
-    if(!(Test-Path -Path $stsZipPath)) {
-        Invoke-WebRequest "http://dist.springsource.com/release/STS/3.8.0.RELEASE/dist/e4.6/spring-tool-suite-3.8.0.RELEASE-e4.6-win32-x86_64.zip" `
-                          -OutFile $stsZipPath
+    # Spring Tool Suite Install Beginn
+    # NOTE: below is not needed, anymore, since Chocolatey has STS in the package gallery, now, but still outdated
+    if( ($installOtherIDE -eq "eclipse-sts") -or ($installOtherIDE -eq "all") ) {
+        # Extract Spring Tool Suite Eclipse and copy to standard working directory
+        Write-Host ""
+        Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
+        $stsZipPath = ($PWD.Path + "\spring-tool-suite.zip")
+        if(!(Test-Path -Path $stsZipPath)) {
+            Invoke-WebRequest "http://download.springsource.com/release/STS/3.9.1.RELEASE/dist/e4.7/spring-tool-suite-3.9.1.RELEASE-e4.7.1a-win32-x86_64.zip" `
+                            -OutFile $stsZipPath
+        }
+        $shell = New-Object -ComObject Shell.Application
+        $stsZipFile = $shell.NameSpace($stsZipPath)
+        CreatePathIfNotExists("C:\tools\sts")
+        foreach($item in $stsZipFile.items()) {
+            $shell.Namespace("C:\tools\sts").CopyHere($item)
+        }
     }
-    $shell = New-Object -ComObject Shell.Application
-    $stsZipFile = $shell.NameSpace($stsZipPath)
-    CreatePathIfNotExists("C:\tools\sts")
-    foreach($item in $stsZipFile.items()) {
-        $shell.Namespace("C:\tools\sts").CopyHere($item)
-    }
+    # Spring Tool Suite Install End
 }
 
 
@@ -319,6 +328,10 @@ if( $dev )
     choco install -y --allowemptychecksum windbg 
 
     choco install -y fiddler4
+
+    choco install -y postman
+
+    choco install -y nimbletext
 
     choco install -y --allowemptychecksum ilspy 
 
@@ -659,13 +672,13 @@ if ( $vscodeext ) {
     code --install-extension johnpapa.Angular1
 
     code --install-extension johnpapa.Angular2
+
+    code --install-extension Angular.ng-template
     
     code --install-extension lukehoban.Go
     
     code --install-extension mohsen1.prettify-json
-    
-    code --install-extension ms-mssql.mssql
-    
+
     code --install-extension ms-vscode.cpptools
     
     code --install-extension ms-vscode.csharp
@@ -673,22 +686,26 @@ if ( $vscodeext ) {
     code --install-extension ms-vscode.mono-debug
     
     code --install-extension ms-vscode.PowerShell
+
+    code --install-extension ms-vscode.node-debug
+
+    code --install-extension redhat.java
+
+    code --install-extension vscjava.vscode-java-debug
+
+    code --install-extension ecmel.vscode-spring-boot
     
     code --install-extension ms-vscode.Theme-MarkdownKit
     
     code --install-extension ms-vscode.Theme-MaterialKit
-    
-    code --install-extension ms-vsts.team
 
-    code --install-extension ms-vscode.node-debug
-    
-    code --install-extension install msazurermtools.azurerm-vscode-tools
-    
     code --install-extension msjsdiag.debugger-for-chrome
-
-    code --install-extension msjsdiag.debugger-for-edge
     
-    ##code --install-extension install PeterJausovec.vscode-docker
+    code --install-extension msjsdiag.debugger-for-edge
+
+    code --install-extension sivarajanraju.vs-code-office-ui-fabric
+
+    code --install-extension knom.office-mailapp-manifestuploader
 
     ##code --install-extension install tht13.python
 
@@ -696,15 +713,52 @@ if ( $vscodeext ) {
 
     ##code --install-extension install codezombiech.gitignore
     
-    code --install-extension redhat.java
+    ##code --install-extension vsmobile.cordova-tools
+
+    ##
+    ## Azure-related Visual Studio Code Extensions
+    ##
+
+    code --install-extension ms-vscode.vscode-azureextensionpack
+
+    # Installed with Azure Extensions Pack
+    #code --install-extension ms-vsts.team
+
+    # Installed with Azure Extensions Package
+    ##code --install-extension ms-mssql.mssql
+
+    # Installed with Azure Extensions Pack
+    code --install-extension bradygaster.azuretoolsforvscode
     
-    code --install-extension vsmobile.cordova-tools
+    # Installed with Azure Extensions Pack
+    #code --install-extension msazurermtools.azurerm-vscode-tools
 
-    code --install-extension Angular.ng-template
+    code --install-extension ms-azuretools.vscode-azureappservice
 
-    code --install-extension sivarajanraju.vs-code-office-ui-fabric
+    code --install-extension ms-azuretools.vscode-azurefunctions
 
-    code --install-extension knom.office-mailapp-manifestuploader
+    # Installed with Azure Extensions Pack
+    #code --install-extension johnpapa.azure-functions-tools
+
+    # Installed with Azure Extensions Pack
+    #code --install-extension ms-vscode.azurecli
+
+    # Installed with Azure Extensions Pack
+    #code --install-extension VisualStudioOnlineApplicationInsights.application-insights
+
+    code --install-extension mshdinsight.azure-hdinsight
+
+    # Installed with Azure Extensions Pack
+    #code --install-extension usqlextpublisher.usql-vscode-ext
+
+    # Installed with Azure Extensions Pack
+    #code --install-extension vsciot-vscode.azure-iot-toolkit
+
+    ## Needs a Mongo DB Install on my Dev-Machine - but I run those in Containers...
+    ##code --install-extension ms-azuretools.vscode-cosmosdb
+
+    # Installed with Azure Extensions Pack
+    ##code --install-extension install PeterJausovec.vscode-docker
 
 }
 

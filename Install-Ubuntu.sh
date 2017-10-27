@@ -217,26 +217,62 @@ if [ $instVsCode == 1 ]; then
     sudo apt-get update
     sudo apt-get install -y code
 
+    # Start installing all extensions
     code --install-extension DavidAnson.vscode-markdownlint
     code --install-extension DotJoshJohnson.xml
     code --install-extension eg2.tslint
     code --install-extension eg2.vscode-npm-script
     code --install-extension johnpapa.Angular1
     code --install-extension johnpapa.Angular2
+    code --install-extension Angular.ng-template
     code --install-extension lukehoban.Go
     code --install-extension mohsen1.prettify-json
-    code --install-extension ms-mssql.mssql
     code --install-extension ms-vscode.cpptools
     code --install-extension ms-vscode.csharp
     code --install-extension ms-vscode.mono-debug
     code --install-extension ms-vscode.PowerShell
+    code --install-extension ms-vscode.node-debug
+    code --install-extension redhat.java
+    code --install-extension vscjava.vscode-java-debug
+    code --install-extension ecmel.vscode-spring-boot
     code --install-extension ms-vscode.Theme-MarkdownKit
     code --install-extension ms-vscode.Theme-MaterialKit
-    code --install-extension ms-vsts.team
-    code --install-extension ms-vscode.node-debug
-    code --install-extension msazurermtools.azurerm-vscode-tools
     code --install-extension msjsdiag.debugger-for-chrome
-    code --install-extension redhat.java
-    code --install-extension Angular.ng-template
+    code --install-extension msjsdiag.debugger-for-edge
+    code --install-extension sivarajanraju.vs-code-office-ui-fabric
     code --install-extension knom.office-mailapp-manifestuploader
+    ##code --install-extension install tht13.python
+    ##code --install-extension install ms-vscode.typescript-javascript-grammar
+    ##code --install-extension install codezombiech.gitignore
+    ##code --install-extension vsmobile.cordova-tools
+
+    ##
+    ## Azure-related Visual Studio Code Extensions
+    ##
+    code --install-extension ms-vscode.vscode-azureextensionpack
+    # Installed with Azure Extensions Pack
+    #code --install-extension ms-vsts.team
+    # Installed with Azure Extensions Package
+    ##code --install-extension ms-mssql.mssql
+    # Installed with Azure Extensions Pack
+    code --install-extension bradygaster.azuretoolsforvscode
+    # Installed with Azure Extensions Pack
+    #code --install-extension msazurermtools.azurerm-vscode-tools
+    code --install-extension ms-azuretools.vscode-azureappservice
+    code --install-extension ms-azuretools.vscode-azurefunctions
+    # Installed with Azure Extensions Pack
+    #code --install-extension johnpapa.azure-functions-tools
+    # Installed with Azure Extensions Pack
+    #code --install-extension ms-vscode.azurecli
+    # Installed with Azure Extensions Pack
+    #code --install-extension VisualStudioOnlineApplicationInsights.application-insights
+    code --install-extension mshdinsight.azure-hdinsight
+    # Installed with Azure Extensions Pack
+    #code --install-extension usqlextpublisher.usql-vscode-ext
+    # Installed with Azure Extensions Pack
+    #code --install-extension vsciot-vscode.azure-iot-toolkit
+    ## Needs a Mongo DB Install on my Dev-Machine - but I run those in Containers...
+    ##code --install-extension ms-azuretools.vscode-cosmosdb
+    # Installed with Azure Extensions Pack
+    ##code --install-extension install PeterJausovec.vscode-docker
 fi
