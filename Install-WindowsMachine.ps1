@@ -174,7 +174,7 @@ if( $tools ) {
 
     choco install -y googlechrome
 
-    choco install -y firefox -installArgs l=en-US
+    #choco install -y firefox -installArgs l=en-US
 
     choco install -y jre8
 
@@ -192,7 +192,7 @@ if( $userTools ) {
 
     choco install -y microsoft-teams
 
-    choco install -y --allowemptychecksum vlc
+    #choco install -y --allowemptychecksum vlc
 
     choco install -y --ignorechecksum goodsync
     
@@ -216,11 +216,11 @@ if( $ittools )
 
     choco install -y wireshark 
 
-    choco install -y --allowemptychecksum putty
+    #choco install -y --allowemptychecksum putty
 
     choco install -y sysinternals
 
-    choco install -y --allowemptychecksum winscp
+    #choco install -y --allowemptychecksum winscp
 
     choco install -y --allowemptychecksum jq
 
@@ -228,9 +228,9 @@ if( $ittools )
 
     choco install -y --allowemptychecksum royalts
     
-    choco install -y --allowemptychecksum vcxsrv
+    #choco install -y --allowemptychecksum vcxsrv
 
-    choco install -y filezilla 
+    #choco install -y filezilla 
 
 }
 
@@ -435,6 +435,8 @@ if( $data )
     choco install -y sql-server-management-studio
 
     choco install -y --allowemptychecksum dbeaver 
+
+    choco install -y studio3t
 
     choco install -y --allowemptychecksum SQLite 
 
