@@ -75,6 +75,15 @@ while :; do
 done
 
 #
+# Check Ubuntu Version
+#
+ver=`lsb_release -r | cut -f 2`
+if [ "$ver" != "16.04" ] && [ "$ver" != "17.04" ]; then 
+    echo "Only Ubuntu 16.04 and 17.04 have been tested!"
+    exit 
+fi
+
+#
 # General packages commonly used on my Linux Dev Machines
 #
 sudo apt-get update
