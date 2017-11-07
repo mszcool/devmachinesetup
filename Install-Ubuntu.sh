@@ -106,6 +106,7 @@ sudo apt-get install -y python-tk
 sudo apt-get install -y emacs25
 sudo apt-get install -y git
 sudo apt-get install -y maven
+sudo apt-get install -y jq
 
 
 #
