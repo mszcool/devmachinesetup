@@ -27,7 +27,7 @@ instDotNetCore="none"
 while :; do
     case $1 in
         -h|--help)
-            show_help()
+            show_help
             exit
             ;;
         --vscode)
@@ -81,6 +81,7 @@ sudo apt-get update
 sudo apt-get -y upgrade 
 
 # Known bug in Ubuntu 16.04 with missing package for GTK 
+sudo apt-get install -y tmux
 sudo apt-get install -y debconf-utils
 sudo apt-get install -y gtk2-engines-pixbuf
 sudo apt-get install -y openssh-servers
