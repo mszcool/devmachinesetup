@@ -16,6 +16,9 @@ Param
     $dev,
 
     [Switch]
+    $clis,
+
+    [Switch]
     $nohyperv,
 
     [Switch]
@@ -76,8 +79,13 @@ if( $prepOS )
     # Enable Console Prompting for PowerShell
     Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name "ConsolePrompting" -Value $True
 
+    # Install Chocolatey
     Invoke-Expression ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
 
+    # Install Scoop, which is more convenient for CLIs and command line dev tools
+    Invoke-Expression (new-object net.webclient).downloadstring('https://get.scoop.sh')
+
+    # Install Windows Features
     Enable-WindowsOptionalFeature -FeatureName NetFx3 -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName WCF-Services45 -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName WCF-TCP-PortSharing45 -Online -NoRestart
@@ -119,6 +127,31 @@ function RefreshEnvironment() {
 function CreatePathIfNotExists($pathName) {
     if(!(Test-Path -Path $pathName)) {
         New-Item -ItemType directory -Path $pathName
+    }
+}
+
+#
+# Function to Download and Extract ZIP Files for CLIs and the likes
+#
+function DownloadAndExtractZip($link, $targetFolder, $tempName) {
+    $downloadPath = ($env:TEMP + "\$tempName")
+    if(!(Test-Path -Path $downloadPath)) {
+        Invoke-WebRequest $link -OutFile $downloadPath
+    }
+    $shell = New-Object -ComObject Shell.Application
+    $targetZip = $shell.NameSpace($downloadPath)
+
+    CreatePathIfNotExists($targetFolder)
+    foreach($item in $targetZip.items()) {
+        $shell.Namespace($targetFolder).CopyHere($item)
+    }
+}
+
+function DownloadAndCopy($link, $targetFolder) {
+    CreatePathIfNotExists($targetFolder)
+
+    if(!(Test-Path -Path $targetFolder)) {
+        Invoke-WebRequest $link -OutFile $downloadPath
     }
 }
 
@@ -166,7 +199,7 @@ function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
 
 if( $tools ) {
 
-    choco install -y keepass.install
+    choco install -y 1password
 
     choco install -y 7zip
 
@@ -174,7 +207,7 @@ if( $tools ) {
 
     choco install -y googlechrome
 
-    #choco install -y firefox -installArgs l=en-US
+    choco install -y firefox -installArgs l=en-US
 
     choco install -y jre8
 
@@ -192,7 +225,7 @@ if( $userTools ) {
 
     choco install -y microsoft-teams
 
-    #choco install -y --allowemptychecksum vlc
+    choco install -y --allowemptychecksum vlc
 
     choco install -y --ignorechecksum goodsync
     
@@ -204,34 +237,23 @@ if( $userTools ) {
 #
 if( $ittools )
 {
-    choco install -y conemu 
+    choco install -y cmder 
  
-    choco install -y mousewithoutborders
-
-    choco install -y vim 
-
-    choco install -y curl
-
-    choco install -y --allowemptychecksum winmerge 
-
     choco install -y wireshark 
-
-    #choco install -y --allowemptychecksum putty
 
     choco install -y sysinternals
 
-    #choco install -y --allowemptychecksum winscp
-
-    choco install -y --allowemptychecksum jq
-
-    choco install -y --allowemptychecksum OpenSSL.Light
-
     choco install -y --allowemptychecksum royalts
     
-    #choco install -y --allowemptychecksum vcxsrv
+    scoop install sudo --global
 
-    #choco install -y filezilla 
+    scoop install curl grep sed less tail touch --global
 
+    scoop install jq --global
+
+    scoop install openssl --global
+
+    scoop install vagrant --global
 }
 
 
@@ -280,17 +302,12 @@ if($installOtherIDE -ne "none") {
         # Extract Spring Tool Suite Eclipse and copy to standard working directory
         Write-Host ""
         Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
-        $stsZipPath = ($PWD.Path + "\spring-tool-suite.zip")
-        if(!(Test-Path -Path $stsZipPath)) {
-            Invoke-WebRequest "http://download.springsource.com/release/STS/3.9.1.RELEASE/dist/e4.7/spring-tool-suite-3.9.1.RELEASE-e4.7.1a-win32-x86_64.zip" `
-                            -OutFile $stsZipPath
-        }
-        $shell = New-Object -ComObject Shell.Application
-        $stsZipFile = $shell.NameSpace($stsZipPath)
-        CreatePathIfNotExists("C:\tools\sts")
-        foreach($item in $stsZipFile.items()) {
-            $shell.Namespace("C:\tools\sts").CopyHere($item)
-        }
+
+        $stsLink = "http://download.springsource.com/release/STS/3.9.2.RELEASE/dist/e4.7/spring-tool-suite-3.9.2.RELEASE-e4.7.2-win32-x86_64.zip"
+        $stsTarget = "C:\tools\sts"
+        $stsTempName = "sts396.zip"
+
+        DownloadAndExtractZip -link $stsLink -targetFolder $stsTarget -tempName $stsTempName
     }
     # Spring Tool Suite Install End
 }
@@ -302,30 +319,42 @@ if($installOtherIDE -ne "none") {
 if( $dev )
 {
     #
-    # Phase #1 will install the the basic tools and runtimes
+    # Phase #1 will install the the basic runtimes
+    #
+
+    scoop install golang --global
+
+    scoop install nodejs --global
+
+    scoop install python --global
+
+    scoop install php --global 
+
+    scoop install scala --global
+
+    scoop install sbt --global
+
+    scoop install maven --global
+
+    scoop install ngrok --global
+
+    scoop install packer --global
+
+    #
+    # Phase #2 will install system-wide dev tools
     #
 
     choco install -y visualstudiocode
 
-    choco install -y golang
-
+    choco install -y --allowemptychecksum webpi 
+    
     choco install -y jdk8
 
-    choco install -y nodejs.install
-
-    choco install -y python 
-
-    choco install -y php 
-
-    choco install -y --allowemptychecksum webpi 
-
     choco install -y git.install
-
-    choco install -y  --allowemptychecksum gitextensions
+    
+    choco install -y --allowemptychecksum gitextensions
 
     choco install -y poshgit 
-
-    choco install -y --allowemptychecksum windbg 
 
     choco install -y fiddler4
 
@@ -341,35 +370,21 @@ if( $dev )
 
         choco install -y virtualbox
 
-        choco install -y docker
-        
-        choco install -y docker-machine
-        
-        choco install -y docker-compose
-
     }
     else {
 
         choco install -y docker-for-windows
 
-    }    
+    }
 
-    choco install -y cloudfoundry-cli
+    scoop install docker --global
 
-    choco install -y kubernetes-cli
+    scoop install docker-machine --global
 
-    choco install -y vagrant
-
-    choco install -y nuget.commandline
-
-    choco install -y maven
-
-    choco install -y sbt
-
-    choco install -y ngrok.portable
+    scoop install docker-compose --global
 
     #
-    # Phase #2 Will use the runtimes/tools above to install additional packages
+    # Phase #3 Will use the runtimes/tools above to install additional packages
     #
 
     RefreshEnvironment      # Ships with chocolatey and re-loads environment variables in the current session
@@ -380,49 +395,39 @@ if( $dev )
 
     npm install -g gulp
 
+}
+
+#
+# [clis] Command Line Interfaces
+#
+
+if ( $clis ) {
+
     pip install azure
 
-    pip install --user azure-cli
+    pip install azure-cli
+
+    pip install awscli
 
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 
     Install-Module -Name AzureRM -Force -SkipPublisherCheck 
 
-    Invoke-WebRequest 'https://howtowhale.github.io/dvm/downloads/latest/install.ps1' -UseBasicParsing | Invoke-Expression
-    
-    if($vsVersion -eq "2013") {
+    pip install sfctl
 
-        webpicmd /Install /Products:OfficeToolsForVS2013Update1 /AcceptEula
+    scoop install kubernetes-cli --global
 
-        webpicmd /Install /Products:VWDOrVs2013AzurePack /AcceptEula
+    scoop install nuget --global
 
-        webpicmd /Install /Products:HDInsightVS2013Tools /AcceptEula
+    # OpenStack CLI
+    pip install --upgrade --requirement https://raw.githubusercontent.com/platform9/support-locker/master/openstack-clients/requirements.txt --constraint http://raw.githubusercontent.com/openstack/requirements/stable/newton/upper-constraints.txt
+    DownloadAndCopy -link "https://github.com/platform9/support-locker/blob/master/openstack-clients/windows/Source_OpenRC.ps1" -targetFolder "C:\tools\openstack\"
 
-        webpicmd /Install /Products:DataFactoryVS2013Tools /AcceptEula
+    # Cloud Foundry CLI
+    DownloadAndExtractZip -link "https://s3-us-west-1.amazonaws.com/cf-cli-releases/releases/v6.34.1/cf-cli_6.34.1_winx64.zip" -targetFolder "C:\tools\cfcli-6.34.1" -tempName "cfcli6.34.1.zip"
 
-        webpicmd /Install /Products:PythonTools21ForVS2013 /AcceptEula
-
-    }
-
-    if($vsVersion -eq "2015") {
-
-        webpicmd /Install /Products:OfficeToolsForVS2015 /AcceptEula
-
-        webpicmd /Install /Products:VWDOrVs2015AzurePack /AcceptEula
-        
-        webpicmd /Install /Products:VWDOrVs2015AzurePack.2.8 /AcceptEula
-        
-        webpicmd /Install /Products:VWDOrVs2015AzurePack.2.9 /AcceptEula
-
-        webpicmd /Install /Products:HDInsightVS2015Tools /AcceptEula
-
-        webpicmd /Install /Products:DataFactoryVS2015Tools /AcceptEula
-        
-        webpicmd /Install /Products:DataLakeVS2015Msi /AcceptEula
-        
-        webpicmd /Install /Products:HDInsightVS2015Msi /AcceptEula
-    }
-
+    # OpenShift CLI
+    DownloadAndExtractZip -link "https://github.com/openshift/origin/releases/download/v3.7.1/openshift-origin-client-tools-v3.7.1-ab0f056-windows.zip" -targetFolder "C:\tools\openshift-3.7.1" -tempName "oh-3.7.1.zip"
 }
 
 
@@ -431,17 +436,21 @@ if( $dev )
 #
 if( $data )
 {
+    DownloadAndExtractZip -link "https://github.com/Microsoft/sqlopsstudio/releases/download/0.26.6/sqlops-windows-0.26.7.zip" -targetFolder "C:\tools\sqlops-windows" -tempName "sqlopsstudio.zip"
+    
+    DownloadAndExtractZip -link "https://dbeaver.jkiss.org/files/dbeaver-ce-latest-win32.win32.x86_64.zip" -targetFolder "C:\tools\dbeaver-windows" -tempName "dbeaver-windows.zip"
+    
+    DownloadAndExtractZip -link "https://download.robomongo.org/1.2.1/windows/robo3t-1.2.1-windows-x86_64-3e50a65.zip" -targetFolder "C:\tools\robomongo" -tempName "robomongo.zip"
+    
+    #choco install -y sql-server-management-studio
 
-    choco install -y sql-server-management-studio
+    #choco install -y dbeaver
+    
+    #choco install -y studio3t
+    
+    #choco install -y --allowemptychecksum SQLite 
 
-    choco install -y --allowemptychecksum dbeaver 
-
-    choco install -y studio3t
-
-    choco install -y --allowemptychecksum SQLite 
-
-    choco install -y --allowemptychecksum sqlite.shell 
-
+    #choco install -y --allowemptychecksum sqlite.shell 
 }
 
 
@@ -517,105 +526,7 @@ if( $vsext -and ($vsVersion -eq "2013") ) {
 
 }
 
-if( $vsext -and ($vsVersion -eq "2015") ) {
-
-    # Refreshing the environment path variables
-    RefreshEnvironment
-
-    # Indent Guides
-    # https://visualstudiogallery.msdn.microsoft.com/e792686d-542b-474a-8c55-630980e72c30
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/e792686d-542b-474a-8c55-630980e72c30/file/48932/20/IndentGuide%20v14.vsix" `
-                       -extensionFileName "IndentGuide.vsix" -vsVersion $vsVersion
-    
-    # Web Essentials 2015
-    # https://visualstudiogallery.msdn.microsoft.com/ee6e6d8c-c837-41fb-886a-6b50ae2d06a2
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/ee6e6d8c-c837-41fb-886a-6b50ae2d06a2/file/146119/37/Web%20Essentials%202015.1%20v1.0.207.vsix" `
-                       -extensionFileName "WebEssentials2015.vsix" -vsVersion $vsVersion
-    
-    # jQuery Code Snippets
-    # https://visualstudiogallery.msdn.microsoft.com/577b9c03-71fb-417b-bcbb-94b6d3d326b8
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/577b9c03-71fb-417b-bcbb-94b6d3d326b8/file/84997/6/jQueryCodeSnippets.vsix" `
-                       -extensionFileName "jQueryCodeSnippets.vsix" -vsVersion $vsVersion
-    
-    # F# PowerTools
-    # https://visualstudiogallery.msdn.microsoft.com/136b942e-9f2c-4c0b-8bac-86d774189cff
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/136b942e-9f2c-4c0b-8bac-86d774189cff/file/124201/33/FSharpVSPowerTools.vsix" `
-                       -extensionFileName "FSharpPowerTools.vsix" -vsVersion $vsVersion
-    
-    # Snippet Designer
-    # https://visualstudiogallery.msdn.microsoft.com/B08B0375-139E-41D7-AF9B-FAEE50F68392
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/B08B0375-139E-41D7-AF9B-FAEE50F68392/file/5131/12/SnippetDesigner.vsix" `
-                       -extensionFileName "SnippetDesigner.vsix" -vsVersion $vsVersion
-    
-    # SideWaffle Template Pack
-    # https://visualstudiogallery.msdn.microsoft.com/a16c2d07-b2e1-4a25-87d9-194f04e7a698
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/a16c2d07-b2e1-4a25-87d9-194f04e7a698/referral/110630" `
-                       -extensionFileName "SideWaffle.vsix" -vsVersion $vsVersion
-    
-    # GraphEngine VSExt
-    # https://visualstudiogallery.msdn.microsoft.com/12835dd2-2d0e-4b8e-9e7e-9f505bb909b8
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/12835dd2-2d0e-4b8e-9e7e-9f505bb909b8/file/161997/14/GraphEngineVSExtension.vsix" `
-                       -extensionFileName "GraphEngine.vsix" -vsVersion $vsVersion
-    
-    # Bing Developer Assistant
-    # https://visualstudiogallery.msdn.microsoft.com/5d01e3bd-6433-47f2-9c6d-a9da52d172cc
-    # Not using it anymore, distracts IntelliSense...
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/5d01e3bd-6433-47f2-9c6d-a9da52d172cc/file/150980/8/DeveloperAssistant_2015.vsix" `
-                       -extensionFileName "DevAssistant.vsix" -vsVersion $vsVersion
-    
-    # RegEx Tester
-    # https://visualstudiogallery.msdn.microsoft.com/16b9d664-d88c-460e-84a5-700ab40ba452
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/16b9d664-d88c-460e-84a5-700ab40ba452/file/31824/18/RegexTester-v1.5.2.vsix" `
-                       -extensionFileName "RegExTester.vsix" -vsVersion $vsVersion
-    
-    # Web Compiler
-    # https://visualstudiogallery.msdn.microsoft.com/3b329021-cd7a-4a01-86fc-714c2d05bb6c
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/3b329021-cd7a-4a01-86fc-714c2d05bb6c/file/164873/38/Web%20Compiler%20v1.10.306.vsix" `
-                       -extensionFileName "WebCompiler.vsix" -vsVersion $vsVersion
-    
-    # OpenCommandLine
-    # https://visualstudiogallery.msdn.microsoft.com/4e84e2cf-2d6b-472a-b1e2-b84932511379
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/4e84e2cf-2d6b-472a-b1e2-b84932511379/file/151803/35/Open%20Command%20Line%20v2.0.168.vsix" `
-                       -extensionFileName "OpenCommandLine.vsix" -vsVersion $vsVersion
-    
-    # Refactoring Essentials for VS2015
-    # https://visualstudiogallery.msdn.microsoft.com/68c1575b-e0bf-420d-a94b-1b0f4bcdcbcc
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/68c1575b-e0bf-420d-a94b-1b0f4bcdcbcc/file/146895/20/RefactoringEssentials.vsix" `
-                       -extensionFileName "RefactoringEssentials.vsix" -vsVersion $vsVersion
-    
-    # AllJoyn System Bridge Templates
-    # https://visualstudiogallery.msdn.microsoft.com/aea0b437-ef07-42e3-bd88-8c7f906d5da8
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/aea0b437-ef07-42e3-bd88-8c7f906d5da8/file/165147/8/DeviceSystemBridgeTemplate.vsix" `
-                       -extensionFileName "AllJoynSysBridge.vsix" -vsVersion $vsVersion
-    
-    # ASP.NET Project Templates for traditional ASP.NET Projects
-    # https://visualstudiogallery.msdn.microsoft.com/9402d38e-2a85-434e-8d6a-8fc075068a42
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/9402d38e-2a85-434e-8d6a-8fc075068a42/referral/149131" `
-                       -extensionFileName "AspNetTemplates.vsix" -vsVersion $vsVersion
-                           
-    # .Net Portability Analyzer
-    # https://visualstudiogallery.msdn.microsoft.com/1177943e-cfb7-4822-a8a6-e56c7905292b
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/1177943e-cfb7-4822-a8a6-e56c7905292b/file/138960/3/ApiPort.vsix" `
-                       -extensionFileName "NetPortabilityAnalyzer.vsix" -vsVersion $vsVersion
-
-    # Caliburn.Micro Windows 10 Templates for VS2015
-    # https://visualstudiogallery.msdn.microsoft.com/b6683732-01ed-4bb3-a2d3-a633a5378997
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/b6683732-01ed-4bb3-a2d3-a633a5378997/file/165880/5/CaliburnUniversalTemplatePackage.vsix" `
-                       -extensionFileName "CaliburnTemplates.vsix" -vsVersion $vsVersion
-
-    # Color Theme Editor
-    # https://visualstudiogallery.msdn.microsoft.com/6f4b51b6-5c6b-4a81-9cb5-f2daa560430b
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/6f4b51b6-5c6b-4a81-9cb5-f2daa560430b/file/169990/1/ColorThemeEditor.vsix" `
-                       -extensionFileName "ColorThemeEditor.vsix" -vsVersion $vsVersion
-
-    # Productivity Power Tools
-    # https://visualstudiogallery.msdn.microsoft.com/34ebc6a2-2777-421d-8914-e29c1dfa7f5d
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/34ebc6a2-2777-421d-8914-e29c1dfa7f5d/file/169971/1/ProPowerTools.vsix" `
-                       -extensionFileName "ProPowerTools.vsix" -vsVersion $vsVersion
-                       
-}
-
-if( $vsext -and ($vsVersion -eq "2017") ) {
+if( $vsext ) {
 
     # Refreshing the environment path variables
     RefreshEnvironment
