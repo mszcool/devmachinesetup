@@ -60,7 +60,7 @@ Param
 #
 # Simple Parameter validation
 #
-if( $prepOS -and ($tools -or $ittools -or $userTools -or $dev -or $data -or $dataSrv -or $installOtherIDE -or $installVs -or $cloneRepos -or $vsext) ) {
+if( $prepOS -and ($tools -or $ittools -or $userTools -or $dev -or $data -or $dataSrv -or ( $installOtherIDE -ne "none" ) -or $installVs -or $cloneRepos -or $vsext) ) {
     throw "Running the script with -prepOS does not allow you to use any other switches. First run -prepOS and then run with any other allowed combination of switches!"
 }
 
@@ -134,6 +134,9 @@ function CreatePathIfNotExists($pathName) {
 # Function to Download and Extract ZIP Files for CLIs and the likes
 #
 function DownloadAndExtractZip($link, $targetFolder, $tempName) {
+
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
     $downloadPath = ($env:TEMP + "\$tempName")
     if(!(Test-Path -Path $downloadPath)) {
         Invoke-WebRequest $link -OutFile $downloadPath
@@ -151,6 +154,7 @@ function DownloadAndCopy($link, $targetFolder) {
     CreatePathIfNotExists($targetFolder)
 
     if(!(Test-Path -Path $targetFolder)) {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         Invoke-WebRequest $link -OutFile $downloadPath
     }
 }
@@ -199,7 +203,7 @@ function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
 
 if( $tools ) {
 
-    choco install -y 1password
+    #choco install -y 1password
 
     choco install -y 7zip
 
@@ -247,7 +251,7 @@ if( $ittools )
     
     scoop install sudo --global
 
-    scoop install curl grep sed less tail touch --global
+    scoop install curl grep sed less touch --global
 
     scoop install jq --global
 
@@ -304,7 +308,7 @@ if($installOtherIDE -ne "none") {
         Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
 
         $stsLink = "http://download.springsource.com/release/STS/3.9.2.RELEASE/dist/e4.7/spring-tool-suite-3.9.2.RELEASE-e4.7.2-win32-x86_64.zip"
-        $stsTarget = "C:\tools\sts"
+        $stsTarget = "C:\tools"
         $stsTempName = "sts396.zip"
 
         DownloadAndExtractZip -link $stsLink -targetFolder $stsTarget -tempName $stsTempName
@@ -322,7 +326,7 @@ if( $dev )
     # Phase #1 will install the the basic runtimes
     #
 
-    scoop install golang --global
+    scoop install go --global
 
     scoop install nodejs --global
 
@@ -356,7 +360,8 @@ if( $dev )
 
     choco install -y poshgit 
 
-    choco install -y fiddler4
+    # Removed from Chocolatey...
+    #choco install -y fiddler4
 
     choco install -y postman
 
@@ -415,13 +420,13 @@ if ( $clis ) {
 
     pip install sfctl
 
-    scoop install kubernetes-cli --global
+    scoop install kubectl --global
 
     scoop install nuget --global
 
     # OpenStack CLI
     pip install --upgrade --requirement https://raw.githubusercontent.com/platform9/support-locker/master/openstack-clients/requirements.txt --constraint http://raw.githubusercontent.com/openstack/requirements/stable/newton/upper-constraints.txt
-    DownloadAndCopy -link "https://github.com/platform9/support-locker/blob/master/openstack-clients/windows/Source_OpenRC.ps1" -targetFolder "C:\tools\openstack\"
+    DownloadAndCopy -link "https://github.com/platform9/support-locker/blob/master/openstack-clients/windows/Source_OpenRC.ps1" -targetFolder "C:\tools\openstack\Source_OpenRC.ps1"
 
     # Cloud Foundry CLI
     DownloadAndExtractZip -link "https://s3-us-west-1.amazonaws.com/cf-cli-releases/releases/v6.34.1/cf-cli_6.34.1_winx64.zip" -targetFolder "C:\tools\cfcli-6.34.1" -tempName "cfcli6.34.1.zip"
@@ -436,11 +441,12 @@ if ( $clis ) {
 #
 if( $data )
 {
-    DownloadAndExtractZip -link "https://github.com/Microsoft/sqlopsstudio/releases/download/0.26.6/sqlops-windows-0.26.7.zip" -targetFolder "C:\tools\sqlops-windows" -tempName "sqlopsstudio.zip"
+    DownloadAndExtractZip -link "https://github.com/Microsoft/sqlopsstudio/releases/download/0.26.6/sqlops-windows-0.26.7.zip" `
+                          -targetFolder "C:\tools\sqlops-windows" -tempName "sqlopsstudio.zip"
     
-    DownloadAndExtractZip -link "https://dbeaver.jkiss.org/files/dbeaver-ce-latest-win32.win32.x86_64.zip" -targetFolder "C:\tools\dbeaver-windows" -tempName "dbeaver-windows.zip"
+    DownloadAndExtractZip -link "https://dbeaver.jkiss.org/files/dbeaver-ce-latest-win32.win32.x86_64.zip" -targetFolder "C:\tools" -tempName "dbeaver-windows.zip"
     
-    DownloadAndExtractZip -link "https://download.robomongo.org/1.2.1/windows/robo3t-1.2.1-windows-x86_64-3e50a65.zip" -targetFolder "C:\tools\robomongo" -tempName "robomongo.zip"
+    DownloadAndExtractZip -link "https://download.robomongo.org/1.2.1/windows/robo3t-1.2.1-windows-x86_64-3e50a65.zip" -targetFolder "C:\tools" -tempName "robomongo.zip"
     
     #choco install -y sql-server-management-studio
 
@@ -710,6 +716,12 @@ if( $cloneRepos ) {
    
     cd "$codeBaseDir\github\mszcool"
     git clone https://github.com/mszcool/azure-quickstart-templates.git
+    git clone https://github.com/mszcool/mszcoolPowerOnDemand.git
+    git clone https://github.com/mszcool/azIoTEdgeDeviceTwinsDemo.git
+    git clone https://github.com/mszcool/azureFindVmWithPrivateIPSamples.git
+    git clone https://github.com/mszcool/azureMsiAndInstanceMetadata.git
+    git clone https://github.com/mszcool/saphanasso.git
+    git clone https://github.com/mszcool/cf-scp-on-azure-simple.git
     git clone https://github.com/mszcool/azureAdMultiTenantServicePrincipal.git
     git clone https://github.com/mszcool/AzureBatchTesseractSample.git
     git clone https://github.com/mszcool/AzureFiles2014Sample.git
@@ -725,6 +737,7 @@ if( $cloneRepos ) {
     git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
     git clone https://github.com/mszcool/TrafficManager201501Sample.git
     git clone https://github.com/mszcool/UniversalApps-Modularity.git
+    git clone https://github.com/mszcool/Excel-CustomXMLPart-Demo.git
     
     cd "$codeBaseDir\github\Azure"
     git clone https://github.com/Azure/api-management-samples.git
