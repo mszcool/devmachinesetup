@@ -155,8 +155,22 @@ function DownloadAndCopy($link, $targetFolder) {
 
     if(!(Test-Path -Path $targetFolder)) {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest $link -OutFile $downloadPath
+        Invoke-WebRequest $link -OutFile $targetFolder
     }
+}
+
+function DownloadAndInstallMsi($link, $targetFolder) {
+    CreatePathIfNotExists($targetFolder)
+
+    if(!(Test-Path -Path $targetFolder)) {
+        Invoke-WebRequest $link $targetFolder
+    }
+
+    # Execute the MSI
+    msiexec.exe /a "$targetFolder" /qn 
+
+    # After completed, delete the MSI-package, again
+    Remove-Item -Path $targetFolder
 }
 
 #
@@ -400,6 +414,17 @@ if( $dev )
 
     npm install -g gulp
 
+    npm install -g iothub-explorer
+
+    #
+    # Phase #4 will install some additional tools
+    #
+
+    DownloadAndExtractZip -link "https://github.com/paolosalvatori/ServiceBusExplorer/releases/download/4.0.109/ServiceBusExplorer-4.0.109.zip" `
+                          -targetFolder "C:\tools\ServiceBusExplorer-4.0.109"
+
+    DownloadAndInstallMsi -link "https://github.com/Azure/azure-iot-sdk-csharp/releases/download/2018-3-13/SetupDeviceExplorer.msi" `
+                          -targetFolder "C:\tools\setupdeviceexplorer-2018-3-13.msi"
 }
 
 #
@@ -417,6 +442,10 @@ if ( $clis ) {
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 
     Install-Module -Name AzureRM -Force -SkipPublisherCheck 
+
+    Install-Module -Name MSOnline -Force -SkipPublisherCheck
+
+    Install-Module -Name AzureAD -Force -SkipPublisherCheck
 
     pip install sfctl
 

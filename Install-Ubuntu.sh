@@ -86,27 +86,34 @@ fi
 #
 # General packages commonly used on my Linux Dev Machines
 #
-sudo apt-get update
-sudo apt-get -y upgrade 
+sudo apt update
+sudo apt -y upgrade 
 
 # Known bug in Ubuntu 16.04 with missing package for GTK 
-sudo apt-get install -y tmux
-sudo apt-get install -y debconf-utils
-sudo apt-get install -y gtk2-engines-pixbuf
-sudo apt-get install -y openssh-servers
-sudo apt-get install -y net-tools
-sudo apt-get install -y MiKTeX
-sudo apt-get install -y ffmpeg
-sudo apt-get install -y mencoder
-sudo apt-get install -y libpng-dev
-sudo apt-get install -y build-dep
-sudo apt-get install -y python-software-properties
-sudo apt-get install -y python-pip
-sudo apt-get install -y python-tk
-sudo apt-get install -y emacs25
-sudo apt-get install -y git
-sudo apt-get install -y maven
-sudo apt-get install -y jq
+sudo apt install -y gtk2-engines-pixbuf
+
+sudo apt install -y tmux
+sudo apt install -y debconf-utils
+sudo apt install -y openssh-servers
+sudo apt install -y net-tools
+sudo apt install -y MiKTeX
+sudo apt install -y ffmpeg
+sudo apt install -y mencoder
+sudo apt install -y libpng-dev
+sudo apt install -y build-dep
+sudo apt install -y python-software-properties
+sudo apt install -y python-pip
+sudo apt install -y python-tk
+sudo apt install -y emacs25
+sudo apt install -y git
+sudo apt install -y maven
+sudo apt install -y jq
+sudo apt install zlib1g-dev
+sudo apt install -y libxml12
+sudo apt install -y ruby2.3-dev
+sudo apt install -y golang-go
+sudo apt install -y ngrok-client
+sudo apt install -y ngrok-server
 
 
 #
@@ -150,10 +157,10 @@ case $instJava in
 
     oraclejdk)
         sudo add-apt-repository ppa:webupd8team/java
-        sudo apt-get update
+        sudo apt update
         echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
         echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
-        sudo apt-get install -y oracle-java9-installer
+        sudo apt install -y oracle-java9-installer
         ;;
 
     default)
@@ -168,8 +175,8 @@ esac
 if [ $instScala == 1 ]; then
     echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
-    sudo apt-get update
-    sudo apt-get install -y sbt
+    sudo apt update
+    sudo apt install -y sbt
 fi
 
 
@@ -196,13 +203,16 @@ case "$instDotNetCore" in
     case "2.0")
         curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
         sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+        
         # Ubuntu 16.04
-        #sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
-        #sudo apt-get update
+        sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
+        sudo apt update
         # Ubuntu 17.04
-        sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-zesty-prod zesty main" > /etc/apt/sources.list.d/dotnetdev.list'
-        sudo apt-get update
-        sudo apt-get install -y dotnet-sdk-2.0.0
+        #sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-zesty-prod zesty main" > /etc/apt/sources.list.d/dotnetdev.list'
+        #sudo apt update
+        
+        sudo apt install -y dotnet-sdk-2.0.0
+        sudo apt install dotnet-sdk-2.1.101
         ;;
     
     case "none")
@@ -217,8 +227,8 @@ esac
 if [ $instIntelliJ == 1 ]; then
     echo "deb http://ppa.launchpad.net/mmk2410/intellij-idea/ubuntu zesty main" | sudo tee -a /etc/apt/sources.list.d/intellij.list
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 88D743200808E359E0A156EFF6F9C5299263FB77
-    sudo apt-get update
-    sudo apt-get install -y intellij-idea-community
+    sudo apt update
+    sudo apt install -y intellij-idea-community
 fi
 
 
@@ -229,8 +239,8 @@ if [ $instVsCode == 1 ]; then
     curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
     sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
-    sudo apt-get update
-    sudo apt-get install -y code
+    sudo apt update
+    sudo apt install -y code
 
     # Start installing all extensions
     code --install-extension DavidAnson.vscode-markdownlint
