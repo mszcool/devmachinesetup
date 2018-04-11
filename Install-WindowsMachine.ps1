@@ -159,18 +159,37 @@ function DownloadAndCopy($link, $targetFolder) {
     }
 }
 
-function DownloadAndInstallMsi($link, $targetFolder) {
+function DownloadAndInstallMsi($link, $targetFolder, $targetName) {
     CreatePathIfNotExists($targetFolder)
 
+    $targetName = [System.IO.Path].Combine($targetFolder, $targetName)
+
     if(!(Test-Path -Path $targetFolder)) {
-        Invoke-WebRequest $link $targetFolder
+        Invoke-WebRequest $link -OutFile $targetName
     }
 
     # Execute the MSI
-    msiexec.exe /a "$targetFolder" /qn 
+    msiexec.exe /a "$targetName" /qn 
 
     # After completed, delete the MSI-package, again
-    Remove-Item -Path $targetFolder
+    Remove-Item -Path $targetName
+}
+
+function DownloadAndInstallExe($link, $targetFolder, $targetName, $targetParams) {
+    # .\FiddlerSetup.exe /S /D=C:\tools\Fiddler
+    CreatePathIfNotExists($targetFolder)
+
+    $targetName = [System.IO.Path].Combine($targetFolder, $targetName)
+
+    if(!(Test-Path -Path $targetFolder)) {
+        Invoke-WebRequest $link -OutFile $targetName
+    }
+
+    # Execute the Installer-EXE
+    & $targetName $targetParams
+
+    # After completed, delete the MSI-package, again
+    Remove-Item -Path $targetName
 }
 
 #
@@ -424,7 +443,15 @@ if( $dev )
                           -targetFolder "C:\tools\ServiceBusExplorer-4.0.109"
 
     DownloadAndInstallMsi -link "https://github.com/Azure/azure-iot-sdk-csharp/releases/download/2018-3-13/SetupDeviceExplorer.msi" `
-                          -targetFolder "C:\tools\setupdeviceexplorer-2018-3-13.msi"
+                          -targetFolder "C:\tools\" `
+                          -targetName "setupdeviceexplorer-2018-3-13.msi"
+
+    DownloadAndInstallExe -link "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe" `
+                          -targetFolder "C:\tools\" `
+                          -targetName "FiddlerSetup.exe" `
+                          -targetParams "/S /D=C:\tools\Fiddler"
+
+    
 }
 
 #
