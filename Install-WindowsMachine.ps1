@@ -238,7 +238,7 @@ if( $tools ) {
 
     #choco install -y 1password
 
-    choco install -y 7zip
+    #choco install -y 7zip
 
     choco install -y adobereader
 
@@ -256,11 +256,14 @@ if( $tools ) {
 #
 if( $userTools ) {
 
-    choco install -y whatsapp 
+    #store In the Windows Store now
+    #choco install -y whatsapp 
 
-    choco install -y slack
-
-    choco install -y microsoft-teams
+    #store In the Windows Store now
+    #choco install -y slack
+    
+    #store In the Windows Store now
+    #choco install -y microsoft-teams
 
     choco install -y --allowemptychecksum vlc
 
@@ -497,7 +500,7 @@ if ( $clis ) {
 #
 if( $data )
 {
-    DownloadAndExtractZip -link "https://github.com/Microsoft/sqlopsstudio/releases/download/0.26.6/sqlops-windows-0.26.7.zip" `
+    DownloadAndExtractZip -link "https://sqlopsbuilds.blob.core.windows.net/release/0.29.3/sqlops-windows-0.29.3.zip" `
                           -targetFolder "C:\tools\sqlops-windows" -tempName "sqlopsstudio.zip"
     
     DownloadAndExtractZip -link "https://dbeaver.jkiss.org/files/dbeaver-ce-latest-win32.win32.x86_64.zip" -targetFolder "C:\tools" -tempName "dbeaver-windows.zip"
@@ -638,7 +641,7 @@ if ( $vscodeext ) {
 
     code --install-extension DavidAnson.vscode-markdownlint
 
-    code --install-extension DotJoshJohnson.xml
+    #code --install-extension DotJoshJohnson.xml
 
     code --install-extension eg2.tslint
 
@@ -658,7 +661,7 @@ if ( $vscodeext ) {
     
     code --install-extension ms-vscode.csharp
     
-    code --install-extension ms-vscode.mono-debug
+    #code --install-extension ms-vscode.mono-debug
     
     code --install-extension ms-vscode.PowerShell
 
@@ -751,7 +754,6 @@ if( $cloneRepos ) {
     #    
     CreatePathIfNotExists -pathName "$codeBaseDir"
     CreatePathIfNotExists -pathName "$codeBaseDir\github"
-    CreatePathIfNotExists -pathName "$codeBaseDir\codeplex"
     CreatePathIfNotExists -pathName "$codeBaseDir\mszCool"
     CreatePathIfNotExists -pathName "$codeBaseDir\marioszp"
     CreatePathIfNotExists -pathName "$codeBaseDir\dpeted"
@@ -768,37 +770,40 @@ if( $cloneRepos ) {
     CreatePathIfNotExists -pathName "$codeBaseDir\github\dx"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\HDInsight"
     CreatePathIfNotExists -pathName "$codeBaseDir\github\mezmicrosoft-ml"
-    CreatePathIfNotExists -pathName "$codeBaseDir\github\solarized"
+    CreatePathIfNotExists -pathName "$codeBaseDir\github\others"
    
     cd "$codeBaseDir\github\mszcool"
-    git clone https://github.com/mszcool/azure-quickstart-templates.git
-    git clone https://github.com/mszcool/mszcoolPowerOnDemand.git
     git clone https://github.com/mszcool/azIoTEdgeDeviceTwinsDemo.git
-    git clone https://github.com/mszcool/azureFindVmWithPrivateIPSamples.git
-    git clone https://github.com/mszcool/azureMsiAndInstanceMetadata.git
-    git clone https://github.com/mszcool/saphanasso.git
-    git clone https://github.com/mszcool/cf-scp-on-azure-simple.git
+    git clone https://github.com/mszcool/azure-quickstart-templates.git
     git clone https://github.com/mszcool/azureAdMultiTenantServicePrincipal.git
     git clone https://github.com/mszcool/AzureBatchTesseractSample.git
     git clone https://github.com/mszcool/AzureFiles2014Sample.git
+    git clone https://github.com/mszcool/azureFindVmWithPrivateIPSamples.git
+    git clone https://github.com/mszcool/azureMsiAndInstanceMetadata.git
     git clone https://github.com/mszcool/azureSpBasedInstanceMetadata.git
     git clone https://github.com/mszcool/bosh-azure-cpi-release.git
+    git clone https://github.com/mszcool/cf-scp-on-azure-simple.git
     git clone https://github.com/mszcool/cfMultiCloudSample.git
+    git clone https://github.com/mszcool/codeplex-archive.git
+    git clone https://github.com/mszcool/consumption-cost-node.git
     git clone https://github.com/mszcool/devmachinesetup.git
+    git clone https://github.com/mszcool/Excel-CustomXMLPart-Demo.git
     git clone https://github.com/mszcool/msgraphcli.git
+    git clone https://github.com/mszcool/mszcool.github.io.git
     git clone https://github.com/mszcool/mszcoolAzureBillingAddIn.git
     git clone https://github.com/mszcool/mszcoolPowerOnDemand.git
     git clone https://github.com/mszcool/NServiceBus.AzureServiceBus-SB1.1-WinSrv.git
+    git clone https://github.com/mszcool/saphanasso.git
     git clone https://github.com/mszcool/simpleconsolefx.git
     git clone https://github.com/mszcool/SqlAlwaysOnAzurePowerShellClassic.git
     git clone https://github.com/mszcool/TrafficManager201501Sample.git
     git clone https://github.com/mszcool/UniversalApps-Modularity.git
-    git clone https://github.com/mszcool/Excel-CustomXMLPart-Demo.git
     
     cd "$codeBaseDir\github\Azure"
     git clone https://github.com/Azure/api-management-samples.git
     git clone https://github.com/Azure/azure-batch-samples.git
     git clone https://github.com/Azure/Azure-DataFactory.git
+    git clone https://github.com/Azure-Samples/azure-iot-e2e-diag-samples.git
     git clone https://github.com/Azure/Azure-Media-Services-Explorer.git
     git clone https://github.com/Azure/azure-media-services-samples.git
     git clone https://github.com/Azure/azure-mobile-apps-quickstarts.git
@@ -807,7 +812,6 @@ if( $cloneRepos ) {
     git clone https://github.com/Azure/azure-notificationhubs-samples.git
     git clone https://github.com/Azure/azure-quickstart-templates.git
     git clone https://github.com/Azure/azure-resource-manager-schemas.git
-    git clone https://github.com/Azure/azure-service-bus-samples.git
     git clone https://github.com/Azure/azure-sql-database-samples.git
     git clone https://github.com/Azure/azure-stream-analytics.git
     git clone https://github.com/Azure/Azure-vpn-config-samples.git
@@ -816,30 +820,32 @@ if( $cloneRepos ) {
     git clone https://github.com/Azure/AzureAD-BYOA-Provisioning-Samples.git
     git clone https://github.com/Azure/AzureQuickStartsProjects.git
     git clone https://github.com/Azure/BillingCodeSamples.git
+    git clone https://github.com/Azure-Samples/compute-dotnet-manage-vmss-in-availability-zones.git
+    git clone https://github.com/Azure-Samples/e2e-diagnostics-portal.git
     git clone https://github.com/Azure/elastic-db-tools.git
     git clone https://github.com/Azure/identity-management-samples.git
+    git clone https://github.com/Azure/open-service-broker-azure.git
     
     cd "$codeBaseDir\github\AzureAD"
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-graphapi-console.git
-    git clone https://github.com/Azure-Samples/active-directory-java-graphapi-web.git
-    git clone https://github.com/Azure-Samples/active-directory-angularjs-singlepageapp-dotnet-webapi.git
     git clone https://github.com/Azure-Samples/active-directory-android.git
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-webapi-openidconnect-aspnetcore.git
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapi-onbehalfof.git
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-headless.git
+    git clone https://github.com/Azure-Samples/active-directory-angularjs-singlepageapp-dotnet-webapi.git
     git clone https://github.com/Azure-Samples/active-directory-cordova-graphapi.git
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-webapi-oauth2-useridentity.git
-    git clone https://github.com/Azure-Samples/active-directory-java-native-headless.git
-    git clone https://github.com/Azure-Samples/active-directory-xamarin-native-v2.git
-    git clone https://github.com/Azure-Samples/active-directory-node-webapi.git
-    git clone https://github.com/Azure-Samples/active-directory-python-graphapi-oauth2-0-access.git
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-uwp-wam.git
-    git clone https://github.com/Azure-Samples/active-directory-java-webapp-openidconnect.git
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-multitarget.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-graphapi-console.git
     git clone https://github.com/Azure-Samples/active-directory-dotnet-graphapi-diffquery.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-headless.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-multitarget.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-native-uwp-wam.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-web-single-sign-out.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapi-onbehalfof.git
     git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-multitenant-openidconnect.git
     git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-roleclaims.git
-    git clone https://github.com/Azure-Samples/active-directory-dotnet-web-single-sign-out.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-webapi-oauth2-useridentity.git
+    git clone https://github.com/Azure-Samples/active-directory-dotnet-webapp-webapi-openidconnect-aspnetcore.git
+    git clone https://github.com/Azure-Samples/active-directory-java-graphapi-web.git
+    git clone https://github.com/Azure-Samples/active-directory-java-native-headless.git
+    git clone https://github.com/Azure-Samples/active-directory-java-webapp-openidconnect.git
+    git clone https://github.com/Azure-Samples/active-directory-node-webapi.git
+    git clone https://github.com/Azure-Samples/active-directory-xamarin-native-v2.git
     git clone https://github.com/AzureAD/azure-activedirectory-library-for-js.git
     git clone https://github.com/AzureAD/microsoft-authentication-library-for-dotnet.git
 
@@ -854,6 +860,8 @@ if( $cloneRepos ) {
     git clone https://github.com/cloudfoundry-incubator/bosh-azure-cpi-release.git
     git clone https://github.com/cf-platform-eng/bosh-azure-template.git
     git clone https://github.com/cloudfoundry/bosh-lite
+    git clone https://github.com/cloudfoundry-incubator/service-fabrik-backup-restore.git
+    git clone https://github.com/cloudfoundry-incubator/service-fabrik-blueprint-service.git
 
     cd "$codeBaseDir\github\dx"
     git clone https://github.com/dx-ted-emea/bigdata-labs.git
@@ -888,17 +896,11 @@ if( $cloneRepos ) {
     git clone https://github.com/mezmicrosoft/Microsoft_R_Server.git
     git clone https://github.com/mezmicrosoft/Sample_Experiments.git
 
-    cd "$codeBaseDir\github\solarized"
+    cd "$codeBaseDir\github\others"
     git clone https://github.com/altercation/solarized.git
     git clone https://github.com/leddt/visualstudio-colors-solarized.git
     git clone https://github.com/shanselman/cmd-colors-solarized.git
     git clone https://github.com/tpenguinltg/windows-solarized.git
-
-    #
-    # Codeplex (legacy stuff)
-    #
-    cd "$codeBaseDir\codeplex"
-    git clone https://git01.codeplex.com/mszcooldemos
-    git clone https://git01.codeplex.com/geres2
-    
+    git clone https://github.com/codeinventory/codeinventory.github.io.git
+    git clone https://github.com/Sylhare/Type-on-Strap.git
 }
