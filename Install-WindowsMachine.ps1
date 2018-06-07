@@ -56,6 +56,11 @@ Param
 )
 
 
+#
+# Store the location of the original script execution
+#
+$originalExecPath = Get-Location
+
 
 #
 # Simple Parameter validation
@@ -201,9 +206,7 @@ $vsixInstallerCommand2017 = "C:\Program Files (x86)\Microsoft Visual Studio\2017
 $vsixInstallerCommandGeneralArgs = " /q /a "
 
 function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
-    
-    Write-Host "Installing extension " $extensionFileName
-    
+        
     # Select the appropriate VSIX installer
     if($vsVersion -eq "2013") {
         $vsixInstallerCommand = $vsixInstallerCommand2013
@@ -214,6 +217,9 @@ function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
     if($vsVersion -eq "2017") {
         $vsixInstallerCommand = $vsixInstallerCommand2017
     }
+
+    Write-Host "Installing extension $extensionFileName"
+    Write-Host "Using devnev $vsixInstallerCommand"
 
     # Download the extension
     Invoke-WebRequest $extensionUrl -OutFile $extensionFileName
@@ -366,7 +372,9 @@ if( $dev )
 
     scoop install nodejs --global
 
-    scoop install python --global
+    # didn't work quite well
+    #scoop install python --global
+    choco install -y --allowemptychecksum python2
 
     scoop install php --global 
 
@@ -596,35 +604,16 @@ if( $vsext ) {
     # Refreshing the environment path variables
     RefreshEnvironment
 
-    # Productivity Power Tools
-    # https://marketplace.visualstudio.com/items?itemName=GitHub.GitHubExtensionforVisualStudio
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/75be44fb-0794-4391-8865-c3279527e97d/file/159055/36/GitHub.VisualStudio.vsix" `
-                       -extensionFileName "GitHubExtensionsForVS.vsix" -vsVersion $vsVersion
+    # Install all extensions from the extensions file
 
-    # Snippet Designer
-    # https://marketplace.visualstudio.com/items?itemName=vs-publisher-2795.SnippetDesigner
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/b08b0375-139e-41d7-af9b-faee50f68392/file/5131/16/SnippetDesigner.vsix" `
-                       -extensionFileName "SnippetDesigner.vsix" -vsVersion $vsVersion
-
-    # Web Essentials 2017
-    # https://marketplace.visualstudio.com/items?itemName=MadsKristensen.WebExtensionPack2017
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/a5a27916-2099-4c5b-a3ff-6a46e4b01298/file/236262/11/Web%20Essentials%202017%20v1.5.8.vsix" `
-                       -extensionFileName "WebEssentials2017.vsix" -vsVersion $vsVersion
-
-    # Productivity Power Tools 2017
-    # https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.ProductivityPowerPack2017
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/11693073-e58a-45b3-8818-b2cf5d925af7/file/244442/4/ProductivityPowerTools2017.vsix" `
-                       -extensionFileName "ProductivityPowertools2017.vsix" -vsVersion $vsVersion
-
-    # Power Commands 2017
-    # https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.PowerCommandsforVisualStudio
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/80f73460-89cd-4d93-bccb-f70530943f82/file/242896/4/PowerCommands.vsix" `
-                       -extensionFileName "PowerCommands2017.vsix" -vsVersion $vsVersion
-
-    # Power Shell Tools 2017
-    # https://marketplace.visualstudio.com/items?itemName=AdamRDriscoll.PowerShellToolsforVisualStudio2017-18561
-    InstallVSExtension -extensionUrl "https://visualstudiogallery.msdn.microsoft.com/8389e80d-9e40-4fc1-907c-a07f7842edf2/file/257196/1/PowerShellTools.15.0.vsix" `
-                       -extensionFileName "PowerShellTools2017.vsix" -vsVersion $vsVersion
+    # Start installing all extensions
+    $vs2017ext = Get-Content "$originalExecPath\vs2017.extensions"
+    $vs2017ext | ForEach-Object { 
+        $vsextline = $_.Split(" ")
+        $vsexturl = $vsextline[1]
+        $vsextfile = $vsextline[0]
+        InstallVSExtension -extensionUrl "$vsexturl" -extensionFileName "$vsextfile" -vsVersion $vsVersion
+    }
 
 }
 
@@ -638,105 +627,8 @@ if ( $vscodeext ) {
     RefreshEnvironment
 
     # Start installing all extensions
-
-    code --install-extension DavidAnson.vscode-markdownlint
-
-    #code --install-extension DotJoshJohnson.xml
-
-    code --install-extension eg2.tslint
-
-    code --install-extension eg2.vscode-npm-script
-
-    code --install-extension johnpapa.Angular1
-
-    code --install-extension johnpapa.Angular2
-
-    code --install-extension Angular.ng-template
-    
-    code --install-extension lukehoban.Go
-    
-    code --install-extension mohsen1.prettify-json
-
-    code --install-extension ms-vscode.cpptools
-    
-    code --install-extension ms-vscode.csharp
-    
-    #code --install-extension ms-vscode.mono-debug
-    
-    code --install-extension ms-vscode.PowerShell
-
-    code --install-extension ms-vscode.node-debug
-
-    code --install-extension redhat.java
-
-    code --install-extension vscjava.vscode-java-debug
-
-    code --install-extension ecmel.vscode-spring-boot
-    
-    code --install-extension ms-vscode.Theme-MarkdownKit
-    
-    code --install-extension ms-vscode.Theme-MaterialKit
-
-    code --install-extension msjsdiag.debugger-for-chrome
-    
-    code --install-extension msjsdiag.debugger-for-edge
-
-    code --install-extension sivarajanraju.vs-code-office-ui-fabric
-
-    code --install-extension knom.office-mailapp-manifestuploader
-
-    ##code --install-extension install tht13.python
-
-    ##code --install-extension install ms-vscode.typescript-javascript-grammar
-
-    ##code --install-extension install codezombiech.gitignore
-    
-    ##code --install-extension vsmobile.cordova-tools
-
-    ##
-    ## Azure-related Visual Studio Code Extensions
-    ##
-
-    code --install-extension ms-vscode.vscode-azureextensionpack
-
-    # Installed with Azure Extensions Pack
-    #code --install-extension ms-vsts.team
-
-    # Installed with Azure Extensions Package
-    ##code --install-extension ms-mssql.mssql
-
-    # Installed with Azure Extensions Pack
-    code --install-extension bradygaster.azuretoolsforvscode
-    
-    # Installed with Azure Extensions Pack
-    #code --install-extension msazurermtools.azurerm-vscode-tools
-
-    code --install-extension ms-azuretools.vscode-azureappservice
-
-    code --install-extension ms-azuretools.vscode-azurefunctions
-
-    # Installed with Azure Extensions Pack
-    #code --install-extension johnpapa.azure-functions-tools
-
-    # Installed with Azure Extensions Pack
-    #code --install-extension ms-vscode.azurecli
-
-    # Installed with Azure Extensions Pack
-    #code --install-extension VisualStudioOnlineApplicationInsights.application-insights
-
-    code --install-extension mshdinsight.azure-hdinsight
-
-    # Installed with Azure Extensions Pack
-    #code --install-extension usqlextpublisher.usql-vscode-ext
-
-    # Installed with Azure Extensions Pack
-    #code --install-extension vsciot-vscode.azure-iot-toolkit
-
-    ## Needs a Mongo DB Install on my Dev-Machine - but I run those in Containers...
-    ##code --install-extension ms-azuretools.vscode-cosmosdb
-
-    # Installed with Azure Extensions Pack
-    ##code --install-extension install PeterJausovec.vscode-docker
+    $vsCodeExtensions = Get-Content "$originalExecPath\vscode.extensions"
+    $vsCodeExtensions | ForEach-Object { code --install-extension $_ }
 
 }
 
