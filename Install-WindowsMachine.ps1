@@ -167,14 +167,14 @@ function DownloadAndCopy($link, $targetFolder) {
 function DownloadAndInstallMsi($link, $targetFolder, $targetName) {
     CreatePathIfNotExists($targetFolder)
 
-    $targetName = [System.IO.Path].Combine($targetFolder, $targetName)
+    $targetName = [System.IO.Path]::Combine($targetFolder, $targetName)
 
-    if(!(Test-Path -Path $targetFolder)) {
+    if(!(Test-Path -Path $targetName)) {
         Invoke-WebRequest $link -OutFile $targetName
     }
 
     # Execute the MSI
-    msiexec.exe /a "$targetName" /qn 
+    Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$targetName`" /passive" -Wait
 
     # After completed, delete the MSI-package, again
     Remove-Item -Path $targetName
@@ -184,14 +184,14 @@ function DownloadAndInstallExe($link, $targetFolder, $targetName, $targetParams)
     # .\FiddlerSetup.exe /S /D=C:\tools\Fiddler
     CreatePathIfNotExists($targetFolder)
 
-    $targetName = [System.IO.Path].Combine($targetFolder, $targetName)
+    $targetName = [System.IO.Path]::Combine($targetFolder, $targetName)
 
-    if(!(Test-Path -Path $targetFolder)) {
+    if(!(Test-Path -Path $targetName)) {
         Invoke-WebRequest $link -OutFile $targetName
     }
 
     # Execute the Installer-EXE
-    & $targetName $targetParams
+    Start-Process -FilePath "$targetName" -ArgumentList "$targetParams" -Wait
 
     # After completed, delete the MSI-package, again
     Remove-Item -Path $targetName
@@ -376,6 +376,8 @@ if( $dev )
     #scoop install python --global
     choco install -y --allowemptychecksum python2
 
+    choco install -y --allowemptychecksum vcpython27
+
     scoop install php --global 
 
     scoop install scala --global
@@ -451,7 +453,8 @@ if( $dev )
     #
 
     DownloadAndExtractZip -link "https://github.com/paolosalvatori/ServiceBusExplorer/releases/download/4.0.109/ServiceBusExplorer-4.0.109.zip" `
-                          -targetFolder "C:\tools\ServiceBusExplorer-4.0.109"
+                          -targetFolder "C:\tools\ServiceBusExplorer-4.0.109" `
+                          -tempName "sbexplorer40.zip"
 
     DownloadAndInstallMsi -link "https://github.com/Azure/azure-iot-sdk-csharp/releases/download/2018-3-13/SetupDeviceExplorer.msi" `
                           -targetFolder "C:\tools\" `
