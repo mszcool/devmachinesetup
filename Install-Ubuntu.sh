@@ -12,7 +12,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2.1|none"
+    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2.1|none --instCLIs"
 }
 
 instApt=0
@@ -25,6 +25,7 @@ instIntelliJ=0
 instNodeJs=0
 instJava="none"
 instDotNetCore="none"
+instCLIs=0
 
 while :; do
     case $1 in
@@ -71,6 +72,9 @@ while :; do
             ;;
         --sysstat)
             instSysstat=1
+            ;;
+        --instCLIs)
+            instCLIs=1
             ;;
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
@@ -235,6 +239,42 @@ case $instDotNetCore in
     none)
         ;;
 esac
+
+
+#
+# Installing various CLIs
+#
+if [ $instCLIs == 1 ]; then
+
+    # All goes into CLIs if not installed via package
+    mkdir ~/clis
+    existsclis=$(grep "~/clis" ~/.profile)
+    if [ "$existsclis" == "" ]; then
+        currentPath=$(grep "PATH=" ~/.profile)
+        newPath=$(echo "${currentPath/\$PATH\"/~/clis:\$PATH\"}")
+        echo "$newPath" >> ~/.profile 
+        source ~/.profile
+    fi
+
+    # Latest kubectl
+    kubeversion=$(curl -s "https://storage.googleapis.com/kubernetes-release/release/stable.txt")
+    wget -O ~/clis/kubectl "https://storage.googleapis.com/kubernetes-release/release/$kubeversion/bin/linux/amd64/kubectl"
+    chmod +x ~/clis/kubectl
+
+    # Cloud Foundry CLI
+    curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx
+    mv cf ~/clis
+
+    # OpenShift CLI
+    curl -L "https://github.com/openshift/origin/releases/download/v3.10.0/openshift-origin-client-tools-v3.10.0-dd10d17-linux-64bit.tar.gz" | tar -zx
+    mv ./openshift-origin-client-tools-v3.10.0-dd10d17-linux-64bit/* ~/clis 
+    
+    # Remove Temporary files
+    rm ./LICENSE
+    rm ./NOTICE
+    rm ./openshift-origin-client-tools-v3.10.0-dd10d17-linux-64bit -r
+
+fi
 
 
 #
