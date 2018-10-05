@@ -4,7 +4,7 @@
 # --intellij
 # --scala
 # --nodejs
-# --dotnetcore 2.0|none
+# --dotnetcore 2.1|none
 # --java default|openjdk|oraclejdk|none
 # --xrdp
 # 
@@ -12,9 +12,11 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2.0|none"
+    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2.1|none"
 }
 
+instApt=0
+instPip=0
 instRdp=0
 instSysstat=0
 instVsCode=0
@@ -29,6 +31,12 @@ while :; do
         -h|--help)
             show_help
             exit
+            ;;
+        --instApt)
+            instApt=1
+            ;;
+        --instPip)
+            instPip=1
             ;;
         --vscode)
             instVsCode=1
@@ -55,7 +63,7 @@ while :; do
                 instDotNetCore=$2
                 shift
             else
-                instDotNetCore="2.0"
+                instDotNetCore=21
             fi
             ;;
         --xrdp)
@@ -86,47 +94,52 @@ fi
 #
 # General packages commonly used on my Linux Dev Machines
 #
-sudo apt update
-sudo apt -y upgrade 
+if [ $instApt == 1 ]; then
+    sudo apt update
+    sudo apt -y upgrade 
 
-# Known bug in Ubuntu 16.04 with missing package for GTK 
-sudo apt install -y gtk2-engines-pixbuf
+    # Known bug in Ubuntu 16.04 with missing package for GTK 
+    sudo apt install -y gtk2-engines-pixbuf
 
-sudo apt install -y tmux
-sudo apt install -y debconf-utils
-sudo apt install -y openssh-servers
-sudo apt install -y net-tools
-sudo apt install -y MiKTeX
-sudo apt install -y ffmpeg
-sudo apt install -y mencoder
-sudo apt install -y libpng-dev
-sudo apt install -y build-dep
-sudo apt install -y python-software-properties
-sudo apt install -y python-pip
-sudo apt install -y python-tk
-sudo apt install -y emacs25
-sudo apt install -y git
-sudo apt install -y maven
-sudo apt install -y jq
-sudo apt install zlib1g-dev
-sudo apt install -y libxml12
-sudo apt install -y ruby2.3-dev
-sudo apt install -y golang-go
-sudo apt install -y ngrok-client
-sudo apt install -y ngrok-server
+    sudo apt install -y tmux
+    sudo apt install -y debconf-utils
+    sudo apt install -y openssh-servers
+    sudo apt install -y net-tools
+    sudo apt install -y MiKTeX
+    sudo apt install -y ffmpeg
+    sudo apt install -y mencoder
+    sudo apt install -y libpng-dev
+    sudo apt install -y build-dep
+    sudo apt install -y python-software-properties
+    sudo apt install -y python-pip
+    sudo apt install -y python-tk
+    sudo apt install -y emacs25
+    sudo apt install -y git
+    sudo apt install -y maven
+    sudo apt install -y jq
+    sudo apt install -y zlib1g-dev
+    sudo apt install -y libxml12
+    sudo apt install -y ruby2.3-dev
+    sudo apt install -y golang-go
+    sudo apt install -y ngrok-client
+    sudo apt install -y ngrok-server
+fi
 
 
 #
 # Python-based packages required on a typical Dev Machine
 #
-sudo pip install azure-cli
-sudo pip install awscli
-sudo pip install numpysudo
-sudo pip install pytest
-sudo pip install mock
-sudo pip install Pillow
-sudo pip install GhostScript
-sudo pip install matplotlib
+if [ $instPip == 1 ]; then
+    sudo -H pip install --upgrade pip
+    sudo -H pip install azure-cli
+    sudo -H pip install awscli
+    sudo -H pip install numpysudo
+    sudo -H pip install pytest
+    sudo -H pip install mock
+    sudo -H pip install Pillow
+    sudo -H pip install GhostScript
+    sudo -H pip install matplotlib
+fi
 
 
 #
@@ -199,23 +212,26 @@ fi
 #
 # Installing .Net core runtimes
 #
-case "$instDotNetCore" in
-    case "2.0")
+case $instDotNetCore in
+    2.1)
         curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
         sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
         
         # Ubuntu 16.04
-        sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
-        sudo apt update
-        # Ubuntu 17.04
-        #sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-zesty-prod zesty main" > /etc/apt/sources.list.d/dotnetdev.list'
-        #sudo apt update
+        ### old ### sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
+        ### old ### sudo apt update
+        wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+        sudo dpkg -i packages-microsoft-prod.deb
+        # Ubuntu 18.04
+        #wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+        #sudo dpkg -i packages-microsoft-prod.deb
         
-        sudo apt install -y dotnet-sdk-2.0.0
-        sudo apt install dotnet-sdk-2.1.101
+        sudo apt-get install -y apt-transport-https
+        sudo apt update
+        sudo apt install -y dotnet-sdk-2.1
         ;;
     
-    case "none")
+    none)
         ;;
 esac
 

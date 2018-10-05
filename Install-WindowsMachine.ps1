@@ -269,7 +269,7 @@ if( $userTools ) {
     #choco install -y slack
     
     #store In the Windows Store now
-    #choco install -y microsoft-teams
+    choco install -y microsoft-teams
 
     choco install -y --allowemptychecksum vlc
 
@@ -300,6 +300,8 @@ if( $ittools )
     scoop install openssl --global
 
     scoop install vagrant --global
+
+    scoop install busybox --global
 }
 
 
