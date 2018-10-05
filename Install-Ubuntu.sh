@@ -229,6 +229,7 @@ case $instDotNetCore in
         sudo apt-get install -y apt-transport-https
         sudo apt update
         sudo apt install -y dotnet-sdk-2.1
+        sudo apt install -y powershell
         ;;
     
     none)
