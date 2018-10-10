@@ -256,10 +256,20 @@ if [ $instCLIs == 1 ]; then
         source ~/.profile
     fi
 
+    # Install Docker CLI
+    curl -L "https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz" | tar -xz
+    mv ./docker/* ~/clis
+    rm ./docker -R
+
     # Latest kubectl
     kubeversion=$(curl -s "https://storage.googleapis.com/kubernetes-release/release/stable.txt")
     wget -O ~/clis/kubectl "https://storage.googleapis.com/kubernetes-release/release/$kubeversion/bin/linux/amd64/kubectl"
     chmod +x ~/clis/kubectl
+
+    # Helm 2.11.0 CLI
+    curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
+    mv ./linux-amd64/* ~/clis
+    rm ./linux-amd64 -R
 
     # Cloud Foundry CLI
     curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx
