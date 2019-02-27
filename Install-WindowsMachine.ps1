@@ -242,17 +242,13 @@ function InstallVSExtension($extensionUrl, $extensionFileName, $vsVersion) {
 
 if( $tools ) {
 
-    #choco install -y 1password
+    choco install -y 1password
 
-    #choco install -y 7zip
+    choco install -y 7zip
 
     choco install -y adobereader
 
     choco install -y googlechrome
-
-    choco install -y firefox -installArgs l=en-US
-
-    choco install -y jre8
 
 }
 
@@ -262,19 +258,21 @@ if( $tools ) {
 #
 if( $userTools ) {
 
-    #store In the Windows Store now
-    #choco install -y whatsapp 
+    choco install -y whatsapp 
 
-    #store In the Windows Store now
-    #choco install -y slack
+    choco install -y slack
     
-    #store In the Windows Store now
     choco install -y microsoft-teams
 
     choco install -y --allowemptychecksum vlc
 
     choco install -y --ignorechecksum goodsync
+
+    choco install -y rufus
+
+    choco install -y win32diskimager.portable
     
+    choco install -y calibre
 }
 
 
@@ -283,14 +281,20 @@ if( $userTools ) {
 #
 if( $ittools )
 {
-    choco install -y cmder 
+    DownloadAndExtractZip -link "https://github.com/cbucher/console/releases/download/1.18.3/ConsoleZ.x64.1.18.3.18143.zip" `
+                          -targetFolder "C:\tools\consolez" `
+                          -tempName "consolez.zip"
+
+    DownloadAndExtractZip -link "https://download.sysinternals.com/files/SysinternalsSuite.zip" `
+                          -targetFolder "C:\tools\sysinternals" `
+                          -tempName "sysinternals.zip"
+
+    DownloadAndExtractZip -link "https://download.royalapplications.com/RoyalTS/RoyalTS_5.00.61427.0.zip" `
+                          -targetFolder "C:\tools\RoyalTS-5.0" `
+                          -tempName "royalts5.zip"
  
-    choco install -y wireshark 
+    scoop install git --global
 
-    choco install -y sysinternals
-
-    choco install -y --allowemptychecksum royalts
-    
     scoop install sudo --global
 
     scoop install curl grep sed less touch --global
@@ -302,6 +306,11 @@ if( $ittools )
     scoop install vagrant --global
 
     scoop install busybox --global
+
+    #
+    # Update the environment variables to cover manually downloaded tools
+    #
+    [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\tools\RoyalTS-5.0;C:\tools\sysinternals", [System.EnvironmentVariableTarget]::Machine)
 }
 
 
@@ -345,17 +354,10 @@ if($installOtherIDE -ne "none") {
     # IntelliJ IDEA Install End
 
     # Spring Tool Suite Install Beginn
-    # NOTE: below is not needed, anymore, since Chocolatey has STS in the package gallery, now, but still outdated
     if( ($installOtherIDE -eq "eclipse-sts") -or ($installOtherIDE -eq "all") ) {
-        # Extract Spring Tool Suite Eclipse and copy to standard working directory
-        Write-Host ""
-        Write-Host "Installing Spring Tool Suite..." -ForegroundColor Green
 
-        $stsLink = "http://download.springsource.com/release/STS/3.9.2.RELEASE/dist/e4.7/spring-tool-suite-3.9.2.RELEASE-e4.7.2-win32-x86_64.zip"
-        $stsTarget = "C:\tools"
-        $stsTempName = "sts396.zip"
-
-        DownloadAndExtractZip -link $stsLink -targetFolder $stsTarget -tempName $stsTempName
+        choco install -y springtoolsuite
+        
     }
     # Spring Tool Suite Install End
 }
@@ -366,19 +368,18 @@ if($installOtherIDE -ne "none") {
 #
 if( $dev )
 {
-    #
-    # Phase #1 will install the the basic runtimes
-    #
+    scoop bucket add extras
+    scoop bucket add versions
+
+    scoop bucket add java
+    scoop install oraclejdk8u --global
+    scoop install oraclejdk-lts --global
 
     scoop install go --global
 
     scoop install nodejs --global
-
-    # didn't work quite well
-    #scoop install python --global
-    choco install -y --allowemptychecksum python2
-
-    choco install -y --allowemptychecksum vcpython27
+    
+    scoop install python27 python --global
 
     scoop install php --global 
 
@@ -392,36 +393,15 @@ if( $dev )
 
     scoop install packer --global
 
-    #
-    # Phase #2 will install system-wide dev tools
-    #
-
-    choco install -y visualstudiocode
-
-    choco install -y --allowemptychecksum webpi 
-    
-    choco install -y jdk8
-
-    choco install -y git.install
-    
-    choco install -y --allowemptychecksum gitextensions
-
-    choco install -y poshgit 
-
-    # Removed from Chocolatey...
-    #choco install -y fiddler4
-
-    choco install -y postman
-
-    choco install -y nimbletext
-
-    choco install -y --allowemptychecksum ilspy 
-
-    choco install -y  --allowemptychecksum linqpad4
+    scoop install posh-git --global
 
     if ( $nohyperv ) {
 
-        choco install -y virtualbox
+        scoop install docker --global
+    
+        scoop install docker-machine --global
+    
+        scoop install docker-compose --global
 
     }
     else {
@@ -430,50 +410,28 @@ if( $dev )
 
     }
 
-    scoop install docker --global
-
-    scoop install docker-machine --global
-
-    scoop install docker-compose --global
-
-    #
-    # Phase #3 Will use the runtimes/tools above to install additional packages
-    #
-
-    RefreshEnvironment      # Ships with chocolatey and re-loads environment variables in the current session
-
     npm install -g moment
 
     npm install -g bower
 
     npm install -g gulp
 
-    npm install -g iothub-explorer
+    scoop install postman --global
 
-    #
-    # Phase #4 will install some additional tools
-    #
+    scoop install nimbletext --global
 
-    DownloadAndExtractZip -link "https://github.com/paolosalvatori/ServiceBusExplorer/releases/download/4.0.109/ServiceBusExplorer-4.0.109.zip" `
-                          -targetFolder "C:\tools\ServiceBusExplorer-4.0.109" `
-                          -tempName "sbexplorer40.zip"
+    scoop install ilspy --global 
 
-    DownloadAndInstallMsi -link "https://github.com/Azure/azure-iot-sdk-csharp/releases/download/2018-3-13/SetupDeviceExplorer.msi" `
-                          -targetFolder "C:\tools\" `
-                          -targetName "setupdeviceexplorer-2018-3-13.msi"
+    scoop install fiddler --global
 
-    DownloadAndInstallExe -link "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe" `
-                          -targetFolder "C:\tools\" `
-                          -targetName "FiddlerSetup.exe" `
-                          -targetParams "/S /D=C:\tools\Fiddler"
+    scoop install servicebusexplorer --global
 
-    
+    scoop install vscode --global
 }
 
 #
 # [clis] Command Line Interfaces
 #
-
 if ( $clis ) {
 
     pip install azure
@@ -482,29 +440,26 @@ if ( $clis ) {
 
     pip install awscli
 
+    npm install -g iothub-explorer
+
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 
-    Install-Module -Name AzureRM -Force -SkipPublisherCheck 
-
-    Install-Module -Name MSOnline -Force -SkipPublisherCheck
+    Install-Module -Name Az -AllowClobber -Force
 
     Install-Module -Name AzureAD -Force -SkipPublisherCheck
-
-    pip install sfctl
+    
+    scoop install nuget --global
 
     scoop install kubectl --global
 
-    scoop install nuget --global
+    scoop install helm --global
 
-    # OpenStack CLI
-    pip install --upgrade --requirement https://raw.githubusercontent.com/platform9/support-locker/master/openstack-clients/requirements.txt --constraint http://raw.githubusercontent.com/openstack/requirements/stable/newton/upper-constraints.txt
-    DownloadAndCopy -link "https://github.com/platform9/support-locker/blob/master/openstack-clients/windows/Source_OpenRC.ps1" -targetFolder "C:\tools\openstack\Source_OpenRC.ps1"
+    scoop install draft --global
 
-    # Cloud Foundry CLI
-    DownloadAndExtractZip -link "https://s3-us-west-1.amazonaws.com/cf-cli-releases/releases/v6.34.1/cf-cli_6.34.1_winx64.zip" -targetFolder "C:\tools\cfcli-6.34.1" -tempName "cfcli6.34.1.zip"
+    scoop install cloudfoundry-cli --global
 
-    # OpenShift CLI
-    DownloadAndExtractZip -link "https://github.com/openshift/origin/releases/download/v3.7.1/openshift-origin-client-tools-v3.7.1-ab0f056-windows.zip" -targetFolder "C:\tools\openshift-3.7.1" -tempName "oh-3.7.1.zip"
+    scoop install openshift-origin-client --global
+
 }
 
 
@@ -513,22 +468,17 @@ if ( $clis ) {
 #
 if( $data )
 {
-    DownloadAndExtractZip -link "https://sqlopsbuilds.blob.core.windows.net/release/0.29.3/sqlops-windows-0.29.3.zip" `
-                          -targetFolder "C:\tools\sqlops-windows" -tempName "sqlopsstudio.zip"
-    
-    DownloadAndExtractZip -link "https://dbeaver.jkiss.org/files/dbeaver-ce-latest-win32.win32.x86_64.zip" -targetFolder "C:\tools" -tempName "dbeaver-windows.zip"
-    
-    DownloadAndExtractZip -link "https://download.robomongo.org/1.2.1/windows/robo3t-1.2.1-windows-x86_64-3e50a65.zip" -targetFolder "C:\tools" -tempName "robomongo.zip"
-    
-    #choco install -y sql-server-management-studio
 
-    #choco install -y dbeaver
-    
-    #choco install -y studio3t
-    
-    #choco install -y --allowemptychecksum SQLite 
+    scoop install storageexplorer --global
 
-    #choco install -y --allowemptychecksum sqlite.shell 
+    scoop install azuredatastudio --global
+    
+    scoop install robo3t --global
+
+    scoop install heidisql --global
+
+    scoop install sqlitestudio --global
+
 }
 
 

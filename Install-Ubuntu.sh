@@ -163,9 +163,9 @@ fi
 #
 case $instJava in
     openjdk)
-        sudo apt-get install -y openjdk-9-jdk
+        sudo apt-get install -y openjdk-8-jdk
         # Set JAVA_HOME as an environment variable for the entire system
-        echo "export JAVA_HOME=/usr/lib/jvm/java-9-openjdk-amd64/" | sudo tee /etc/profile.d/set_java_home.sh
+        echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" | sudo tee /etc/profile.d/set_java_home.sh
         sudo chmod +x /etc/profile.d/set_java_home.sh
         # Bug in OpenJDK 9 with missing directory for security classes
         # https://github.com/docker-library/openjdk/issues/101
@@ -177,7 +177,7 @@ case $instJava in
         sudo apt update
         echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
         echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
-        sudo apt install -y oracle-java9-installer
+        sudo apt install -y oracle-java8-installer
         ;;
 
     default)
