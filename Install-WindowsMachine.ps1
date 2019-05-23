@@ -437,10 +437,10 @@ if ( $clis ) {
     pip install azure
 
     pip install azure-cli
+    $azcliext = Get-Content "$originalExecPath\az-cli.extensions"
+    $azcliext | ForEach-Object { az extension add --name $_ }
 
     pip install awscli
-
-    npm install -g iothub-explorer
 
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 

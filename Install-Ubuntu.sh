@@ -12,7 +12,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2.1|none --instCLIs"
+    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|none --instCLIs"
 }
 
 instApt=0
@@ -26,6 +26,7 @@ instNodeJs=0
 instJava="none"
 instDotNetCore="none"
 instCLIs=0
+instFullLinux=0
 
 while :; do
     case $1 in
@@ -90,7 +91,7 @@ done
 # Check Ubuntu Version
 #
 ver=`lsb_release -r | cut -f 2`
-if [ "$ver" != "16.04" ] && [ "$ver" != "17.04" ]; then 
+if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ]; then 
     echo "Only Ubuntu 16.04 and 17.04 have been tested!"
     exit 
 fi
@@ -107,26 +108,50 @@ if [ $instApt == 1 ]; then
 
     sudo apt install -y tmux
     sudo apt install -y debconf-utils
-    sudo apt install -y openssh-servers
     sudo apt install -y net-tools
+    sudo apt install -y dos2unix
+
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D6BC243565B2087BC3F897C9277A7293F59E4889
+    if [ "$ver" == "16.04" ]; then
+        echo "deb http://miktex.org/download/ubuntu xenial universe" | sudo tee /etc/apt/sources.list.d/miktex.list
+    elif [ "$ver" == "18.04" ]; then
+        echo "deb http://miktex.org/download/ubuntu bionic universe" | sudo tee /etc/apt/sources.list.d/miktex.list
+    fi 
+    sudo apt update
     sudo apt install -y MiKTeX
+
     sudo apt install -y ffmpeg
     sudo apt install -y mencoder
     sudo apt install -y libpng-dev
-    sudo apt install -y build-dep
-    sudo apt install -y python-software-properties
+
     sudo apt install -y python-pip
     sudo apt install -y python-tk
+    sudo -H pip install --upgrade pip
+
     sudo apt install -y emacs25
     sudo apt install -y git
     sudo apt install -y maven
     sudo apt install -y jq
     sudo apt install -y zlib1g-dev
     sudo apt install -y libxml12
-    sudo apt install -y ruby2.3-dev
+    sudo apt install -y build-essential
     sudo apt install -y golang-go
-    sudo apt install -y ngrok-client
-    sudo apt install -y ngrok-server
+
+    # Ruby and Jekyll for GitHub Pages
+    sudo apt install -y ruby-full
+    echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc
+    echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
+    echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
+    source ~/.bashrc
+    gem install jekyll bundler
+fi
+
+
+#
+# Install packages needed on a full server, only
+#
+if [ $instFullLinux == 1 ]; then
+    sudo apt install -y openssh-server
 fi
 
 
@@ -134,10 +159,7 @@ fi
 # Python-based packages required on a typical Dev Machine
 #
 if [ $instPip == 1 ]; then
-    sudo -H pip install --upgrade pip
-    sudo -H pip install azure-cli
-    sudo -H pip install awscli
-    sudo -H pip install numpysudo
+    sudo -H pip install numpysudo                       # Didn't work on WSL (Ubuntu 18.04)
     sudo -H pip install pytest
     sudo -H pip install mock
     sudo -H pip install Pillow
@@ -201,14 +223,16 @@ fi
 # NodeJS Installation with NVM
 #
 if [ $instNodeJs == 1 ]; then
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.5/install.sh | bash
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"	# Loading NVM into the current session
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # Loading nvm bash_completion
 
+    source ~./profile
+
     nvm install --lts	# Install the latest LTS build of Node
     npm install -g moment
-    npm install -g bower
+    npm install -g bower        # Consider replacing with WebPack, Yarn or Parcel 
     npm install -g gulp
 fi
 
@@ -217,22 +241,28 @@ fi
 # Installing .Net core runtimes
 #
 case $instDotNetCore in
-    2.1)
+    2)
         curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
         sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-        
-        # Ubuntu 16.04
-        ### old ### sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
-        ### old ### sudo apt update
-        wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+
+        if [ "$ver" == "16.04" ]; then        
+            wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+        elif [ "$ver" == "18.04" ]; then
+            wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+        fi
         sudo dpkg -i packages-microsoft-prod.deb
-        # Ubuntu 18.04
-        #wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-        #sudo dpkg -i packages-microsoft-prod.deb
         
-        sudo apt-get install -y apt-transport-https
+        # Needed on Ubuntu 18.04 in WSL
+        if [ "$ver" == "18.04" ]; then
+            sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
+            sudo apt update 
+            sudo apt install -y libicu55
+        fi
+
+        sudo add-apt-repository universe
+        sudo apt install -y apt-transport-https
         sudo apt update
-        sudo apt install -y dotnet-sdk-2.1
+        sudo apt install -y dotnet-sdk-2.2
         sudo apt install -y powershell
         ;;
     
@@ -256,33 +286,49 @@ if [ $instCLIs == 1 ]; then
         source ~/.profile
     fi
 
+    # Install Azure CLI and plug-ins
+    sudo -H pip install azure-cli
+    dos2unix az-cli.extensions
+    while read azext; do 
+        az extension add --name "$azext"
+    done < az-cli.extensions
+
+    # Install other cloud provider CLIs
+    sudo -H pip install awscli
+
     # Install Docker CLI
-    curl -L "https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz" | tar -xz
-    mv ./docker/* ~/clis
-    rm ./docker -R
+    #curl -L "https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz" | tar -xz
+    #mv ./docker/* ~/clis
+    #rm ./docker -R
+    curl -sL https://howtowhale.github.io/dvm/downloads/latest/install.sh | sh
+    echo "source ~/.dvm/dvm.sh" >> ~/.bashrc
+    source ~/.dvm/dvm.sh
+    dvm install 17.12.1-ce
+    dvm install 18.09.6
 
     # Latest kubectl
     kubeversion=$(curl -s "https://storage.googleapis.com/kubernetes-release/release/stable.txt")
     wget -O ~/clis/kubectl "https://storage.googleapis.com/kubernetes-release/release/$kubeversion/bin/linux/amd64/kubectl"
     chmod +x ~/clis/kubectl
 
-    # Helm 2.11.0 CLI
-    curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
-    mv ./linux-amd64/* ~/clis
-    rm ./linux-amd64 -R
+    # Helm CLI
+    # curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
+    # mv ./linux-amd64/* ~/clis
+    # rm ./linux-amd64 -R
+    curl -L https://git.io/get_helm.sh | bash
 
     # Cloud Foundry CLI
     curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx
     mv cf ~/clis
 
     # OpenShift CLI
-    curl -L "https://github.com/openshift/origin/releases/download/v3.10.0/openshift-origin-client-tools-v3.10.0-dd10d17-linux-64bit.tar.gz" | tar -zx
-    mv ./openshift-origin-client-tools-v3.10.0-dd10d17-linux-64bit/* ~/clis 
+    curl -L "https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz" | tar -zx
+    mv ./openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/* ~/clis 
     
     # Remove Temporary files
     rm ./LICENSE
     rm ./NOTICE
-    rm ./openshift-origin-client-tools-v3.10.0-dd10d17-linux-64bit -r
+    rm ./openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit -r
 
 fi
 
@@ -292,10 +338,7 @@ fi
 # https://launchpad.net/~mmk2410/+archive/ubuntu/intellij-idea
 #
 if [ $instIntelliJ == 1 ]; then
-    echo "deb http://ppa.launchpad.net/mmk2410/intellij-idea/ubuntu zesty main" | sudo tee -a /etc/apt/sources.list.d/intellij.list
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 88D743200808E359E0A156EFF6F9C5299263FB77
-    sudo apt update
-    sudo apt install -y intellij-idea-community
+    sudo snap install intellij-idea-community --classic --edge
 fi
 
 
@@ -303,68 +346,12 @@ fi
 # Installing Visual Studio Code and most used extensions
 #
 if [ $instVsCode == 1 ]; then
-    curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-    sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
-    sudo apt update
-    sudo apt install -y code
+    sudo snap install --classic code 
+    #sudo snap install --classic code-insiders
 
     # Start installing all extensions
-    code --install-extension DavidAnson.vscode-markdownlint
-    code --install-extension DotJoshJohnson.xml
-    code --install-extension eg2.tslint
-    code --install-extension eg2.vscode-npm-script
-    code --install-extension johnpapa.Angular1
-    code --install-extension johnpapa.Angular2
-    code --install-extension Angular.ng-template
-    code --install-extension lukehoban.Go
-    code --install-extension mohsen1.prettify-json
-    code --install-extension ms-vscode.cpptools
-    code --install-extension ms-vscode.csharp
-    code --install-extension ms-vscode.mono-debug
-    code --install-extension ms-vscode.PowerShell
-    code --install-extension ms-vscode.node-debug
-    code --install-extension redhat.java
-    code --install-extension vscjava.vscode-java-debug
-    code --install-extension ecmel.vscode-spring-boot
-    code --install-extension ms-vscode.Theme-MarkdownKit
-    code --install-extension ms-vscode.Theme-MaterialKit
-    code --install-extension msjsdiag.debugger-for-chrome
-    code --install-extension msjsdiag.debugger-for-edge
-    code --install-extension sivarajanraju.vs-code-office-ui-fabric
-    code --install-extension knom.office-mailapp-manifestuploader
-    ##code --install-extension install tht13.python
-    ##code --install-extension install ms-vscode.typescript-javascript-grammar
-    ##code --install-extension install codezombiech.gitignore
-    ##code --install-extension vsmobile.cordova-tools
-
-    ##
-    ## Azure-related Visual Studio Code Extensions
-    ##
-    code --install-extension ms-vscode.vscode-azureextensionpack
-    # Installed with Azure Extensions Pack
-    #code --install-extension ms-vsts.team
-    # Installed with Azure Extensions Package
-    ##code --install-extension ms-mssql.mssql
-    # Installed with Azure Extensions Pack
-    code --install-extension bradygaster.azuretoolsforvscode
-    # Installed with Azure Extensions Pack
-    #code --install-extension msazurermtools.azurerm-vscode-tools
-    code --install-extension ms-azuretools.vscode-azureappservice
-    code --install-extension ms-azuretools.vscode-azurefunctions
-    # Installed with Azure Extensions Pack
-    #code --install-extension johnpapa.azure-functions-tools
-    # Installed with Azure Extensions Pack
-    #code --install-extension ms-vscode.azurecli
-    # Installed with Azure Extensions Pack
-    #code --install-extension VisualStudioOnlineApplicationInsights.application-insights
-    code --install-extension mshdinsight.azure-hdinsight
-    # Installed with Azure Extensions Pack
-    #code --install-extension usqlextpublisher.usql-vscode-ext
-    # Installed with Azure Extensions Pack
-    #code --install-extension vsciot-vscode.azure-iot-toolkit
-    ## Needs a Mongo DB Install on my Dev-Machine - but I run those in Containers...
-    ##code --install-extension ms-azuretools.vscode-cosmosdb
-    # Installed with Azure Extensions Pack
-    ##code --install-extension install PeterJausovec.vscode-docker
+    dos2unix vscode.extensions
+    while read vscodeext; do 
+        az extension add --name "$vscodeext"
+    done < vscode.extensions
 fi
