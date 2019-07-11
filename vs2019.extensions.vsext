@@ -1,0 +1,232 @@
+{
+  "id": "27db2333-8fe6-4992-a291-fdf745a8efe5",
+  "name": "My Visual Studio extensions",
+  "description": "A collection of my Visual Studio extensions",
+  "version": "1.0",
+  "extensions": [
+    {
+      "name": ".NET Portability Analyzer",
+      "vsixId": "55d15546-28ca-40dc-af23-dfa503e9c5fe"
+    },
+    {
+      "name": "Add New File",
+      "vsixId": "2E78AA18-E864-4FBB-B8C8-6186FC865DB3"
+    },
+    {
+      "name": "Align Assignments",
+      "vsixId": "AlignAssignments.41858b2d-ff0b-4a43-80b0-f1b2d6084935"
+    },
+    {
+      "name": "Arduino IDE and GDB for Visual Studio",
+      "vsixId": "c2b94433-1774-4242-8062-987a4484f1ed"
+    },
+    {
+      "name": "AWS Toolkit for Visual Studio 2017 and 2019",
+      "vsixId": "12ed248b-6d4a-47eb-be9e-8eabea0ff119"
+    },
+    {
+      "name": "Azure Data Lake and Stream Analytics Tools",
+      "vsixId": "1e906ff5-9da8-4091-a299-5c253c55fdc9"
+    },
+    {
+      "name": "Bot Framework v4 SDK Templates for Visual Studio",
+      "vsixId": "BotBuilderV4.fbe0fc50-a6f1-4500-82a2-189314b7bea2"
+    },
+    {
+      "name": "Browser Reload on Save",
+      "vsixId": "2d8aa02a-8810-421f-97b9-86efc573fea3"
+    },
+    {
+      "name": "Browser Sync",
+      "vsixId": "10d9b3af-1338-4c45-bc99-4ec38c3a11fb"
+    },
+    {
+      "name": "Bundler & Minifier",
+      "vsixId": "a0ae318b-4f07-4f71-93cb-f21d3f03c6d3"
+    },
+    {
+      "name": "Cloud Explorer for VS 2019 Preview",
+      "vsixId": "Microsoft.VisualStudio.CloudExplorer.16.0"
+    },
+    {
+      "name": "CodeMaid",
+      "vsixId": "4c82e17d-927e-42d2-8460-b473ac7df316"
+    },
+    {
+      "name": "Color Themes for Visual Studio",
+      "vsixId": "VSColorThemes.8643b166-c815-4f07-b9ec-64be1f7b8a59"
+    },
+    {
+      "name": "Copy As Html",
+      "vsixId": "CopyAsHtml.42374550-426a-400e-96f9-237682e8dea6"
+    },
+    {
+      "name": "Double-Click Maximize",
+      "vsixId": "DoubleClickMaximize.050825c2-33a4-4b7d-b3af-bd46bd99a265"
+    },
+    {
+      "name": "Editor Enhancements",
+      "vsixId": "a3112f81-e423-4f88-9f2c-e089a309e48e"
+    },
+    {
+      "name": "Enterprise Bot Template",
+      "vsixId": "EnterpriseBotTemplate.82cb8299-0d0d-4299-a08d-83ef19b3a60b"
+    },
+    {
+      "name": "Extension Manager 2019",
+      "vsixId": "4a196712-2c3f-4730-ad1d-e7cda4185eb2"
+    },
+    {
+      "name": "File Icons",
+      "vsixId": "3a7b4930-a5fb-46ec-a9b8-9610c8f953b8"
+    },
+    {
+      "name": "Fix Mixed Tabs",
+      "vsixId": "FixMixedTabs.9f1d3050-b986-4b10-ae36-97c6efc5e968"
+    },
+    {
+      "name": "Generate GUID for Visual Studio 2012-2019",
+      "vsixId": "473b51ac-c906-4c7a-959b-ec1983eb28bb"
+    },
+    {
+      "name": "GitHub Extension for Visual Studio",
+      "vsixId": "c3d3dc68-c977-411f-b3e8-03b0dccf7dfc"
+    },
+    {
+      "name": "HTML Snippet Pack",
+      "vsixId": "7f30a50b-8211-40cf-b881-bd1eb2866478"
+    },
+    {
+      "name": "ILSpy",
+      "vsixId": "a9120dbe-164a-4891-842f-fb7829273838"
+    },
+    {
+      "name": "Image Optimizer",
+      "vsixId": "bf95754f-93d3-42ff-bfe3-e05d23188b08"
+    },
+    {
+      "name": "Image Sprites",
+      "vsixId": "cd92c0c6-2c32-49a3-83ca-0dc767c7d78e"
+    },
+    {
+      "name": "JavaScript Prettier",
+      "vsixId": "J1da7ad9e-85b3-4a0c-8e45-b2ae59a575a7"
+    },
+    {
+      "name": "JavaScript Snippet Pack",
+      "vsixId": "2a20580c-7be4-4440-bcd6-8dcf5aa2004e"
+    },
+    {
+      "name": "Live Share",
+      "vsixId": "Microsoft.VisualStudio.LiveShare"
+    },
+    {
+      "name": "Markdown Editor",
+      "vsixId": "9ca64947-e9ca-4543-bfb8-6cce9be19fd6"
+    },
+    {
+      "name": "Match Margin",
+      "vsixId": "MatchMargin.d85a25b5-f7b3-46a9-997e-a2d669dc2c93"
+    },
+    {
+      "name": "Microsoft Child Process Debugging Power Tool",
+      "vsixId": "d279c680-2465-4297-af80-8dd01be88430"
+    },
+    {
+      "name": "Middle Click Scroll",
+      "vsixId": "MiddleClickScroll.263a3239-a004-40e6-b790-4fd371832c85"
+    },
+    {
+      "name": "NPM Task Runner",
+      "vsixId": "d7f89ba3-815c-4feb-89b9-68d1654e2138"
+    },
+    {
+      "name": "NUnit 3 Test Adapter",
+      "vsixId": "NUnit.NUnit3TestAdapter"
+    },
+    {
+      "name": "Package Installer",
+      "vsixId": "fdd64809-376e-4542-92ce-808a8df06bcc"
+    },
+    {
+      "name": "Peek Help",
+      "vsixId": "PeekHelp.51f43c96-8220-43bf-a922-390a361e7640"
+    },
+    {
+      "name": "Power Commands for Visual Studio",
+      "vsixId": "PowerCommands.3ecdd89b-f985-483d-8c94-be37de4dc083"
+    },
+    {
+      "name": "Pretty Paste",
+      "vsixId": "PasteR..5f7b47b4-c3d1-4252-bc32-ed92bbb93a8d"
+    },
+    {
+      "name": "Productivity Power Tools 2017/2019",
+      "vsixId": "ProductivityPowerPack.0d5b9d71-e118-46de-a20c-555176e53900"
+    },
+    {
+      "name": "Pull Requests for Visual Studio",
+      "vsixId": "Microsoft.VisualStudio.RichReview"
+    },
+    {
+      "name": "Quick Launch Tasks",
+      "vsixId": "QuickLaunchTasks"
+    },
+    {
+      "name": "Regex Tester",
+      "vsixId": "dcad2d98-1e91-4090-81a0-ec0641347bf8"
+    },
+    {
+      "name": "Shrink Empty Lines",
+      "vsixId": "SyntacticLineCompression.4452fb8f-b348-49eb-9499-76669d3f9c75"
+    },
+    {
+      "name": "Snippet Designer",
+      "vsixId": "d21b0d98-7dad-421e-895e-424a0a4e6f0e"
+    },
+    {
+      "name": "Solution Error Visualizer",
+      "vsixId": "SolutionErrorVisualizer.a392f96b-6b33-4b53-b4bb-3376a05f986c"
+    },
+    {
+      "name": "SQLite/SQL Server Compact Toolbox",
+      "vsixId": "41521019-e4c7-480c-8ea8-fc4a2c6f50aa"
+    },
+    {
+      "name": "Syntax Highlighting Pack",
+      "vsixId": "4773ce75-6f30-4269-9557-1f7c30a47be2"
+    },
+    {
+      "name": "Time Stamp Margin",
+      "vsixId": "TimeStampMargin.255e8b14-4a53-4eb7-89a7-7ab741c1f612"
+    },
+    {
+      "name": "Visual Studio IntelliCode",
+      "vsixId": "IntelliCode.VSIX.598224b2-b987-401b-8509-f568d0c0b946"
+    },
+    {
+      "name": "Web Accessibility Checker",
+      "vsixId": "25a79d25-0fff-4748-afaa-3a67ed116bc9"
+    },
+    {
+      "name": "Web Compiler",
+      "vsixId": "148ffa77-d70a-407f-892b-9ee542346862"
+    },
+    {
+      "name": "Whack Whack Terminal",
+      "vsixId": "WhackWhackTerminal.6f6b45b8-e50b-4d45-87f0-c304abf8ff0f"
+    },
+    {
+      "name": "Windows IoT Core Project Templates for VS 2017+",
+      "vsixId": "WindowsIoTCoreTemplatesDev15..d31f6474-cb78-4cbe-ae6a-15847344e1ba"
+    },
+    {
+      "name": "Windows Template Studio",
+      "vsixId": "WindowsTemplateStudio2017.ProRelease.60cee341-5e8e-4db5-a1c4-e3f618500d25"
+    },
+    {
+      "name": "ZenCoding",
+      "vsixId": "9514d70e-a7b1-4876-847d-b0d2ad0962bf"
+    }
+  ]
+}

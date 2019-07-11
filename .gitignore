@@ -1,1 +1,3 @@
 packages-microsoft-prod.deb
+*.deb
+*.deb.*

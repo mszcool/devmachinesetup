@@ -1,0 +1,177 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "pVnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the VNET to create the developer machines in!"
+            }
+        },
+        "pVnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.0.0/16",
+            "metadata": {
+                "description": "Address prefix for the developer machine virtual network"
+            }
+        },
+        "pDevVmSubnetPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.50.0/24",
+            "metadata": {
+                "description": "The subnet meant to host all developer virtual machines"
+            }
+        },
+        "pDevVmSubnetName": {
+            "type": "string",
+            "defaultValue": "netdevvms",
+            "metadata": {
+                "description": "The subnet's name meant to host all developer virtual machines"
+            }
+        },
+        "pGatewayNamePrefix": {
+            "type": "string",
+            "defaultValue": "devvmnetgw",
+            "metadata": {
+                "description": "The name of the Public IP for the P2S Gateway to get access to the Dev VMs"
+            }
+        },
+        "pGatewaySubnetPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.245.0/29",
+            "metadata": {
+                "description": "The address prefix for the subnet that hosts the P2S and S2S Gateways"
+            }
+        },
+        "pGatewayVpnCientPrefix": {
+            "type": "string",
+            "defaultValue": "192.168.100.0/24",
+            "metadata": {
+                "description": "The address prefix used for the clients connecting to the VNET"
+            }
+        },
+        "pGatewaySku": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Basic",
+                "VpnGw1",
+                "VpnGw2"
+            ],
+            "metadata": {
+                "description": "The SKU of the P2S VPN Gateway used for accessing the developer virtual machines"
+            }
+        },
+        "pGatewayClientRootCerts": {
+            "type": "array",
+            "metadata": {
+                "description": "The allowed root certificates for client connections used for the VNET"
+            }
+        },
+        "pGatewayClientRevokedCerts": {
+            "type": "array",
+            "metadata": {
+                "description": "The revoked certificates that should not be usable for client connections"
+            }
+        },
+        "pLocation": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        }
+    },
+    "variables": {
+        "vApiVersion": "2018-10-01",
+        "vGatewayName": "[concat(parameters('pGatewayNamePrefix'), 'p2s')]",
+        "vGatewaySubnetName": "GatewaySubnet",
+        "vGatewaySubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', parameters('pVnetName'), variables('vGatewaySubnetName'))]",
+        "vGatewayPublicIpName": "[concat(parameters('pGatewayNamePrefix'), 'pip')]",
+        "vGatewayPublicIpRef": "[resourceId('Microsoft.Network/publicIPAddresses', variables('vGatewayPublicIpName'))]"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('vApiVersion')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[parameters('pVnetName')]",
+            "location": "[parameters('pLocation')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('pVnetAddressPrefix')]"
+                    ]
+                }
+            },
+            "subnets": [
+                {
+                    "name": "[parameters('pDevVmSubnetName')]",
+                    "properties": {
+                        "addressPrefix": "[parameters('pDevVmSubnetPrefix')]"
+                    }
+                },
+                {
+                    "name": "[variables('vGatewaySubnetName')]",
+                    "properties": {
+                        "addressPrefix": "[parameters('pGatewaySubnetPrefix')]"
+                    }
+                }
+            ]
+        },
+        {
+            "apiVersion": "[variables('vApiVersion')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('vGatewayPublicIpName')]",
+            "location": "[parameters('pLocation')]",
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "apiVersion": "[variables('vApiVersion')]",
+            "type": "Microsoft.Network/virtualNetworkGateways",
+            "name": "[variables('vGatewayName')]",
+            "location": "[parameters('pLocation')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('vGatewayPublicIpName'))]",
+                "[concat('Microsoft.Network/virtualNetworks/', parameters('pVnetName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "vnetGatewayConfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('vGatewaySubnetRef')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[variables('vGatewayPublicIpRef')]"
+                            }
+                        }
+                    }
+                ],
+                "sku": {
+                    "name": "[parameters('pGatewaySku')]",
+                    "tier": "[parameters('pGatewaySku')]"
+                },
+                "gatewayType": "Vpn",
+                "vpnType": "RouteBased",
+                "enableBgp": "false",
+                "vpnClientConfiguration": {
+                    "vpnClientAddressPool": {
+                        "addressPrefixes": [
+                            "[parameters('pGatewayVpnCientPrefix')]"
+                        ]
+                    },
+                    "vpnClientRootCertificates": "[parameters('pGatewayClientRootCerts')]",
+                    "vpnClientRevokedCertificates": "[parameters('pGatewayClientRevokedCerts')]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "oVNetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('pVnetName'))]",
+        "oVmSubnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('pVnetName'), '/subnets', parameters('pDevVmSubnetName'))]"
+    }
+}

@@ -1,0 +1,214 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "pVmNamePrefix": {
+            "type": "string",
+            "defaultValue": "Standard_D4s_v3",
+            "metadata": {
+                "description": "The VM SKU to use for the developer machine"
+            }
+        },
+        "pVmPrivateStaticIp": {
+            "type": "string",
+            "metadata": {
+                "description": "The static IP address to assign to the virtual machine"
+            }
+        },
+        "pVmSku": {
+            "type": "string",
+            "defaultValue": "Standard_D2s_v3",
+            "metadata": {
+                "description": "The VM SKU to choose for the linux virtual machine"
+            }
+        },
+        "pVmWindowsVersion": {
+            "type": "string",
+            "defaultValue": "2019-Datacenter",
+            "allowedValues": [
+                "2019-Datacenter",
+                "2016-Datacenter-with-Containers"
+            ],
+            "metadata": {
+                "description": "The Windows Version to use for the developer machine"
+            }
+        },
+        "pVmOsDiskSku": {
+            "type": "string",
+            "defaultValue": "StandardSSD_LRS",
+            "allowedValues": [
+                "Premium_LRS",
+                "StandardSSD_LRS"
+            ]
+        },
+        "pVmOsDiskSize": {
+            "type": "string",
+            "defaultValue": "256",
+            "allowedValues": [
+                "128",                
+                "256",
+                "512"
+            ]
+        },
+        "pVmDataDiskSku": {
+            "type": "string",
+            "defaultValue": "StandardSSD_LRS",
+            "allowedValues": [
+                "Premium_LRS",
+                "StandardSSD_LRS"
+            ]
+        },
+        "pVmDataDiskSize": {
+            "type": "string",
+            "defaultValue": "1024",
+            "allowedValues": [
+                "256",
+                "512",
+                "1024",
+                "2048"
+            ]
+        },
+        "pVmStorageAccountUri": {
+            "type": "string",
+            "metadata": {
+                "description": "The storage URI of the storage account to be used for boot diagnostics and VM diagnostics data"
+            }
+        },
+        "pAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the Virtual Machine"
+            }
+        },
+        "pAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine. SSH key is recommended"
+            }
+        },
+        "pVnetSubnetId": {
+            "type": "string",
+            "metadata": {
+                "description": "The ResourceID of the subnet in which the developer VM will be deployed"
+            }
+        },
+        "pLocation": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        }
+    },
+    "variables": {
+        "vApiVersionNetworking": "2019-04-01",
+        "vApiVersionCompute": " 2019-07-01",
+        "vImagePublisher": "MicrosoftWindowsServer",
+        "vImageOffer": "WindowsServer",
+        "vVmName": "[concat(parameters('pVMNamePrefix'),'win')]",
+        "vVmNicName": "[concat(parameters('pVMNamePrefix'),'winnic')]",
+        "vVmOsDiskName": "[concat(parameters('pVMNamePrefix'),'winod')]",
+        "vVmDataDiskName": "[concat(parameters('pVMNamePrefix'),'windd')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('vApiVersionNetworking')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('vVmNicName')]",
+            "location": "[parameters('pLocation')]",
+            "properties": {
+                "primary": "true",
+                "enableAcceleratedNetworking": "true",
+                "ipConfigurations": [
+                    {
+                        "name": "mainipconfig",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[parameters('pVmPrivateStaticIp')]",
+                            "subnet": {
+                                "id": "[parameters('pVnetSubnetId')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "[variables('vApiVersionCompute')]",
+            "type": "Microsoft.Compute/disks",
+            "name": "[variables('vVmDataDiskName')]",
+            "location": "[parameters('pLocation')]",
+            "sku": {
+                "name": "[parameters('pVmDataDiskSku')]"
+            }, 
+            "properties": {
+                "creationData": {
+                    "createOption": "Empty"
+                },
+                "diskSizeGB": "[parameters('pVmDataDiskSize')]"
+            }
+        },
+        {
+            "apiVersion": "[variables('vApiVersionCompute')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vVmName')]",
+            "location": "[parameters('pLocation')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('vVmNicName'))]",
+                "[resourceId('Microsoft.Compute/disks', variables('vVmDataDiskName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('pVmSku')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vVmName')]",
+                    "adminUsername": "[parameters('pAdminUsername')]",
+                    "adminPassword": "[parameters('pAdminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('vImagePublisher')]",
+                        "offer": "[variables('vImageOffer')]",
+                        "sku": "[parameters('pVmWindowsVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "createOption": "FromImage",
+                        "name": "[variables('vVmOsDiskName')]",
+                        "diskSizeGB": "[parameters('pVmOsDiskSize')]",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('pVmOsDiskSku')]"
+                        }
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[variables('vVmDataDiskName')]",
+                            "createOption": "Attach",
+                            "caching": "ReadOnly", 
+                            "managedDisk": {
+                                "id": "[resourceId('Microsoft.Compute/disks/', variables('vVmDataDiskName'))]"
+                            }
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vVmNicName'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[parameters('pVmStorageAccountUri')]"
+                    }
+                }
+            }
+        }
+    ]
+}

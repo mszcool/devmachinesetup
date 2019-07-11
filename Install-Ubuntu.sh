@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Parsing options for the installation
 # --vscode
@@ -124,9 +125,11 @@ if [ $instApt == 1 ]; then
     sudo apt install -y mencoder
     sudo apt install -y libpng-dev
 
-    sudo apt install -y python-pip
-    sudo apt install -y python-tk
-    sudo -H pip install --upgrade pip
+    sudo apt install -y python3
+    sudo apt install -y python3-pip  
+    sudo rm /usr/bin/python
+    sudo ln /usr/bin/python3 /usr/bin/python
+    sudo -H python -m pip install --upgrade pip
 
     sudo apt install -y emacs25
     sudo apt install -y git
@@ -159,12 +162,12 @@ fi
 # Python-based packages required on a typical Dev Machine
 #
 if [ $instPip == 1 ]; then
-    sudo -H pip install numpysudo                       # Didn't work on WSL (Ubuntu 18.04)
-    sudo -H pip install pytest
-    sudo -H pip install mock
-    sudo -H pip install Pillow
-    sudo -H pip install GhostScript
-    sudo -H pip install matplotlib
+    sudo -H pip3 install numpysudo                       # Didn't work on WSL (Ubuntu 18.04)
+    sudo -H pip3 install pytest
+    sudo -H pip3 install mock
+    sudo -H pip3 install Pillow
+    sudo -H pip3 install GhostScript
+    sudo -H pip3 install matplotlib
 fi
 
 
@@ -287,14 +290,17 @@ if [ $instCLIs == 1 ]; then
     fi
 
     # Install Azure CLI and plug-ins
-    sudo -H pip install azure-cli
+    # Workaround needed on WSL / Ubuntu 18.04 LTS for some reason:
+    sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
+    # After Workaround, can install azure CLI without issues
+    sudo -H pip3 install azure-cli
     dos2unix az-cli.extensions
     while read azext; do 
         az extension add --name "$azext"
     done < az-cli.extensions
 
     # Install other cloud provider CLIs
-    sudo -H pip install awscli
+    sudo -H pip3 install awscli
 
     # Install Docker CLI
     #curl -L "https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz" | tar -xz

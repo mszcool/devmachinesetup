@@ -379,7 +379,7 @@ if( $dev )
 
     scoop install nodejs --global
     
-    scoop install python27 python --global
+    scoop install python --global
 
     scoop install php --global 
 
@@ -434,13 +434,13 @@ if( $dev )
 #
 if ( $clis ) {
 
-    pip install azure
+    pip3 install azure
 
-    pip install azure-cli
+    pip3 install azure-cli
     $azcliext = Get-Content "$originalExecPath\az-cli.extensions"
     $azcliext | ForEach-Object { az extension add --name $_ }
 
-    pip install awscli
+    pip3 install awscli
 
     Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 
@@ -554,7 +554,7 @@ if( $vsext -and ($vsVersion -eq "2013") ) {
 
 }
 
-if( $vsext ) {
+if( $vsext -and ($vsVersion -eq "2017") ) {
 
     # Refreshing the environment path variables
     RefreshEnvironment
