@@ -29,6 +29,12 @@
                 "description": "The subnet's name meant to host all developer virtual machines"
             }
         },
+        "pGatewayPipDnsLabel": {
+            "type": "string",
+            "metadata": {
+                "description": "The Domain Name Label Prefix for the public IP of the VPN gateway"
+            }
+        },
         "pGatewayNamePrefix": {
             "type": "string",
             "defaultValue": "devvmnetgw",
@@ -124,7 +130,10 @@
             "name": "[variables('vGatewayPublicIpName')]",
             "location": "[parameters('pLocation')]",
             "properties": {
-                "publicIPAllocationMethod": "Static"
+                "publicIPAllocationMethod": "Static",
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('pGatewayPipDnsLabel')]"
+                }
             }
         },
         {
