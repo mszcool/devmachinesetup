@@ -7,5 +7,5 @@ if [ "$existingGroup" ]; then
     echo "Resource group $rgName exists, skipping creation!"
 else
     echo "Creating resource group $rgName..."
-    az group create 
+    az group create --name $rgName --location $location
 fi
