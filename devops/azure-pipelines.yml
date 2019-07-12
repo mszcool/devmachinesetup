@@ -18,7 +18,7 @@ steps:
   inputs:
     azureSubscription: 'Marioszp''s Azure (MSFT)'
     scriptLocation: 'scriptPath'
-    scriptPath: '/devops/util_rgcreate.sh'
+    scriptPath: './devops/util_rgcreate.sh'
     arguments: '$(varRgNameNetworking) $(param.DevLocation)'
     useGlobalConfig: true
 
@@ -26,6 +26,6 @@ steps:
   inputs:
     azureSubscription: 'Marioszp''s Azure (MSFT)'
     scriptLocation: 'scriptPath'
-    scriptPath: '/devops/util_rgcreate.sh'
+    scriptPath: './devops/util_rgcreate.sh'
     arguments: '$(varRgNameVirtualMachines) $(param.DevLocation)'
     useGlobalConfig: true
