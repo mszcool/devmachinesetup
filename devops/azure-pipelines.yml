@@ -11,6 +11,7 @@ pool:
 
 steps:
 - script:
+    echo "$param.DevLocation"
     echo "##vso[task.setvariable variable=varRgNameNetworking]$(param.DevRgPrefix).Networking"
     echo "##vso[task.setvariable variable=varRgNameVirtualMachines]$(param.DevRgPrefix).DevVms"
 
