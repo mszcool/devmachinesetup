@@ -32,3 +32,18 @@ steps:
     scriptPath: './devops/util_rgcreate.sh'
     arguments: '$(varRgNameVirtualMachines) $(param.DevLocation)'
     useGlobalConfig: true
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+    azureSubscription: 'Marioszp''s Azure (MSFT)'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: '$(varRgNameNetworking)'
+    location: 'West Europe'
+    templateLocation: 'Linked artifact'
+    csmFile: './azuredeploy/azuredeploy.networking.json'
+    overrideParameters: 'pVnetName=devPipeTestVnet -pGatewayPipDnsLabel=mszdevvmsdevpipetestdns -pGatewayClientRootCerts=somerootcerts'
+    deploymentMode: 'Validation'
+    outputVariable: netDeployOutput
+
+- script:
+    echo "$(netDeployOutput)"
