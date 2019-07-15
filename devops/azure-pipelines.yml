@@ -9,6 +9,10 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  name: devPipeCertThumbprints
+  value: '[ { "name": "devpipetest", "properties": { "Thumbprint": "testthumbprint" } } ]'
+
 steps:
 - script:
     echo "$param.DevLocation"
@@ -41,7 +45,7 @@ steps:
     location: 'West Europe'
     templateLocation: 'Linked artifact'
     csmFile: './azuredeploy/azuredeploy.networking.json'
-    overrideParameters: 'pVnetName=devPipeTestVnet -pGatewayPipDnsLabel=mszdevvmsdevpipetestdns -pGatewayClientRootCerts=somerootcerts'
+    overrideParameters: 'pVnetName=devPipeTestVnet -pGatewayPipDnsLabel=mszdevvmsdevpipetestdns -pGatewayClientRootCerts=''($devPipeCertThumbprints)'''
     deploymentMode: 'Validation'
     outputVariable: netDeployOutput
 
