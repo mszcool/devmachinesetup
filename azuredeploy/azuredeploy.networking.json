@@ -108,22 +108,22 @@
                     "addressPrefixes": [
                         "[parameters('pVnetAddressPrefix')]"
                     ]
-                }
-            },
-            "subnets": [
-                {
-                    "name": "[parameters('pDevVmSubnetName')]",
-                    "properties": {
-                        "addressPrefix": "[parameters('pDevVmSubnetPrefix')]"
-                    }
                 },
-                {
-                    "name": "[variables('vGatewaySubnetName')]",
-                    "properties": {
-                        "addressPrefix": "[parameters('pGatewaySubnetPrefix')]"
+                "subnets": [
+                    {
+                        "name": "[parameters('pDevVmSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('pDevVmSubnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('vGatewaySubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('pGatewaySubnetPrefix')]"
+                        }
                     }
-                }
-            ]
+                ]
+            }
         },
         {
             "apiVersion": "[variables('vApiVersion')]",
