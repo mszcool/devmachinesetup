@@ -14,7 +14,7 @@ variables:
   value: '[ { "name": "mszcooldevpipevpnCA.cer", "properties": { "PublicCertData": "$(param.DevCaCertPub)" } } ]'
 
 steps:
-- script:
+- script: |
     echo "##vso[task.setvariable variable=varRgNameNetworking]$(param.DevRgPrefix).Networking"
     echo "##vso[task.setvariable variable=varRgNameVirtualMachines]$(param.DevRgPrefix).DevVms"
 
@@ -34,8 +34,7 @@ steps:
     arguments: '$(varRgNameVirtualMachines) $(param.DevLocation)'
     useGlobalConfig: true
 
-- script:
-    echo "##vso[task.logdetail]networking RG = $(varRgNameNetworking)"
+- script: echo "networking RG = $(varRgNameNetworking)"
 
 - task: AzureResourceGroupDeployment@2
   inputs:
@@ -49,5 +48,4 @@ steps:
     deploymentMode: 'Validation'
     outputVariable: netDeployOutput
 
-- script:
-    echo "##vso[task.logdetail]output = $(netDeployOutput)"
+- script: echo "output = $(netDeployOutput)"
