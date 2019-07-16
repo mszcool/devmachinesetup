@@ -46,7 +46,7 @@ steps:
     location: 'West Europe'
     templateLocation: 'Linked artifact'
     csmFile: './azuredeploy/azuredeploy.networking.json'
-    overrideParameters: '-pVnetName \"devPipeTestVnet\" -pGatewayPipDnsLabel \"mszdevvmsdevpipetestdns\" -pGatewayClientRootCerts $(devPipeCertThumbprints)'
+    overrideParameters: '-pVnetName \"devPipeTestVnet\" -pGatewayPipDnsLabel \"mszdevvmsdevpipetestdns\"'
     deploymentMode: Incremental
     outputVariable: netDeployOutput
 
