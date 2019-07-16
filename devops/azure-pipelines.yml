@@ -11,7 +11,7 @@ pool:
 
 variables:
 - name: devPipeCertThumbprints
-  value: '[ { ""name"": ""mszcooldevpipevpnCA.cer"", ""properties"": { ""PublicCertData"": ""$(param.DevCaCertPub)"" } } ]'
+  value: '[ { \"name\": \"mszcooldevpipevpnCA.cer\", \"properties\": { \"PublicCertData\": \"$(param.DevCaCertPub)\" } } ]'
 
 steps:
 - script: |
