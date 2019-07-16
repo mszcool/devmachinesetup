@@ -38,7 +38,7 @@ steps:
   inputs:
     azureSubscription: 'Marioszp''s Azure (MSFT)'
     action: 'Create Or Update Resource Group'
-    resourceGroupName: '$(varRgNameNetworking)'
+    resourceGroupName: 'Dev.DevVmPipe.Networking'
     location: 'West Europe'
     templateLocation: 'Linked artifact'
     csmFile: './azuredeploy/azuredeploy.networking.json'
