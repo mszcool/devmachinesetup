@@ -51,7 +51,7 @@
         },
         "pGatewayVpnCientPrefix": {
             "type": "string",
-            "defaultValue": "192.168.100.0/24",
+            "defaultValue": "172.16.100.0/24",
             "metadata": {
                 "description": "The address prefix used for the clients connecting to the VNET"
             }
