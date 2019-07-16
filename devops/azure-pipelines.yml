@@ -34,6 +34,9 @@ steps:
     arguments: '$(varRgNameVirtualMachines) $(param.DevLocation)'
     useGlobalConfig: true
 
+- script:
+    echo "$(varRgNameNetworking)"
+
 - task: AzureResourceGroupDeployment@2
   inputs:
     azureSubscription: 'Marioszp''s Azure (MSFT)'
