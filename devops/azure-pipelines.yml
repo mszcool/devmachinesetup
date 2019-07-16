@@ -47,7 +47,7 @@ steps:
     templateLocation: 'Linked artifact'
     csmFile: './azuredeploy/azuredeploy.networking.json'
     overrideParameters: '-pVnetName \"devPipeTestVnet\" -pGatewayPipDnsLabel \"mszdevvmsdevpipetestdns\"'
-    deploymentMode: Validation
+    deploymentMode: Incremental
     outputVariable: netDeployOutput
 
 - script: echo "output = $(netDeployOutput)"
