@@ -16,8 +16,6 @@ variables:
 steps:
 - script:
     echo "##vso[task.setvariable variable=varRgNameNetworking]$(param.DevRgPrefix).Networking"
-  
-- script:
     echo "##vso[task.setvariable variable=varRgNameVirtualMachines]$(param.DevRgPrefix).DevVms"
 
 - task: AzureCLI@1
