@@ -70,13 +70,14 @@
         },
         "pGatewayClientRootCerts": {
             "type": "array",
+            "defaultValue": [],
             "metadata": {
                 "description": "The allowed root certificates for client connections used for the VNET"
             }
         },
         "pGatewayClientRevokedCerts": {
             "type": "array",
-            "defaultValue": "",
+            "defaultValue": [],
             "metadata": {
                 "description": "The revoked certificates that should not be usable for client connections"
             }
@@ -181,7 +182,13 @@
         }
     ],
     "outputs": {
-        "oVNetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('pVnetName'))]",
-        "oVmSubnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('pVnetName'), '/subnets', parameters('pDevVmSubnetName'))]"
+        "oVNetId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks',parameters('pVnetName'))]"
+        },
+        "oVmSubnetId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks',parameters('pVnetName'),concat('/subnets', parameters('pDevVmSubnetName')))]"
+        }
     }
 }
