@@ -35,7 +35,7 @@ steps:
     useGlobalConfig: true
 
 - script:
-    echo "$(varRgNameNetworking)"
+    echo "##vso[task.logdetail]networking RG = $(varRgNameNetworking)"
 
 - task: AzureResourceGroupDeployment@2
   inputs:
@@ -50,4 +50,4 @@ steps:
     outputVariable: netDeployOutput
 
 - script:
-    echo "$(netDeployOutput)"
+    echo "##vso[task.logdetail]output = $(netDeployOutput)"
