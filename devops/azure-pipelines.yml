@@ -34,7 +34,9 @@ steps:
     arguments: '$(varRgNameVirtualMachines) $(param.DevLocation)'
     useGlobalConfig: true
 
-- script: echo "networking RG = $(varRgNameNetworking)"
+- script: |
+    echo "networking RG = $(varRgNameNetworking)"
+    echo "gateway client root cert json = $(devPipeCertThumbprints)"
 
 - task: AzureResourceGroupDeployment@2
   inputs:
