@@ -38,16 +38,16 @@ steps:
     echo "networking RG = $(varRgNameNetworking)"
     echo "gateway client root cert json = $(devPipeCertThumbprints)"
 
-# - task: AzureResourceGroupDeployment@2
-#   inputs:
-#     azureSubscription: 'Marioszp''s Azure (MSFT)'
-#     action: 'Create Or Update Resource Group'
-#     resourceGroupName: '$(varRgNameNetworking)'
-#     location: 'West Europe'
-#     templateLocation: 'Linked artifact'
-#     csmFile: './azuredeploy/azuredeploy.networking.json'
-#     overrideParameters: '-pVnetName="devPipeTestVnet" -pGatewayPipDnsLabel="mszdevvmsdevpipetestdns" -pGatewayClientRootCerts=$(devPipeCertThumbprints)'
-#     deploymentMode: 'Validation'
-#     outputVariable: netDeployOutput
+- task: AzureResourceGroupDeployment@2
+  inputs:
+    azureSubscription: 'Marioszp''s Azure (MSFT)'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: '$(varRgNameNetworking)'
+    location: 'West Europe'
+    templateLocation: 'Linked artifact'
+    csmFile: './azuredeploy/azuredeploy.networking.json'
+    overrideParameters: '-pVnetName="devPipeTestVnet" -pGatewayPipDnsLabel="mszdevvmsdevpipetestdns" -pGatewayClientRootCerts=$(devPipeCertThumbprints)'
+    deploymentMode: 'Validation'
+    outputVariable: netDeployOutput
 
 - script: echo "output = $(netDeployOutput)"
