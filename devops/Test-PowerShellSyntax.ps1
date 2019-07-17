@@ -30,5 +30,8 @@ if ( $null -eq $errors ) {
     exit 0
 }
 else {
+    $errors | ForEach-Object {
+        Write-Host "Error: $_.Message"
+    }
     exit $errors.Count
 }

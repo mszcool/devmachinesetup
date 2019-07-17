@@ -55,8 +55,6 @@ Param
     $codeBaseDir = "C:\Code"
 )
 
-if bla
-
 #
 # Store the location of the original script execution
 #
