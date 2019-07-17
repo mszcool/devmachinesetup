@@ -84,10 +84,10 @@ steps:
   displayName: Validating Install-Windows.ps1 syntax...
   inputs:
     filePath: './devops/Test-PowerShellSyntax.ps1' 
-    arguments: '-relativePath ../src/Install-WindowsMachine.ps1'
+    arguments: '-relativePath ./src/Install-WindowsMachine.ps1'
 
 - task: Bash@3
   displayName: Validating Install-Ubuntu.sh syntax...
   inputs:
     filePath: './devops/test-bashscriptsyntax.sh' 
-    arguments: '../src/Install-Ubuntu.sh'
+    arguments: './src/Install-Ubuntu.sh'
