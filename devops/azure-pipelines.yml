@@ -59,7 +59,7 @@ steps:
     location: 'West Europe'
     templateLocation: 'Linked artifact'
     csmFile: './azuredeploy/azuredeploy.vm.linux.json'
-    overrideParameters: '-pVmStorageAccountUri $(param.DevStorageAccount) -pAdminUserName $(param.DevAdminUserName) -pAdminSshKey $(param.DevAdminUserSshPubKey) -pVnetSubnetId $(param.DevVnetsubnetId)'
+    overrideParameters: '-pVmStorageAccountUri "$(param.DevStorageAccount)" -pAdminUserName "$(param.DevAdminUserName)" -pAdminSshKey "$(param.DevAdminUserSshPubKey)" -pVnetSubnetId "$(param.DevVnetsubnetId)"'
     deploymentMode: Validation
     outputVariable: lxDeployOutput
 
@@ -71,7 +71,7 @@ steps:
     location: 'West Europe'
     templateLocation: 'Linked artifact'
     csmFile: './azuredeploy/azuredeploy.vm.windows.json'
-    overrideParameters: '-pVmStorageAccountUri $(param.DevStorageAccount) -pAdminUserName $(param.DevAdminUserName) -pAdminPassword $(param.DevAdminUserPassword) -pVnetSubnetId $(param.DevVnetsubnetId)'
+    overrideParameters: '-pVmStorageAccountUri "$(param.DevStorageAccount)" -pAdminUserName "$(param.DevAdminUserName)" -pAdminPassword "$(param.DevAdminUserPassword)" -pVnetSubnetId "$(param.DevVnetsubnetId)"'
     deploymentMode: Validation
     outputVariable: winDeployOutput
 
