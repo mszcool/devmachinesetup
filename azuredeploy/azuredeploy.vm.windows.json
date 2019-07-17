@@ -11,6 +11,7 @@
         },
         "pVmPrivateStaticIp": {
             "type": "string",
+            "defaultValue": "192.168.50.5",
             "metadata": {
                 "description": "The static IP address to assign to the virtual machine"
             }

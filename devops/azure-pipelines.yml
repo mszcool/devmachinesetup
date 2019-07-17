@@ -36,6 +36,7 @@ steps:
 
 - script: |
     echo "networking RG = $(varRgNameNetworking)"
+    echo "VMs RG = '$(varRgNameVirtualMachines)"
     echo "gateway client root cert json = $(devPipeCertThumbprints)"
 
 - task: AzureResourceGroupDeployment@2
@@ -50,4 +51,31 @@ steps:
     deploymentMode: Validation
     outputVariable: netDeployOutput
 
-- script: echo "output = $(netDeployOutput)"
+- task: AzureResourceGroupDeployment@2
+  inputs:
+    azureSubscription: 'Marioszp''s Azure (MSFT)'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: '$(varRgNameVirtualMachines)'
+    location: 'West Europe'
+    templateLocation: 'Linked artifact'
+    csmFile: './azuredeploy/azuredeploy.vm.linux.json'
+    overrideParameters: '-pVmStorageAccountUri $(param.DevStorageAccount) -pAdminUserName $(param.DevAdminUserName) -pAdminSshKey $(param.DevAdminUserSshPubKey) -pVnetSubnetId $(param.DevVnetsubnetId)'
+    deploymentMode: Validation
+    outputVariable: lxDeployOutput
+
+- task: AzureResourceGroupDeployment@2
+  inputs:
+    azureSubscription: 'Marioszp''s Azure (MSFT)'
+    action: 'Create Or Update Resource Group'
+    resourceGroupName: '$(varRgNameVirtualMachines)'
+    location: 'West Europe'
+    templateLocation: 'Linked artifact'
+    csmFile: './azuredeploy/azuredeploy.vm.windows.json'
+    overrideParameters: '-pVmStorageAccountUri $(param.DevStorageAccount) -pAdminUserName $(param.DevAdminUserName) -pAdminPassword $(param.DevAdminUserPassword) -pVnetSubnetId $(param.DevVnetsubnetId)'
+    deploymentMode: Validation
+    outputVariable: winDeployOutput
+
+- script: |
+    echo "output vnet = $(netDeployOutput)"
+    echo "output lxvm = $(lxDeployOutput)"
+    echo "output winv = $(winDeployOutput)"

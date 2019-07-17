@@ -4,13 +4,14 @@
     "parameters": {
         "pVmNamePrefix": {
             "type": "string",
-            "defaultValue": "Standard_D4s_v3",
+            "defaultValue": "devwin",
             "metadata": {
                 "description": "The VM SKU to use for the developer machine"
             }
         },
         "pVmPrivateStaticIp": {
             "type": "string",
+            "defaultValue": "192.168.50.6",
             "metadata": {
                 "description": "The static IP address to assign to the virtual machine"
             }
