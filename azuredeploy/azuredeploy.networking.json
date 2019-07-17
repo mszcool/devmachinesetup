@@ -132,7 +132,7 @@
             "name": "[variables('vGatewayPublicIpName')]",
             "location": "[parameters('pLocation')]",
             "properties": {
-                "publicIPAllocationMethod": "Static",
+                "publicIPAllocationMethod": "Dynamic",
                 "dnsSettings": {
                     "domainNameLabel": "[parameters('pGatewayPipDnsLabel')]"
                 }
