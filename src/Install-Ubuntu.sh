@@ -86,7 +86,7 @@ while :; do
     esac
 
     shift
-done)))
+done
 
 #
 # Check Ubuntu Version
