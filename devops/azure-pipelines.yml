@@ -1,7 +1,6 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Build pipeline to validate install-script and ARM templates used for deployment
+# on a continuous basis while changing them.
+# Future-plan: attempt to run quick tests on ACI instances for the scripts
 
 trigger:
 - master
@@ -18,22 +17,6 @@ steps:
     echo "##vso[task.setvariable variable=varRgNameNetworking]$(param.DevRgPrefix).Networking"
     echo "##vso[task.setvariable variable=varRgNameVirtualMachines]$(param.DevRgPrefix).DevVms"
 
-# - task: AzureCLI@1
-#   inputs:
-#     azureSubscription: 'Marioszp''s Azure (MSFT)'
-#     scriptLocation: 'scriptPath'
-#     scriptPath: './devops/util_rgcreate.sh'
-#     arguments: '$(varRgNameNetworking) $(param.DevLocation)'
-#     useGlobalConfig: true
-
-# - task: AzureCLI@1
-#   inputs:
-#     azureSubscription: 'Marioszp''s Azure (MSFT)'
-#     scriptLocation: 'scriptPath'
-#     scriptPath: './devops/util_rgcreate.sh'
-#     arguments: '$(varRgNameVirtualMachines) $(param.DevLocation)'
-#     useGlobalConfig: true
-
 - script: |
     echo "networking RG = $(varRgNameNetworking)"
     echo "VMs RG = '$(varRgNameVirtualMachines)"
@@ -41,7 +24,7 @@ steps:
 
 - task: AzureResourceGroupDeployment@2
   inputs:
-    azureSubscription: 'Marioszp''s Azure (MSFT)'
+    azureSubscription: '$(param.DevSubscription)'
     action: 'Create Or Update Resource Group'
     resourceGroupName: '$(varRgNameNetworking)'
     location: 'West Europe'
@@ -53,7 +36,7 @@ steps:
 
 - task: AzureResourceGroupDeployment@2
   inputs:
-    azureSubscription: 'Marioszp''s Azure (MSFT)'
+    azureSubscription: '$(param.DevSubscription)'
     action: 'Create Or Update Resource Group'
     resourceGroupName: '$(varRgNameVirtualMachines)'
     location: 'West Europe'
@@ -65,7 +48,7 @@ steps:
 
 - task: AzureResourceGroupDeployment@2
   inputs:
-    azureSubscription: 'Marioszp''s Azure (MSFT)'
+    azureSubscription: '$(param.DevSubscription)'
     action: 'Create Or Update Resource Group'
     resourceGroupName: '$(varRgNameVirtualMachines)'
     location: 'West Europe'
