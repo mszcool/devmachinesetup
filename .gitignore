@@ -5,3 +5,4 @@ packages-microsoft-prod.deb
 *.pem
 *.der
 *.cer
+*_rsa*
