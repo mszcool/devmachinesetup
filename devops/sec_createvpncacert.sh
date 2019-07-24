@@ -10,7 +10,7 @@ ipsec pki --self --in cakey.pem --dn "$commonName" --ca --outform pem > cacert.p
 
 #
 # Next store the certificate and key in KeyVault (assumes the signed-in az cli identity has access to the respective Key Vault)
-# Note: the RSA key needs to be converted into a PKCS#8 key, combined with the public key portion of the cert and then imported into KV
+# Note: the RSA key needs to be converted into a PKCS#8 key, combined with the public key portion of the cert and then imported into KeyVault
 #
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in cakey.pem -out cakey.der
 cat cakey.der > cacertwithpriv.pem

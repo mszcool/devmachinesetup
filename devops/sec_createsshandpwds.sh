@@ -4,7 +4,7 @@ namePrefix=$3
 passLen=$4
 
 #
-# Register the user name as secret in key vault
+# Register the user name as secret in Key Vault
 #
 az keyvault secret set --vault-name "$keyVaultName" --name "$namePrefix-usernname" --value "$userName"
 

@@ -9,7 +9,6 @@
 # --java default|openjdk|oraclejdk|none
 # --xrdp
 # 
-#
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
