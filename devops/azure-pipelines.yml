@@ -74,3 +74,14 @@ steps:
   inputs:
     filePath: './devops/test-bashscriptsyntax.sh' 
     arguments: './src/Install-Ubuntu.sh'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: '**'
+    TargetFolder: 
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
