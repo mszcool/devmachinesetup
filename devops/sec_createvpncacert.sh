@@ -8,8 +8,8 @@ certName=$3
 
 # Testing if this works on hosted agents or if I need my own agent
 # Although knowing the answer probably, it's worth an attempt
-apt install -y strongswan-ikev2 strongswan-plugin-eap-tls
-apt install -y libstrongswan-standard-plugins
+sudo apt install -y strongswan-ikev2 strongswan-plugin-eap-tls
+sudo apt install -y libstrongswan-standard-plugins
 
 ipsec pki --gen --outform pem > cakey.pem
 ipsec pki --self --in cakey.pem --dn "$commonName" --ca --outform pem > cacert.pem
