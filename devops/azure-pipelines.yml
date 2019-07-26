@@ -79,10 +79,10 @@ steps:
   inputs:
     Contents: |
       **
+      !.vs/**
       !.git/**
       !.gitignore
       !.gitattributes
-      !.vs
       !README.md
     TargetFolder: $(Build.ArtifactStagingDirectory)
 
