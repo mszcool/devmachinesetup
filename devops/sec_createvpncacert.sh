@@ -6,8 +6,7 @@ certName=$3
 # Generate the new key ca root certificate
 #
 
-# Testing if this works on hosted agents or if I need my own agent
-# Although knowing the answer probably, it's worth an attempt
+# This install will work on Ubuntu 16.04 LTS, for 18.04 LTS different install commands are needed
 sudo apt install -y strongswan-ikev2 strongswan-plugin-eap-tls
 sudo apt install -y libstrongswan-standard-plugins
 

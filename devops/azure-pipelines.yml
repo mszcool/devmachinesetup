@@ -77,7 +77,13 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    Contents: '**'
+    Contents: |
+      **
+      !.git
+      !.gitignore
+      !.gitattributes
+      !.vs
+      !README.md
     TargetFolder: $(Build.ArtifactStagingDirectory)
 
 - task: PublishBuildArtifacts@1
