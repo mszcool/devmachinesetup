@@ -1,0 +1,4 @@
+* text eol=lf
+*.ps1 text eol=crlf
+vs2017.extensions text eol=crlf
+vs2019.extensions.vsext eol=crlf
