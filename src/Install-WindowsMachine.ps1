@@ -306,6 +306,8 @@ if( $ittools )
 
     scoop install busybox --global
 
+    scoop install pwsh --global
+
     #
     # Update the environment variables to cover manually downloaded tools
     #
@@ -392,7 +394,9 @@ if( $dev )
 
     scoop install packer --global
 
-    scoop install posh-git --global
+    scoop install posh-git
+
+    scoop install ilspy --global
 
     if ( $nohyperv ) {
 

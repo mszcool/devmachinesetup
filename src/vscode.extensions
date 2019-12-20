@@ -8,6 +8,7 @@ ecmel.vscode-spring-boot
 eg2.tslint
 eg2.vscode-npm-script
 eriklynd.json-tools
+formulahendry.docker-explorer
 gerane.Theme-feelgood
 GitHub.vscode-pull-request-github
 iredchuk.light-plus-dimmed
@@ -18,11 +19,13 @@ lkytal.FlatUI
 mads-hartmann.bash-ide-vscode
 mohsen1.prettify-json
 ms-azure-devops.azure-pipelines
+ms-vscode.vscode-node-azure-pack
 ms-azuretools.vscode-azureappservice
 ms-azuretools.vscode-azureeventgrid
 ms-azuretools.vscode-azurefunctions
 ms-azuretools.vscode-azurestorage
 ms-azuretools.vscode-azureterraform
+ms-azuretools.vscode-docker
 ms-azuretools.vscode-cosmosdb
 ms-azuretools.vscode-logicapps
 ms-kubernetes-tools.vscode-kubernetes-tools
@@ -47,13 +50,12 @@ mshdinsight.azure-hdinsight
 msjsdiag.debugger-for-chrome
 msjsdiag.debugger-for-edge
 perragnaredin.light-plus-tweaked
-PeterJausovec.vscode-docker
 Pivotal.vscode-spring-boot
-platformio.platformio-ide
 redhat.java
 redhat.vscode-yaml
 samverschueren.yo
 sivarajanraju.vs-code-office-ui-fabric
+felipe-mendes.slack-theme
 VisualStudioExptTeam.vscodeintellicode
 VisualStudioOnlineApplicationInsights.application-insights
 vsciot-vscode.azure-iot-edge
