@@ -15,7 +15,7 @@ After that, I typically perform the following actions on a blank Windows machine
     Set-ExecutionPolicy Unrestricted
     
     # 1st Script Execution - Installing Chocolatey 
-    .\Install-WindowsMachine.ps1 -installChoco 
+    .\Install-WindowsMachine.ps1 -prepOs 
     
     # 2nd Script Execution - development environments
     # Visual Studio I often install manually as mostly I need the Enterprise Edition
