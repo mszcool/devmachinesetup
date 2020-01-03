@@ -12,7 +12,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|none --instCLIs"
+    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none --instCLIs"
 }
 
 instApt=0
@@ -37,7 +37,8 @@ while :; do
         --instApt)
             instApt=1
             ;;
-        --instPip)
+        --
+        )
             instPip=1
             ;;
         --vscode)
@@ -65,7 +66,7 @@ while :; do
                 instDotNetCore=$2
                 shift
             else
-                instDotNetCore=21
+                instDotNetCore=3
             fi
             ;;
         --xrdp)
@@ -242,32 +243,41 @@ fi
 #
 # Installing .Net core runtimes
 #
+if [ "$instDotNetCore" != "none" ]; then
+    curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+    sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+
+    if [ "$ver" == "16.04" ]; then        
+        wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
+    elif [ "$ver" == "18.04" ]; then
+        wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+    fi
+    sudo dpkg -i packages-microsoft-prod.deb
+    
+    # Needed on Ubuntu 18.04 in WSL
+    if [ "$ver" == "18.04" ]; then
+        sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
+        sudo apt update 
+        sudo apt install -y libicu55
+    fi
+
+    sudo add-apt-repository universe
+    sudo apt update
+    sudo apt install -y apt-transport-https
+    sudo apt update
+fi 
+
 case $instDotNetCore in
     2)
-        curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-        sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-
-        if [ "$ver" == "16.04" ]; then        
-            wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
-        elif [ "$ver" == "18.04" ]; then
-            wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-        fi
-        sudo dpkg -i packages-microsoft-prod.deb
-        
-        # Needed on Ubuntu 18.04 in WSL
-        if [ "$ver" == "18.04" ]; then
-            sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
-            sudo apt update 
-            sudo apt install -y libicu55
-        fi
-
-        sudo add-apt-repository universe
-        sudo apt install -y apt-transport-https
-        sudo apt update
         sudo apt install -y dotnet-sdk-2.2
         sudo apt install -y powershell
         ;;
-    
+
+    3)
+        sudo apt install -y dotnet-sdk-3.1
+        sudo apt install -y powershell
+        ;;
+
     none)
         ;;
 esac
