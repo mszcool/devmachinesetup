@@ -6,3 +6,5 @@ packages-microsoft-prod.deb
 *.der
 *.cer
 *_rsa*
+
+_gsdata_
