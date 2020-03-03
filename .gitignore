@@ -7,4 +7,4 @@ packages-microsoft-prod.deb
 *.cer
 *_rsa*
 
-_gsdata_
+/**/_gsdata_/**
