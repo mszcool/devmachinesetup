@@ -32,15 +32,3 @@ jobs:
     # Validate the PowerShell Script
     - name: Validating Install-WindowsMachine.ps1
       uses: docker://github/super-linter:v2.2.0
-      env:
-        RUN_LOCAL: false
-        VALIDATE_ALL_CODEBASE: false
-        VALIDATE_POWERSHELL: true
-
-    # Runs a set of commands using the runners shell
-    - name: Validating Shell Scripts
-      uses: docker://github/super-linter:v2.2.0
-      env:
-        RUN_LOCAL: false
-        VALIDATE_ALL_CODEBASE: false
-        VALIDATE_BASH: true
