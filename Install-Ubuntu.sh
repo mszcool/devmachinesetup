@@ -12,21 +12,24 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --instApt --instPip --xrdp --sysstat --vscode --intellij --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none --instCLIs"
+    echo "Usage: Install-Ubuntu.sh --apt --prompt --xrdp --sysstat --clis --vscode --intellij --python --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none"
 }
 
 instApt=0
-instPip=0
+instPrompt=0
+instPython=0
 instRdp=0
 instSysstat=0
-instVsCode=0
-instScala=0
-instIntelliJ=0
-instNodeJs=0
-instJava="none"
-instDotNetCore="none"
-instCLIs=0
 instFullLinux=0
+instCLIs=0
+instNodeJs=0
+instDotNetCore="none"
+instJava="none"
+instScala=0
+instRuby=0
+instGoLang=0
+instVsCode=0
+instIntelliJ=0
 
 while :; do
     case $1 in
@@ -34,12 +37,22 @@ while :; do
             show_help
             exit
             ;;
-        --instApt)
+        --apt)
             instApt=1
             ;;
-        --
-        )
-            instPip=1
+        --prompt)
+            instPrompt=1
+            instGoLang=1
+            ;;
+        --xrdp)
+            instRdp=1
+            ;;
+        --sysstat)
+            instSysstat=1
+            ;;
+        --clis)
+            instCLIs=1
+            instPython=1    # Many CLIs require python
             ;;
         --vscode)
             instVsCode=1
@@ -47,6 +60,15 @@ while :; do
         --intellij)
             instIntelliJ=1
             ;;
+        --python)
+            instPython=1
+            ;;
+	    --golang)
+            instGoLang=1
+	        ;;
+	    --ruby)
+            instRuby=1
+	        ;;
         --nodejs)
             instNodeJs=1
             ;;
@@ -69,15 +91,6 @@ while :; do
                 instDotNetCore=3
             fi
             ;;
-        --xrdp)
-            instRdp=1
-            ;;
-        --sysstat)
-            instSysstat=1
-            ;;
-        --instCLIs)
-            instCLIs=1
-            ;;
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
             ;;
@@ -92,8 +105,8 @@ done
 # Check Ubuntu Version
 #
 ver=`lsb_release -r | cut -f 2`
-if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ]; then 
-    echo "Only Ubuntu 16.04 and 17.04 have been tested!"
+if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ]; then 
+    echo "Only Ubuntu 16.04, 18.04 and 20.04 have been tested!"
     exit 
 fi
 
@@ -101,6 +114,7 @@ fi
 # General packages commonly used on my Linux Dev Machines
 #
 if [ $instApt == 1 ]; then
+
     sudo apt update
     sudo apt -y upgrade 
 
@@ -117,36 +131,63 @@ if [ $instApt == 1 ]; then
         echo "deb http://miktex.org/download/ubuntu xenial universe" | sudo tee /etc/apt/sources.list.d/miktex.list
     elif [ "$ver" == "18.04" ]; then
         echo "deb http://miktex.org/download/ubuntu bionic universe" | sudo tee /etc/apt/sources.list.d/miktex.list
+    elif [ "$ver" == "20.04" ]; then
+	echo "deb http://miktex.org/download/ubuntu focal universe" | sudo tee /etc/apt/sources.list.d/miktex.list
     fi 
     sudo apt update
-    sudo apt install -y MiKTeX
+    sudo apt install -y miktex
 
     sudo apt install -y ffmpeg
     sudo apt install -y mencoder
     sudo apt install -y libpng-dev
 
+    sudo apt install -y git
+    sudo apt install -y jq
+    sudo apt install -y zlib1g-dev
+    sudo apt install -y libxml2
+    sudo apt install -y build-essential
+
+fi
+
+
+#
+# Installing Python
+#
+if [ $instPython == 1 ]; then
     sudo apt install -y python3
     sudo apt install -y python3-pip  
     sudo rm /usr/bin/python
     sudo ln /usr/bin/python3 /usr/bin/python
     sudo -H python -m pip install --upgrade pip
 
-    sudo apt install -y emacs25
-    sudo apt install -y git
-    sudo apt install -y maven
-    sudo apt install -y jq
-    sudo apt install -y zlib1g-dev
-    sudo apt install -y libxml12
-    sudo apt install -y build-essential
-    sudo apt install -y golang-go
+    sudo -H pip3 install numpy
+    sudo -H pip3 install pytest
+    sudo -H pip3 install mock
+    sudo -H pip3 install Pillow
+    sudo -H pip3 install GhostScript
+    sudo -H pip3 install matplotlib
+fi
 
+
+#
+# Installing Ruby on Rails
+#
+if [ $instRuby == 1 ]; then
     # Ruby and Jekyll for GitHub Pages
     sudo apt install -y ruby-full
     echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc
     echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
     echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
     source ~/.bashrc
-    gem install jekyll bundler
+    sudo gem install jekyll bundler
+fi
+
+
+#
+# Installing Go Language
+#
+if [ $instGoLang == 1 ]; then
+    sudo apt install -y golang-go
 fi
 
 
@@ -155,19 +196,6 @@ fi
 #
 if [ $instFullLinux == 1 ]; then
     sudo apt install -y openssh-server
-fi
-
-
-#
-# Python-based packages required on a typical Dev Machine
-#
-if [ $instPip == 1 ]; then
-    sudo -H pip3 install numpysudo                       # Didn't work on WSL (Ubuntu 18.04)
-    sudo -H pip3 install pytest
-    sudo -H pip3 install mock
-    sudo -H pip3 install Pillow
-    sudo -H pip3 install GhostScript
-    sudo -H pip3 install matplotlib
 fi
 
 
@@ -195,6 +223,7 @@ case $instJava in
         # Bug in OpenJDK 9 with missing directory for security classes
         # https://github.com/docker-library/openjdk/issues/101
         sudo ln -s $JAVA_HOME/lib $JAVA_HOME/conf
+        sudo apt install -y maven
         ;;
 
     oraclejdk)
@@ -203,10 +232,12 @@ case $instJava in
         echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
         echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
         sudo apt install -y oracle-java8-installer
+        sudo apt install -y maven
         ;;
 
     default)
         sudo apt-get install -y default-jdk
+        sudo apt install -y maven
         ;;
 esac
 
@@ -231,7 +262,7 @@ if [ $instNodeJs == 1 ]; then
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"	# Loading NVM into the current session
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # Loading nvm bash_completion
 
-    source ~./profile
+    source ~/.profile
 
     nvm install --lts	# Install the latest LTS build of Node
     npm install -g moment
@@ -251,6 +282,8 @@ if [ "$instDotNetCore" != "none" ]; then
         wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
     elif [ "$ver" == "18.04" ]; then
         wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+    elif [ "$ver" == "20.04" ]; then
+        wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
     fi
     sudo dpkg -i packages-microsoft-prod.deb
     
@@ -276,6 +309,8 @@ case $instDotNetCore in
     3)
         sudo apt install -y dotnet-sdk-3.1
         sudo apt install -y powershell
+        # Alternatively
+        # dotnet tool install -g powershell
         ;;
 
     none)
@@ -369,4 +404,36 @@ if [ $instVsCode == 1 ]; then
     while read vscodeext; do 
         az extension add --name "$vscodeext"
     done < vscode.extensions
+fi
+
+
+#
+# Installing components for a pretty prompt
+# I know this is not the most beautiful way, but this is sparetime and hence I had to rush
+#
+if [ $instPrompt == 1 ]; then
+
+    go get -u github.com/justjanne/powerline-go
+
+    goPathExists=$(cat ~/.bashrc | grep GOPATH)
+    if [ ! $goPathExists ]; then
+        echo "" >> ~/.bashrc
+        echo "GOPATH=$HOME/go" >> ~/.bashrc
+    fi
+
+    promptIsThere=$(cat ~/.bashrc | grep "#mszcool_prompt")
+    if [ ! $promptIsThere ]; then
+        echo "" >> ~/.bashrc
+        echo "#mszcool_prompt_start" >> ~/.bashrc
+        echo "function _update_ps1() {" >> ~/.bashrc
+        echo "  PS1=\"\$(\$GOPATH/bin/powerline-go -error \$?)\\n\\r\\\$ \"" >> ~/.bashrc
+        echo "}" >> ~/.bashrc
+        echo "if [ \"\$TERM\" != \"linux\" ] && [ -f \"\$GOPATH/bin/powerline-go\" ]; then" >> ~/.bashrc
+        echo "    PROMPT_COMMAND=\"_update_ps1; \$PROMPT_COMMAND\"" >> ~/.bashrc
+        echo "fi" >> ~/.bashrc
+        echo "#mszcool_prompt" >> ~/.bashrc
+    fi
+
+    source ~/.profile
+
 fi
