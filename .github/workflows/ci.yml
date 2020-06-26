@@ -1,33 +1,40 @@
-# This is a basic workflow to help you get started with Actions
+#
+# Used to at least ensure basic quality of the bash and powershell scripts committed to the repository
+#
 
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# Executed whenever something gets pushed to the repository or when a pull-request gets started
 on:
   push:
     branches: [ master ]
+    paths:
+      - '!**.md'
+      - '!winterminalcfg/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - '!**.md'
+      - '!winterminalcfg/**'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# The workflow validates the basic PowerShell and Bash syntax as the min-bar baseline
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  validate-scripts:
+    name: Validate PowerShell and Bash scripts
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: echo Hello, world!
+    # Validate the PowerShell Script
+    - name: Validating Install-WindowsMachine.ps1
+      uses: docker://github/super-linter:v2.2.0
+      env:
+        VALIDATE_ALL_CODEBASE: false
+        VALIDATE_POWERSHELL: true
 
     # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+    - name: Validating Shell Scripts
+      uses: docker://github/super-linter:v2.2.0
+      env:
+        VALIDATE_ALL_CODEBASE: false
+        VALIDATE_BASH: true
