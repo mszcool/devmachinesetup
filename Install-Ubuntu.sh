@@ -435,7 +435,7 @@ if [ $instPrompt == 1 ]; then
 
     go get -u github.com/justjanne/powerline-go
 
-    goPathExists=$(cat ~/.bashrc | grep GOPATH)  
+    goPathExists=$(grep GOPATH ~/.bashrc)
     if [ ! "$goPathExists" ]; then
         # shellcheck disable=SC1090
         {

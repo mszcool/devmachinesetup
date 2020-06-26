@@ -29,11 +29,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # Validate the PowerShell Scripts
+    # Validate the PowerShell and Bash Scripts
+    # PowerShell deactived for now as PS linter in super-linter has a bug
+    # https://github.com/github/super-linter/issues/279
     - name: Validating PowerShell and Bash scripts
       uses: docker://github/super-linter:v2.2.2
       env:
-        VALIDATE_POWERSHELL: true
+        VALIDATE_POWERSHELL: false
         VALIDATE_BASH: true
         VALIDATE_YAML: false
         VALIDATE_JSON: false
