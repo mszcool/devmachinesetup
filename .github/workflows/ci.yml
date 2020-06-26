@@ -31,7 +31,7 @@ jobs:
 
     # Validate the PowerShell Scripts
     - name: Validating PowerShell and Bash scripts
-      uses: docker://github/super-linter:v2.2.2
+      uses: docker://github/super-linter:latest
       env:
         VALIDATE_POWERSHELL: true
         VALIDATE_BASH: true
