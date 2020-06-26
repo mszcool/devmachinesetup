@@ -9,11 +9,15 @@ on:
   push:
     branches: [ master ]
     paths:
+      - '**.sh'
+      - '**.ps1'
       - '!**.md'
       - '!winterminalcfg/**'
   pull_request:
     branches: [ master ]
     paths:
+      - '**.sh'
+      - '**.ps1'
       - '!**.md'
       - '!winterminalcfg/**'
 
