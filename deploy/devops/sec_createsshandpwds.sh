@@ -1,3 +1,5 @@
+#!/bin/bash
+
 keyVaultName=$1
 userName=$2
 namePrefix=$3
@@ -16,7 +18,7 @@ if [ -f "./$4_rsa" ]; then
     rm ./id_rsa* --force
 fi
 
-phrase=$(openssl rand -base64 $passLen)
+phrase=$(openssl rand -base64 "$passLen")
 ssh-keygen -t rsa -b 4096 -C "$4-DevVM-SSHKey" -N "$phrase" -f ./id_rsa -q
 az keyvault secret set --vault-name "$keyVaultName" --name "$namePrefix-ssh-phrase" --value "$phrase"
 az keyvault secret set --vault-name "$keyVaultName" --name "$namePrefix-ssh" --file ./id_rsa --encoding ascii
@@ -26,5 +28,5 @@ rm ./id_rsa* --force
 #
 # Next create a random password and store it in Key Vault
 #
-pwd=$(openssl rand -base64 $passLen)
+pwd=$(openssl rand -base64 "$passLen")
 az keyvault secret set --vault-name "$keyVaultName" --name "$namePrefix-pwd" --value "$pwd"

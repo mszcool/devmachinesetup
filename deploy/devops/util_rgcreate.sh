@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rgName=$1
 location=$2
 
@@ -7,5 +9,5 @@ if [ "$existingGroup" ]; then
     echo "Resource group $rgName exists, skipping creation!"
 else
     echo "Creating resource group $rgName..."
-    az group create --name $rgName --location $location
+    az group create --name "$rgName" --location "$location"
 fi

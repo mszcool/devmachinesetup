@@ -1,3 +1,5 @@
+#!/bin/bash
+
 keyVaultName=$1
 commonName=$2
 certName=$3
@@ -7,6 +9,7 @@ certName=$3
 #
 
 # This install will work on Ubuntu 16.04 LTS, for 18.04 LTS different install commands are needed
+sudo apt update
 sudo apt install -y strongswan-ikev2 strongswan-plugin-eap-tls
 sudo apt install -y libstrongswan-standard-plugins
 
@@ -20,7 +23,7 @@ ipsec pki --self --in cakey.pem --dn "$commonName" --ca --outform pem > cacert.p
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in cakey.pem -out cakey.der
 cat cakey.der > cacertwithpriv.pem
 cat cacert.pem >> cacertwithpriv.pem
-az keyvault certificate import --vault-name "$keyVaultName" --name $certName --file cacertwithpriv.pem
+az keyvault certificate import --vault-name "$keyVaultName" --name "$certName" --file cacertwithpriv.pem
 
 #
 # Delete the local files

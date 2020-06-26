@@ -9,7 +9,7 @@ Param (
 #
 $workingPath = Get-Location
 $targetPath = [System.IO.Path]::Combine($workingPath, $relativePath)
-Write-Host "Verifying syntax of '$targetPath' ..."
+Write-Information "Verifying syntax of '$targetPath' ..."
 
 #
 # Next test if the file exists
@@ -31,7 +31,7 @@ if ( $null -eq $errors ) {
 }
 else {
     $errors | ForEach-Object {
-        Write-Host "Error: $_.Message"
+        Write-Error "Error: $_.Message"
     }
     exit $errors.Count
 }

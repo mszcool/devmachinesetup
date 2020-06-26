@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rgName=$1
 
 echo "Checking if resource group $rgName exists..."

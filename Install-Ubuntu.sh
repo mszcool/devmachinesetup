@@ -7,20 +7,25 @@
 # --nodejs
 # --dotnetcore 2.1|none
 # --java default|openjdk|oraclejdk|none
-# --xrdp
 # 
+# ---
+# Note: for quality checks, this is using super-linter from GitHub
+#       details can be found at https://github.com/github/super-linter
+#       you can run it locally using your own docker environment
+#       docker run -e RUN_LOCAL=true -e VALIDATE_ALL_CODEBASE=false -eVALIDATE_BASH=true -v /pathtoyourcoderoot/devmachinesetup/:/tmp/lint github/super-linter
+# ---
+#
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --apt --prompt --xrdp --sysstat --clis --vscode --intellij --python --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none"
+    echo "Usage: Install-Ubuntu.sh --apt --prompt --sysstat --sshsrv --clis --vscode --intellij --python --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none"
 }
 
 instApt=0
 instPrompt=0
 instPython=0
-instRdp=0
 instSysstat=0
-instFullLinux=0
+instSshServer=0
 instCLIs=0
 instNodeJs=0
 instDotNetCore="none"
@@ -44,8 +49,8 @@ while :; do
             instPrompt=1
             instGoLang=1
             ;;
-        --xrdp)
-            instRdp=1
+        --sshsrv)
+            instSshServer=1
             ;;
         --sysstat)
             instSysstat=1
@@ -104,7 +109,7 @@ done
 #
 # Check Ubuntu Version
 #
-ver=`lsb_release -r | cut -f 2`
+ver=$(lsb_release -r | cut -f 2)
 if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ]; then 
     echo "Only Ubuntu 16.04, 18.04 and 20.04 have been tested!"
     exit 
@@ -174,11 +179,19 @@ fi
 #
 if [ $instRuby == 1 ]; then
     # Ruby and Jekyll for GitHub Pages
+
     sudo apt install -y ruby-full
-    echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc
-    echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
-    echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
+
+    # shellcheck disable=SC1090
+    {
+        echo "# Install Ruby Gems to ~/gems"
+        echo "export GEM_HOME=\"$HOME/gems\"" 
+        echo "export PATH=\"\$HOME/gems/bin:\$PATH\""
+    } >> ~/.bashrc
+
+    # shellcheck disable=SC1090
     source ~/.bashrc
+
     sudo gem install jekyll bundler
 fi
 
@@ -194,7 +207,7 @@ fi
 #
 # Install packages needed on a full server, only
 #
-if [ $instFullLinux == 1 ]; then
+if [ $instSshServer == 1 ]; then
     sudo apt install -y openssh-server
 fi
 
@@ -204,7 +217,7 @@ fi
 #
 if [ $instSysstat == 1 ]; then
     sudo apt-get install -y sysstat
-    cat sysstat | awk '{gsub("ENABLED=\"false\"", "ENABLED=\"true\"")}1' | sudo tee sysstat
+    awk '{gsub("ENABLED=\"false\"", "ENABLED=\"true\"")}1' /etc/default/sysstat | sudo tee /etc/default/sysstat
     # Update /etc/cron.d/sysstat for more frequent intervals
     # Change "5-55/10 * * * * root command -v debina-sa1 > /dev/null && debian-sa1 1 1"
     # To     "*/2 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1"
@@ -222,7 +235,7 @@ case $instJava in
         sudo chmod +x /etc/profile.d/set_java_home.sh
         # Bug in OpenJDK 9 with missing directory for security classes
         # https://github.com/docker-library/openjdk/issues/101
-        sudo ln -s $JAVA_HOME/lib $JAVA_HOME/conf
+        sudo ln -s "$JAVA_HOME/lib" "$JAVA_HOME/conf"
         sudo apt install -y maven
         ;;
 
@@ -259,9 +272,12 @@ fi
 if [ $instNodeJs == 1 ]; then
     curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
     export NVM_DIR="$HOME/.nvm"
+    # shellcheck disable=SC1090
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"	# Loading NVM into the current session
+    # shellcheck disable=SC1090
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # Loading nvm bash_completion
 
+    # shellcheck disable=SC1090
     source ~/.profile
 
     nvm install --lts	# Install the latest LTS build of Node
@@ -325,11 +341,13 @@ if [ $instCLIs == 1 ]; then
 
     # All goes into CLIs if not installed via package
     mkdir ~/clis
-    existsclis=$(grep "~/clis" ~/.profile)
+    existsclis=$(grep "$HOME/clis" ~/.profile)
     if [ "$existsclis" == "" ]; then
         currentPath=$(grep "PATH=" ~/.profile)
-        newPath=$(echo "${currentPath/\$PATH\"/~/clis:\$PATH\"}")
-        echo "$newPath" >> ~/.profile 
+        newPath="${currentPath/\$PATH\"/~/clis:\$PATH\"}"
+        # shellcheck disable=SC1090
+        echo "$newPath" >> ~/.profile
+        # shellcheck disable=SC1090
         source ~/.profile
     fi
 
@@ -339,7 +357,7 @@ if [ $instCLIs == 1 ]; then
     # After Workaround, can install azure CLI without issues
     sudo -H pip3 install azure-cli
     dos2unix az-cli.extensions
-    while read azext; do 
+    while read -r azext; do 
         az extension add --name "$azext"
     done < az-cli.extensions
 
@@ -351,7 +369,9 @@ if [ $instCLIs == 1 ]; then
     #mv ./docker/* ~/clis
     #rm ./docker -R
     curl -sL https://howtowhale.github.io/dvm/downloads/latest/install.sh | sh
+    # shellcheck disable=SC1090
     echo "source ~/.dvm/dvm.sh" >> ~/.bashrc
+    # shellcheck disable=SC1090
     source ~/.dvm/dvm.sh
     dvm install 17.12.1-ce
     dvm install 18.09.6
@@ -401,7 +421,7 @@ if [ $instVsCode == 1 ]; then
 
     # Start installing all extensions
     dos2unix vscode.extensions
-    while read vscodeext; do 
+    while read -r vscodeext; do 
         az extension add --name "$vscodeext"
     done < vscode.extensions
 fi
@@ -415,25 +435,34 @@ if [ $instPrompt == 1 ]; then
 
     go get -u github.com/justjanne/powerline-go
 
-    goPathExists=$(cat ~/.bashrc | grep GOPATH)
-    if [ ! $goPathExists ]; then
-        echo "" >> ~/.bashrc
-        echo "GOPATH=$HOME/go" >> ~/.bashrc
+    # shellcheck disable=SC1090
+    goPathExists=$(grep GOPATH ~/.bashrc)
+    if [ ! "$goPathExists" ]; then
+        # shellcheck disable=SC1090
+        {
+            echo ""
+            echo "GOPATH=$HOME/go"
+        } >> ~/.bashrc
     fi
 
-    promptIsThere=$(cat ~/.bashrc | grep "#mszcool_prompt")
-    if [ ! $promptIsThere ]; then
-        echo "" >> ~/.bashrc
-        echo "#mszcool_prompt_start" >> ~/.bashrc
-        echo "function _update_ps1() {" >> ~/.bashrc
-        echo "  PS1=\"\$(\$GOPATH/bin/powerline-go -error \$?)\\n\\r\\\$ \"" >> ~/.bashrc
-        echo "}" >> ~/.bashrc
-        echo "if [ \"\$TERM\" != \"linux\" ] && [ -f \"\$GOPATH/bin/powerline-go\" ]; then" >> ~/.bashrc
-        echo "    PROMPT_COMMAND=\"_update_ps1; \$PROMPT_COMMAND\"" >> ~/.bashrc
-        echo "fi" >> ~/.bashrc
-        echo "#mszcool_prompt" >> ~/.bashrc
+    # shellcheck disable=SC1090
+    promptIsThere=$(grep "#mszcool_prompt" ~/.bashrc)
+    if [ ! "$promptIsThere" ]; then
+        # shellcheck disable=SC1090
+        {
+            printf "\n"
+            printf "#mszcool_prompt_start\n"
+            printf "function _update_ps1() {\n"
+            printf "  PS1=\"\$(\$GOPATH/bin/powerline-go -error \$?)\\\n\\\$ \"\n"
+            printf "}\n"
+            printf "if [ \"\$TERM\" != \"linux\" ] && [ -f \"\$GOPATH/bin/powerline-go\" ]; then\n"
+            printf "    PROMPT_COMMAND=\"_update_ps1; \$PROMPT_COMMAND\"\n"
+            printf "fi\n"
+            printf "#mszcool_prompt\n"
+        } >> ~/.bashrc
     fi
 
+    # shellcheck disable=SC1090
     source ~/.profile
 
 fi

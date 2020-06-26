@@ -1,3 +1,4 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingInvokeExpression', '', Justification='Following installation instructions from scoop.sh')]
 Param
 (
     [Switch]
@@ -18,7 +19,7 @@ Param
     [Switch]
     $devTools,
 
-    [Parameter(Mandatory=$False)]
+    [Parameter(Mandatory = $False)]
     [ValidateSet("no", "desktop", "cli")]
     $docker = "no",
 
@@ -34,11 +35,11 @@ Param
     [Switch]
     $installVs,
 
-    [Parameter(Mandatory=$False)]
+    [Parameter(Mandatory = $False)]
     [ValidateSet("Community", "Professional", "Enterprise")]
     $vsEdition = "Community",
 
-    [Parameter(Mandatory=$False)]
+    [Parameter(Mandatory = $False)]
     [ValidateSet("none", "intelliJ", "eclipse-sts", "all")]
     $installOtherIDE = "none",
 
@@ -49,9 +50,9 @@ Param
 
 
 # winget is becoming a part of Windows 10, but for now, you need to install it
-Write-Host "***********************************************************************************************************"
-Write-Host "Please make sure to have winget installed: https://docs.microsoft.com/en-us/windows/package-manager/winget/"
-Write-Host "***********************************************************************************************************"
+Write-Information "***********************************************************************************************************"
+Write-Information "Please make sure to have winget installed: https://docs.microsoft.com/en-us/windows/package-manager/winget/"
+Write-Information "***********************************************************************************************************"
 
 
 #
@@ -63,7 +64,7 @@ $originalExecPath = Get-Location
 #
 # Simple Parameter validation
 #
-if( $prepOS -and ($tools -or $userTools -or $ittools -or $dev -or $devTools -or ( $docker -ne "no" ) -or $clis -or $instVsCode -or $installVs -or ( $installOtherIDE -ne "none" ) -or $instPrettyPrompt) ) {
+if ( $prepOS -and ($tools -or $userTools -or $ittools -or $dev -or $devTools -or ( $docker -ne "no" ) -or $clis -or $instVsCode -or $installVs -or ( $installOtherIDE -ne "none" ) -or $instPrettyPrompt) ) {
     throw "Running the script with -prepOS does not allow you to use any other switches. First run -prepOS and then run with any other allowed combination of switches!"
 }
 
@@ -71,8 +72,7 @@ if( $prepOS -and ($tools -or $userTools -or $ittools -or $dev -or $devTools -or 
 #
 # [prepOS] Installing Operating System Components as well as chocolatey itself. Needs to happen before ANY other runs!
 #
-if( $prepOS ) 
-{
+if ( $prepOS ) {
     # Enable Console Prompting for PowerShell
     Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name "ConsolePrompting" -Value $True
 
@@ -87,7 +87,7 @@ if( $prepOS )
     Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
 
-    if( $hyperv ) {
+    if ( $hyperv ) {
         Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
         Enable-WindowsOptionalFeature -FeatureName Containers -Online -NoRestart
     }
@@ -104,7 +104,7 @@ if( $prepOS )
 # Function to create a path if it does not exist
 #
 function CreatePathIfNotExists($pathName) {
-    if(!(Test-Path -Path $pathName)) {
+    if (!(Test-Path -Path $pathName)) {
         New-Item -ItemType directory -Path $pathName
     }
 }
@@ -123,10 +123,10 @@ function ExtractZipArchive($zipFile, $outPath) {
 # Function to prepare PowerShell itself
 #
 function PreparePowerShell() {
-    Write-Host "Installing PackageManagement if needed..."
+    Write-Information "Installing PackageManagement if needed..."
     Install-Module -Name PackageManagement -Force -MinimumVersion 1.4.6 -Scope CurrentUser -AllowClobber
     #Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    Write-Host "Installing PowerShellGet if neeed..."
+    Write-Information "Installing PowerShellGet if neeed..."
     Install-Module -Name PowerShellGet -Force
 }
 
@@ -135,7 +135,7 @@ function PreparePowerShell() {
 # [tools] Tools needed on every machine
 #
 
-if( $tools ) {
+if ( $tools ) {
 
     winget install --silent 1password
 
@@ -153,30 +153,29 @@ if( $tools ) {
 #
 # [userTools] Tools only needed for end-user related machines (not machines focused on dev-only)
 #
-if( $userTools ) {
+if ( $userTools ) {
 
-    winget install --silent whatsapp 
+    winget install --silent whatsapp
 
     winget install --silent slack
-    
+
     winget install --silent "Microsoft Teams"
 
     winget install --silent Rufus
 
     winget install --silent win32diskimager
-    
+
     winget install --silent calibre
 
     winget install --silent PowerToys
 }
 
 
-# 
+#
 # [ittools] IT-oriented tools
 #
-if( $ittools )
-{
- 
+if ( $ittools ) {
+
     scoop install git --global
 
     scoop install sudo --global
@@ -197,13 +196,12 @@ if( $ittools )
 #
 # [devTools] All tools needed for development
 #
-if( $devTools )
-{
+if ( $devTools ) {
     scoop bucket add extras
     scoop bucket add versions
 
     scoop install azuredatastudio --global
-    
+
     scoop install robo3t --global
 
     scoop install heidisql --global
@@ -215,23 +213,22 @@ if( $devTools )
     scoop install storageexplorer --global
 
     scoop install ilspy --global
-    
+
     scoop install postman --global
-    
-    scoop install ilspy --global 
-    
+
+    scoop install ilspy --global
+
     scoop install fiddler --global
-    
+
     scoop install ngrok --global
-    
+
 }
 
 
 #
 # [docker] Docker, either CLIs only or with full Docker for Desktop
 #
-if( $docker -eq "cli" )
-{
+if ( $docker -eq "cli" ) {
     scoop bucket add extras
     scoop bucket add versions
 
@@ -240,7 +237,7 @@ if( $docker -eq "cli" )
     scoop install docker-compose --global
 
 }
-elseif( $docker -eq "desktop" ) {
+elseif ( $docker -eq "desktop" ) {
 
     winget install --silent DockerDesktop
 
@@ -250,8 +247,7 @@ elseif( $docker -eq "desktop" ) {
 #
 # [dev] Developer Tools needed on every dev-machine
 #
-if( $dev )
-{
+if ( $dev ) {
     scoop bucket add extras
     scoop bucket add versions
 
@@ -259,10 +255,10 @@ if( $dev )
     scoop install openjdk --global
 
     scoop install go --global
-    
+
     scoop install python --global
 
-    scoop install php --global 
+    scoop install php --global
 
     scoop install scala --global
 
@@ -299,7 +295,7 @@ if ( $clis ) {
     Install-Module -Name Az -AllowClobber -Force
 
     Install-Module -Name AzureAD -Force -SkipPublisherCheck
-    
+
     scoop install nuget --global
 
     scoop install kubectl --global
@@ -335,7 +331,7 @@ if ( $instVsCode ) {
 #
 # [installVs] Installing a version of Visual Studio (based on Chocolatey)
 #
-if($installVs) {
+if ($installVs) {
     winget install --silent "Visual Studio $vsEdition"
 }
 
@@ -343,14 +339,14 @@ if($installVs) {
 #
 # [installOtherIde] Installing Eclipse and/or IntelliJ if required
 #
-if(($installOtherIDE -eq "all") -or ($installOtherIDE -eq "intelliJ")) {
+if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "intelliJ")) {
 
     scoop bucket add extras
     scoop bucket add jetbrains
     scoop install IntelliJ-IDEA --global
 
 }
-if(($installOtherIDE -eq "all") -or ($installOtherIDE -eq "eclipse-sts")) {
+if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "eclipse-sts")) {
 
     scoop bucket add extras
     scoop install sts --global
@@ -361,28 +357,28 @@ if(($installOtherIDE -eq "all") -or ($installOtherIDE -eq "eclipse-sts")) {
 #
 # Installing a pretty prompt for PowerShell
 #
-if( $instPrettyPrompt ) {
+if ( $instPrettyPrompt ) {
 
     PreparePowerShell
 
-    Write-Host "Installing posh-git..."
+    Write-Information "Installing posh-git..."
     Install-Module -Name posh-git -Scope CurrentUser -Force
-    Write-Host "Installing oh-my-posh..."
+    Write-Information "Installing oh-my-posh..."
     Install-Module -Name oh-my-posh -Scope CurrentUser -Force
-    Write-Host "Installing PSReadLine..."
+    Write-Information "Installing PSReadLine..."
     Install-Module -Name PSReadLine -Scope CurrentUser -SkipPublisherCheck -Force
 
-    # Then write to the PowerShell Profile 
+    # Then write to the PowerShell Profile
     if ( ! [System.IO.File]::Exists($PROFILE) ) {
         $f = [System.IO.File]::CreateText($PROFILE)
         $f.Close()
     }
-    
+
     # A bit hacky, but this is a bit of spare-time, hence limited time to optimize:)
     $profileContent = Get-Content -Path $PROFILE
-    if( ! $profileContent.Contains("posh-git") ) { Add-Content -Path $PROFILE -Value "Import-Module posh-git" }
-    if( ! $profileContent.Contains("oh-my-posh") ) { Add-Content -Path $PROFILE -Value "Import-Module oh-my-posh" }
-    if( ! $profileContent.Contains("Set-Theme Paradox") ) { Add-Content -Path $PROFILE -Value "Set-Theme Paradox" }
+    if ( ! $profileContent.Contains("posh-git") ) { Add-Content -Path $PROFILE -Value "Import-Module posh-git" }
+    if ( ! $profileContent.Contains("oh-my-posh") ) { Add-Content -Path $PROFILE -Value "Import-Module oh-my-posh" }
+    if ( ! $profileContent.Contains("Set-Theme Paradox") ) { Add-Content -Path $PROFILE -Value "Set-Theme Paradox" }
 
     # Download the Cascadia Font PL true type font
     $fontUrl = "https://github.com/microsoft/cascadia-code/releases/download/v2005.15/CascadiaCode_2005.15.zip"
@@ -395,5 +391,5 @@ if( $instPrettyPrompt ) {
     $fontFile = [System.IO.Path]::Combine($fontOutDir, "CascadiaCodePL.ttf")
     Copy-Item "$fontFile" "$env:windir\Fonts"
     New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" -Name "Cascadia Code PL" -PropertyType String -Value "CascadiaCodePL.ttf"
-    Write-Host "You need to restart to make the font-installation effective (used this way instead of shell object as it works on server core)!"
+    Write-Information "You need to restart to make the font-installation effective (used this way instead of shell object as it works on server core)!"
 }
