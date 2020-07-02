@@ -137,7 +137,7 @@ function PreparePowerShell() {
 
 if ( $tools ) {
 
-    winget install --silent 1password
+    winget install --silent 1password     
 
     winget install --silent 7zip
 
