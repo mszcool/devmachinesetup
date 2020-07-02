@@ -137,7 +137,7 @@ function PreparePowerShell() {
 
 if ( $tools ) {
 
-    winget install --silent 1password     
+    winget install --silent 1password
 
     winget install --silent 7zip
 
@@ -361,7 +361,7 @@ if ( $instPrettyPrompt ) {
 
     PreparePowerShell
 
-    Write-Host "Installing posh-git...."                 
+    Write-Information "Installing posh-git...."
     Install-Module -Name posh-git -Scope CurrentUser -Force
     Write-Information "Installing oh-my-posh..."
     Install-Module -Name oh-my-posh -Scope CurrentUser -Force
