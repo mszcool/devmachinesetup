@@ -400,6 +400,11 @@ if [ $instCLIs == 1 ]; then
     rm ./NOTICE
     rm ./openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit -r
 
+    # armclient GO-version for Linux
+    curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armclient-go_linux_64-bit.tar.gz | tar xz
+    mv armclient ~/clis
+    rm ./LICENSE
+
 fi
 
 
