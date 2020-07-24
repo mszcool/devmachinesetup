@@ -18,10 +18,10 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --apt --prompt --sysstat --sshsrv --clis --vscode --intellij --python --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none"
+    echo "Usage: Install-Ubuntu.sh --baseline --prompt --sysstat --sshsrv --clis --vscode --intellij --python --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none"
 }
 
-instApt=0
+instBase=0
 instPrompt=0
 instPython=0
 instSysstat=0
@@ -42,8 +42,8 @@ while :; do
             show_help
             exit
             ;;
-        --apt)
-            instApt=1
+        --baseline)
+            instBase=1
             ;;
         --prompt)
             instPrompt=1
@@ -118,7 +118,7 @@ fi
 #
 # General packages commonly used on my Linux Dev Machines
 #
-if [ $instApt == 1 ]; then
+if [ $instBase == 1 ]; then
 
     sudo apt update
     sudo apt -y upgrade 
@@ -151,6 +151,15 @@ if [ $instApt == 1 ]; then
     sudo apt install -y zlib1g-dev
     sudo apt install -y libxml2
     sudo apt install -y build-essential
+
+    # Install 'homebrew' on Ubuntu per https://brew.sh/
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    #test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+    test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+    #test -r ~/.bash_profile && echo eval" ($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
+    echo "eval $($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+
+    brew update
 
 fi
 
