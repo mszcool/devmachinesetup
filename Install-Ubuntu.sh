@@ -423,7 +423,8 @@ case $instDotNetCore in
         # Alternatively
         dotnet tool install -g powershell
         echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
-        source "$HOME/.profile"
+        # shellcheck disable=SC1090
+        source ~/.profile
         ;;
 
     none)
