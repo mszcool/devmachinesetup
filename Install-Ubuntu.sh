@@ -314,7 +314,7 @@ if [ $instDockerEngine == 1 ]; then
    
    # groupadd was not needed after the installation
    #sudo groupadd docker
-   sudo usermod -aG docker $USER
+   sudo usermod -aG docker "$USER"
 
 fi
 
@@ -423,7 +423,7 @@ case $instDotNetCore in
         # Alternatively
         dotnet tool install -g powershell
         echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
-        source ~/.profile
+        source "$HOME/.profile"
         ;;
 
     none)
@@ -522,7 +522,7 @@ if [ $instVsCode == 1 ]; then
     # Start installing all extensions
     dos2unix vscode.extensions
     while read -r vscodeext; do 
-        code --install-extension "$	vscodeext"
+        code --install-extension "$vscodeext"
     done < vscode.extensions
 fi
 
@@ -548,7 +548,7 @@ if [ $instMoreDevTools == 1 ]; then
    
    # Arduino IDE
    sudo snap install arduino
-   sudo usermod -a -G dialout $USER
+   sudo usermod -a -G dialout "$USER"
    
    # Redis Desktop Manager
    sudo snap install redis-desktop-manager
