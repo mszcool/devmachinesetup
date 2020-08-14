@@ -18,14 +18,16 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --baseline --prompt --sysstat --sshsrv --clis --vscode --intellij --python --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none --vscode --moreDevTools --intellij --prompt"
 }
 
+instEnduser=0
 instBase=0
 instPrompt=0
 instPython=0
 instSysstat=0
 instSshServer=0
+instDockerEngine=0
 instCLIs=0
 instNodeJs=0
 instDotNetCore="none"
@@ -35,12 +37,16 @@ instRuby=0
 instGoLang=0
 instVsCode=0
 instIntelliJ=0
+instMoreDevTools=0
 
 while :; do
     case $1 in
         -h|--help)
             show_help
             exit
+            ;;
+        --enduser)
+            instEnduser=1
             ;;
         --baseline)
             instBase=1
@@ -55,12 +61,18 @@ while :; do
         --sysstat)
             instSysstat=1
             ;;
+        --docker)
+            instDockerEngine=1
+            ;;
         --clis)
             instCLIs=1
             instPython=1    # Many CLIs require python
             ;;
         --vscode)
             instVsCode=1
+            ;;
+        --moreDevTools)
+            instMoreDevTools=1
             ;;
         --intellij)
             instIntelliJ=1
@@ -106,6 +118,7 @@ while :; do
     shift
 done
 
+
 #
 # Check Ubuntu Version
 #
@@ -114,6 +127,7 @@ if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ]; then
     echo "Only Ubuntu 16.04, 18.04 and 20.04 have been tested!"
     exit 
 fi
+
 
 #
 # General packages commonly used on my Linux Dev Machines
@@ -130,6 +144,8 @@ if [ $instBase == 1 ]; then
     sudo apt install -y debconf-utils
     sudo apt install -y net-tools
     sudo apt install -y dos2unix
+    sudo apt install -y unzip
+    sudo apt install -y curl
 
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D6BC243565B2087BC3F897C9277A7293F59E4889
     if [ "$ver" == "16.04" ]; then
@@ -137,7 +153,7 @@ if [ $instBase == 1 ]; then
     elif [ "$ver" == "18.04" ]; then
         echo "deb http://miktex.org/download/ubuntu bionic universe" | sudo tee /etc/apt/sources.list.d/miktex.list
     elif [ "$ver" == "20.04" ]; then
-	echo "deb http://miktex.org/download/ubuntu focal universe" | sudo tee /etc/apt/sources.list.d/miktex.list
+	echo "deb [arch=amd64] http://miktex.org/download/ubuntu focal universe" | sudo tee /etc/apt/sources.list.d/miktex.list
     fi 
     sudo apt update
     sudo apt install -y miktex
@@ -155,12 +171,54 @@ if [ $instBase == 1 ]; then
     # Install 'homebrew' on Ubuntu per https://brew.sh/
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     #test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+    # shellcheck disable=SC2046
     test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-    #test -r ~/.bash_profile && echo eval" ($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-    echo "eval $($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+    #test -r ~/.bash_profile && echo eval" ($(brew --prefix)/bin/brew shellenv)" >> ~/.bash_profile
+    # shellcheck disable=SC2046
+    echo "eval $($(brew --prefix)/bin/brew shellenv)" >> ~/.profile
 
     brew update
 
+fi
+
+
+#
+# Installing end user tools for a desktop environment
+#
+if [ $instEnduser == 1 ]; then
+    
+    sudo snap install --edge 1password
+    sudo snap install spotify
+    
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo dpkg -i google-chrome-stable_current_amd64.deb
+    
+    sudo snap install telegram-desktop
+    sudo snap install whatsapp-for-linux  
+    sudo snap install skype
+    
+    sudo snap install --classic slack
+    
+    curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB3E94ADBE1229CF
+    echo "deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main" | sudo tee /etc/apt/sources.list.d/teams.list
+    sudo apt update
+    sudo apt install -y teams
+
+    sudo snap install unofficial-webapp-office
+    
+    sudo apt install -y calibre   
+    
+    sudo snap install remmina
+    
+    sudo sudo apt install -y mate-system-monitor
+    
+    sudo ufw enable
+    sudo systemctl enable ufw
+    sudo ufw default deny incoming
+    
+    sudo apt install -y p7zip-full
+    
 fi
 
 
@@ -230,6 +288,34 @@ if [ $instSysstat == 1 ]; then
     # Update /etc/cron.d/sysstat for more frequent intervals
     # Change "5-55/10 * * * * root command -v debina-sa1 > /dev/null && debian-sa1 1 1"
     # To     "*/2 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1"
+fi
+
+
+#
+# Install docker engine
+#
+if [ $instDockerEngine == 1 ]; then
+
+   sudo apt -y install \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg-agent \
+        software-properties-common
+
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+   
+   sudo apt-key fingerprint 0EBFCD88
+   
+   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+   
+   sudo apt update
+   sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
+   
+   # groupadd was not needed after the installation
+   #sudo groupadd docker
+   sudo usermod -aG docker $USER
+
 fi
 
 
@@ -333,9 +419,11 @@ case $instDotNetCore in
 
     3)
         sudo apt install -y dotnet-sdk-3.1
-        sudo apt install -y powershell
+        #sudo apt install -y powershell
         # Alternatively
-        # dotnet tool install -g powershell
+        dotnet tool install -g powershell
+        echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
+        source ~/.profile
         ;;
 
     none)
@@ -352,10 +440,8 @@ if [ $instCLIs == 1 ]; then
     mkdir ~/clis
     existsclis=$(grep "$HOME/clis" ~/.profile)
     if [ "$existsclis" == "" ]; then
-        currentPath=$(grep "PATH=" ~/.profile)
-        newPath="${currentPath/\$PATH\"/~/clis:\$PATH\"}"
         # shellcheck disable=SC1090
-        echo "$newPath" >> ~/.profile
+        echo "export PATH=\"\$HOME/clis:\$PATH\"" >> ~/.profile
         # shellcheck disable=SC1090
         source ~/.profile
     fi
@@ -436,8 +522,44 @@ if [ $instVsCode == 1 ]; then
     # Start installing all extensions
     dos2unix vscode.extensions
     while read -r vscodeext; do 
-        az extension add --name "$vscodeext"
+        code --install-extension "$	vscodeext"
     done < vscode.extensions
+fi
+
+
+#
+# Installing cloud tools such as Azure Data Studio etc.
+#
+if [ $instMoreDevTools == 1 ]; then
+
+   # Azure Data Studio
+   wget -O azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
+   sudo dpkg -i ./azuredatastudio-linux.deb
+   
+   # Azure Storage Explorer
+   sudo snap install storage-explorer
+   sudo snap connect storage-explorer:password-manager-service :password-manager-service
+   
+   # Postman
+   sudo snap install postman
+   
+   # MQTT Explorer
+   sudo snap install mqtt-explorer
+   
+   # Arduino IDE
+   sudo snap install arduino
+   sudo usermod -a -G dialout $USER
+   
+   # Redis Desktop Manager
+   sudo snap install redis-desktop-manager
+   
+   # Installing the Cascadia code font
+   sudo apt install -y unzip
+   wget -O "cascadiacodepl.zip" "https://github.com/microsoft/cascadia-code/releases/download/v2005.15/CascadiaCode_2005.15.zip"
+   unzip "cascadiacodepl.zip" -d "./cascadiacodepl"
+   sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
+   sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
+
 fi
 
 
@@ -477,5 +599,7 @@ if [ $instPrompt == 1 ]; then
 
     # shellcheck disable=SC1090
     source ~/.profile
+    # shellcheck disable=SC1090
+    source ~/.bashrc
 
 fi
