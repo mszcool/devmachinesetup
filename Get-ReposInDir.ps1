@@ -9,21 +9,21 @@ Param(
 #
 # Function for walking a directory
 #
-function Walk-Directory([String]$parent) {
+function Step-Directory([String]$parent, [String]$op) {
     # Walk through all directories in the passed in Root Directory
     $children = Get-ChildItem -Path $parent -Directory
     foreach($d in $children) {
-        cd $d.FullName
+        Set-Location $d.FullName
         # Try if this is a git repo
         $remoteName = git remote 2> $null
         if($? -eq $True) {
-            $repoName = git remote get-url origin 2> $null
+            $repoName = git remote get-url $remoteName 2> $null
             if($? -eq $True ) {
-                if($operation -eq "dump") {
+                if($op -eq "dump") {
                     Write-Output "git clone $repoName"
-                } elseif ($operation -eq "pull") {
+                } elseif ($op -eq "pull") {
                     git pull
-                } elseif ($operation -eq "status") {
+                } elseif ($op -eq "status") {
                     git status
                 } else {
                     Write-Output "$PWD"
@@ -36,5 +36,5 @@ function Walk-Directory([String]$parent) {
 }
 
 $currentPath = $PWD.Path
-Walk-Directory($rootDir)
-cd $currentPath
+Step-Directory($rootDir, $operation)
+Set-Location $currentPath

@@ -18,7 +18,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none --vscode --moreDevTools --intellij --prompt"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none --dotnetmono --vscode --moreDevTools --intellij --prompt"
 }
 
 instEnduser=0
@@ -31,6 +31,7 @@ instDockerEngine=0
 instCLIs=0
 instNodeJs=0
 instDotNetCore="none"
+instDotNetMono=0
 instJava="none"
 instScala=0
 instRuby=0
@@ -107,6 +108,9 @@ while :; do
             else
                 instDotNetCore=3
             fi
+            ;;
+        --dotnetmono)
+            instDotNetMono=1
             ;;
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
@@ -430,6 +434,19 @@ case $instDotNetCore in
     none)
         ;;
 esac
+
+
+#
+# Installing Mono for .NET
+#
+if [ $instDotNetMono == 1 ]; then
+    sudo apt install gnupg ca-certificates
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+    
+    sudo apt update
+    sudo apt install -y mono-devel
+fi
 
 
 #
