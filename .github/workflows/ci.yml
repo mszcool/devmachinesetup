@@ -33,7 +33,7 @@ jobs:
     # PowerShell deactived for now as PS linter in super-linter has a bug
     # https://github.com/github/super-linter/issues/279
     - name: Validating PowerShell and Bash scripts
-      uses: docker://github/super-linter:v3
+      uses: docker://github/super-linter:latest
       env:
         VALIDATE_ALL_CODEBASE: false
         DEFAULT_BRANCH: master
