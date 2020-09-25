@@ -257,6 +257,9 @@ if ( $dev ) {
     scoop install go --global
 
     scoop install python --global
+    
+    # Reference : https://pypi.org/project/autopep8/
+    python -m pip install --upgrade autopep8
 
     scoop install php --global
 
@@ -273,6 +276,10 @@ if ( $dev ) {
     npm install -g bower
 
     npm install -g gulp
+    
+    npm install -g autorest@3.0.6187
+
+    npm install -g swagger-tools@0.10.4
 
 }
 
