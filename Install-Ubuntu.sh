@@ -242,6 +242,7 @@ if [ $instPython == 1 ]; then
     sudo -H pip3 install Pillow
     sudo -H pip3 install GhostScript
     sudo -H pip3 install matplotlib
+    sudo -H pip3 install autopep8
 fi
 
 
@@ -383,13 +384,15 @@ if [ $instNodeJs == 1 ]; then
     npm install -g moment
     npm install -g bower        # Consider replacing with WebPack, Yarn or Parcel 
     npm install -g gulp
+    npm install -g autorest@3.0.6187
+    npm install -g swagger-tools@0.10.4
 fi
 
 
 #
 # Installing .Net core runtimes
 #
-if [ "$instDotNetCore" != "none" ]; then
+if [ "$instDotNetCore" != "none" ]; then   
     curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 
@@ -423,10 +426,10 @@ case $instDotNetCore in
 
     3)
         sudo apt install -y dotnet-sdk-3.1
-        #sudo apt install -y powershell
+        sudo apt install -y powershell
         # Alternatively
-        dotnet tool install -g powershell
-        echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
+        #dotnet tool install -g powershell
+        #echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
         # shellcheck disable=SC1090
         source ~/.profile
         ;;
