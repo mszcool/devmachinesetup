@@ -177,6 +177,7 @@ if ( $userTools ) {
 if ( $ittools ) {
 
     scoop install git --global
+    scoop install git-lfs --global
 
     scoop install sudo --global
 
