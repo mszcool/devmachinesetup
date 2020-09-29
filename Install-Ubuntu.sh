@@ -166,7 +166,10 @@ if [ $instBase == 1 ]; then
     sudo apt install -y mencoder
     sudo apt install -y libpng-dev
 
+    # Git including enabling large-file-store scenarios (git-lfs)
     sudo apt install -y git
+    sudo apt install -y git-lfs
+    
     sudo apt install -y jq
     sudo apt install -y zlib1g-dev
     sudo apt install -y libxml2
@@ -386,6 +389,15 @@ if [ $instNodeJs == 1 ]; then
     npm install -g gulp
     npm install -g autorest@3.0.6187
     npm install -g swagger-tools@0.10.4
+    
+    # This particular version 3.0.6187 of autorest depends on libssl1.0, hence on Ubuntu 20.04 need to install this version of the library, as well
+    if [ "$ver" == "20.04" ]; then
+    	wget -O libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb
+        wget -O multiarch-support_2.19-18+deb8u10_amd64.deb http://ftp.de.debian.org/debian/pool/main/g/glibc/multiarch-support_2.19-18+deb8u10_amd64.deb
+
+        sudo dpkg -i multiarch-support_2.19-18+deb8u10_amd64.deb
+        sudo dpkg -i libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb
+    fi
 fi
 
 
