@@ -78,6 +78,7 @@ if ( $prepOS ) {
 
     # Install Scoop, which is more convenient for CLIs and command line dev tools
     Invoke-Expression (new-object net.webclient).downloadstring('https://get.scoop.sh')
+    scoop install git
 
     # Install Windows Features
     Enable-WindowsOptionalFeature -FeatureName NetFx4-AdvSrvs -Online -NoRestart
@@ -139,6 +140,8 @@ if ( $tools ) {
 
     winget install --silent 1password
 
+    winget install --silent "Microsoft.PowerToys"
+
     winget install --silent 7zip
 
     winget install --silent "Adobe Acrobat Reader DC"
@@ -176,8 +179,9 @@ if ( $userTools ) {
 #
 if ( $ittools ) {
 
-    scoop install git --global
-    scoop install git-lfs --global
+    # Had to update to have git in the profile and enable scoop to continue working.
+    scoop install git
+    scoop install git-lfs
 
     scoop install sudo --global
 
@@ -290,13 +294,11 @@ if ( $dev ) {
 #
 if ( $clis ) {
 
-    pip3 install azure
-
-    pip3 install azure-cli
+    scoop install azure-cli --global
     $azcliext = Get-Content "$originalExecPath\az-cli.extensions"
     $azcliext | ForEach-Object { az extension add --name $_ }
 
-    pip3 install awscli
+    scoop install aws --global
 
     PreparePowerShell
 
@@ -312,7 +314,7 @@ if ( $clis ) {
 
     scoop install draft --global
 
-    scoop install cloudfoundry-cli --global
+    scoop install cloudfoundry-cli@7.1.0 --global
 
     scoop install openshift-origin-client --global
 
@@ -384,6 +386,7 @@ if ( $instPrettyPrompt ) {
 
     # A bit hacky, but this is a bit of spare-time, hence limited time to optimize:)
     $profileContent = Get-Content -Path $PROFILE
+    if ( [System.String]::IsNullOrEmpty($profileContent) ) { $profileContent = "" }
     if ( ! $profileContent.Contains("posh-git") ) { Add-Content -Path $PROFILE -Value "Import-Module posh-git" }
     if ( ! $profileContent.Contains("oh-my-posh") ) { Add-Content -Path $PROFILE -Value "Import-Module oh-my-posh" }
     if ( ! $profileContent.Contains("Set-Theme Paradox") ) { Add-Content -Path $PROFILE -Value "Set-Theme Paradox" }
@@ -393,10 +396,10 @@ if ( $instPrettyPrompt ) {
     $fontZipFile = "$env:TEMP\CascadiaCode.zip"
     $fontOutDir = "$env:TEMP\CascadiaCode"
     Invoke-WebRequest -Uri $fontUrl -OutFile $fontZipFile
-    ExtractZipArchive($fontZipFile, $fontOutDir)
+    ExtractZipArchive -zipFile $fontZipFile -outPath $fontOutDir
 
     # Install the Cascadia Code PL Font
-    $fontFile = [System.IO.Path]::Combine($fontOutDir, "CascadiaCodePL.ttf")
+    $fontFile = [System.IO.Path]::Combine($fontOutDir, "ttf\CascadiaCodePL.ttf")
     Copy-Item "$fontFile" "$env:windir\Fonts"
     New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" -Name "Cascadia Code PL" -PropertyType String -Value "CascadiaCodePL.ttf"
     Write-Information "You need to restart to make the font-installation effective (used this way instead of shell object as it works on server core)!"
