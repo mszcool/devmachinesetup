@@ -190,6 +190,8 @@ if ( $ittools ) {
     scoop install jq --global
 
     scoop install openssl --global
+    
+    scoop install win32-openssh --global
 
     scoop install busybox --global
 
