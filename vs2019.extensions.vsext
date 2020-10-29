@@ -1,9 +1,17 @@
 {
-  "id": "27db2333-8fe6-4992-a291-fdf745a8efe5",
+  "id": "e86ee02a-5867-44a9-a16a-a84397cda247",
   "name": "My Visual Studio extensions",
   "description": "A collection of my Visual Studio extensions",
   "version": "1.0",
   "extensions": [
+    {
+      "name": ".ignore",
+      "vsixId": "7ac24965-ea21-4108-9cac-6e46394aaaef"
+    },
+    {
+      "name": ".NET Core Debugging with WSL 2 - Preview",
+      "vsixId": "82e81c51-04b7-4681-91bb-87b6cf7c516b"
+    },
     {
       "name": ".NET Portability Analyzer",
       "vsixId": "55d15546-28ca-40dc-af23-dfa503e9c5fe"
@@ -17,10 +25,6 @@
       "vsixId": "AlignAssignments.41858b2d-ff0b-4a43-80b0-f1b2d6084935"
     },
     {
-      "name": "Arduino IDE and GDB for Visual Studio",
-      "vsixId": "c2b94433-1774-4242-8062-987a4484f1ed"
-    },
-    {
       "name": "AWS Toolkit for Visual Studio 2017 and 2019",
       "vsixId": "12ed248b-6d4a-47eb-be9e-8eabea0ff119"
     },
@@ -31,6 +35,10 @@
     {
       "name": "Bot Framework v4 SDK Templates for Visual Studio",
       "vsixId": "BotBuilderV4.fbe0fc50-a6f1-4500-82a2-189314b7bea2"
+    },
+    {
+      "name": "Bridge to Kubernetes",
+      "vsixId": "f2d65832-b361-4eca-a72c-cd2f812958fd"
     },
     {
       "name": "Browser Reload on Save",
@@ -53,6 +61,10 @@
       "vsixId": "4c82e17d-927e-42d2-8460-b473ac7df316"
     },
     {
+      "name": "Color Theme Editor for Visual Studio 2019",
+      "vsixId": "VSColorThemeEditor.A8079E6E-373A-4C61-8A97-C8B72107906A"
+    },
+    {
       "name": "Color Themes for Visual Studio",
       "vsixId": "VSColorThemes.8643b166-c815-4f07-b9ec-64be1f7b8a59"
     },
@@ -67,10 +79,6 @@
     {
       "name": "Editor Enhancements",
       "vsixId": "a3112f81-e423-4f88-9f2c-e089a309e48e"
-    },
-    {
-      "name": "Enterprise Bot Template",
-      "vsixId": "EnterpriseBotTemplate.82cb8299-0d0d-4299-a08d-83ef19b3a60b"
     },
     {
       "name": "Extension Manager 2019",
@@ -91,6 +99,10 @@
     {
       "name": "GitHub Extension for Visual Studio",
       "vsixId": "c3d3dc68-c977-411f-b3e8-03b0dccf7dfc"
+    },
+    {
+      "name": "Google Cloud Tools for Visual Studio",
+      "vsixId": "GoogleAppEngine.Google.d3d3eeb8-3710-4bd9-97ba-1401bf2acd22"
     },
     {
       "name": "HTML Snippet Pack",
@@ -117,6 +129,10 @@
       "vsixId": "2a20580c-7be4-4440-bcd6-8dcf5aa2004e"
     },
     {
+      "name": "License Header Manager",
+      "vsixId": "4c570677-8476-4d33-bd0c-da36c89287c8"
+    },
+    {
       "name": "Live Share",
       "vsixId": "Microsoft.VisualStudio.LiveShare"
     },
@@ -137,12 +153,20 @@
       "vsixId": "MiddleClickScroll.263a3239-a004-40e6-b790-4fd371832c85"
     },
     {
+      "name": "ML.NET Model Builder (Preview)",
+      "vsixId": "FE96D051-645F-4309-AE99-107A776B0DA2"
+    },
+    {
       "name": "NPM Task Runner",
       "vsixId": "d7f89ba3-815c-4feb-89b9-68d1654e2138"
     },
     {
       "name": "NUnit 3 Test Adapter",
       "vsixId": "NUnit.NUnit3TestAdapter"
+    },
+    {
+      "name": "Output enhancer",
+      "vsixId": "VSOutputEnhancer.Nikolay Balakin.a06be4c3-f97e-425c-8a0d-bdef08ac2abb"
     },
     {
       "name": "Package Installer",
@@ -155,6 +179,10 @@
     {
       "name": "Power Commands for Visual Studio",
       "vsixId": "PowerCommands.3ecdd89b-f985-483d-8c94-be37de4dc083"
+    },
+    {
+      "name": "Power Query SDK",
+      "vsixId": "PowerQuerySDK.Microsoft.30831070-f420-4649-a031-6f679996b182"
     },
     {
       "name": "Pretty Paste",
@@ -211,10 +239,6 @@
     {
       "name": "Web Compiler",
       "vsixId": "148ffa77-d70a-407f-892b-9ee542346862"
-    },
-    {
-      "name": "Whack Whack Terminal",
-      "vsixId": "WhackWhackTerminal.6f6b45b8-e50b-4d45-87f0-c304abf8ff0f"
     },
     {
       "name": "Windows IoT Core Project Templates for VS 2017+",

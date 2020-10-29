@@ -197,6 +197,8 @@ if ( $ittools ) {
 
     scoop install pwsh --global
 
+    scoop install sysinternals --global
+
 }
 
 
@@ -204,6 +206,7 @@ if ( $ittools ) {
 # [devTools] All tools needed for development
 #
 if ( $devTools ) {
+
     scoop bucket add extras
     scoop bucket add versions
 
@@ -219,8 +222,6 @@ if ( $devTools ) {
 
     scoop install storageexplorer --global
 
-    scoop install ilspy --global
-
     scoop install postman --global
 
     scoop install ilspy --global
@@ -229,6 +230,10 @@ if ( $devTools ) {
 
     scoop install ngrok --global
 
+    scoop install nswagstudio --global
+
+    scoop install lessmsi --global
+
 }
 
 
@@ -236,6 +241,7 @@ if ( $devTools ) {
 # [docker] Docker, either CLIs only or with full Docker for Desktop
 #
 if ( $docker -eq "cli" ) {
+
     scoop bucket add extras
     scoop bucket add versions
 
@@ -255,6 +261,7 @@ elseif ( $docker -eq "desktop" ) {
 # [dev] Developer Tools needed on every dev-machine
 #
 if ( $dev ) {
+
     scoop bucket add extras
     scoop bucket add versions
 
@@ -308,6 +315,8 @@ if ( $clis ) {
 
     Install-Module -Name AzureAD -Force -SkipPublisherCheck
 
+    scoop install armclient --global
+    
     scoop install nuget --global
 
     scoop install kubectl --global

@@ -12,7 +12,6 @@ interactive
 ip-group
 log-analytics
 resource-graph
-signalr
 spring-cloud
 virtual-wan
 webapp
