@@ -519,6 +519,9 @@ if [ $instCLIs == 1 ]; then
     echo "export PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"" >> ~/.profile
     # shellcheck disable=SC1090
     source ~/.profile
+    # Install the plug-ins
+    krew install krew
+    krew install exec-as
     
 
     # Helm CLI
