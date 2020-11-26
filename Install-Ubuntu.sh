@@ -508,6 +508,18 @@ if [ $instCLIs == 1 ]; then
     kubeversion=$(curl -s "https://storage.googleapis.com/kubernetes-release/release/stable.txt")
     wget -O ~/clis/kubectl "https://storage.googleapis.com/kubernetes-release/release/$kubeversion/bin/linux/amd64/kubectl"
     chmod +x ~/clis/kubectl
+    
+    # Krew extension manager
+    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.tar.gz"
+    tar zxvf krew.tar.gz
+    mv krew* ~/clis
+    KREW=~/clis/krew-"$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm.*$/arm/')"
+    "$KREW" install krew
+    cp "$KREW" ./krew
+    echo "export PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"" >> ~/.profile
+    # shellcheck disable=SC1090
+    source ~/.profile
+    
 
     # Helm CLI
     # curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
