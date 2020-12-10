@@ -171,6 +171,8 @@ if ( $userTools ) {
     winget install --silent calibre
 
     winget install --silent PowerToys
+    
+    scoop install advancedrenamer --global
 }
 
 
@@ -227,6 +229,8 @@ if ( $devTools ) {
     scoop install ilspy --global
 
     scoop install fiddler --global
+    
+    scoop install jmeter --global
 
     scoop install ngrok --global
 
