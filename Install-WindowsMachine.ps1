@@ -182,8 +182,10 @@ if ( $userTools ) {
 if ( $ittools ) {
 
     # Had to update to have git in the profile and enable scoop to continue working.
-    scoop install git
-    scoop install git-lfs
+    scoop uninstall git
+    scoop install git --global
+    scoop install git-lfs --global
+    scoop install gitextensions --global
 
     scoop install sudo --global
 
