@@ -1,5 +1,5 @@
 {
-  "id": "e86ee02a-5867-44a9-a16a-a84397cda247",
+  "id": "53df5712-4e73-4c2c-b3fb-7788ece8b597",
   "name": "My Visual Studio extensions",
   "description": "A collection of my Visual Studio extensions",
   "version": "1.0",
@@ -23,6 +23,10 @@
     {
       "name": "Align Assignments",
       "vsixId": "AlignAssignments.41858b2d-ff0b-4a43-80b0-f1b2d6084935"
+    },
+    {
+      "name": "ASP.NET Providers Connected Service",
+      "vsixId": "Microsoft.VisualStudio.ConnectedServices.Aspnet.Providers"
     },
     {
       "name": "AWS Toolkit for Visual Studio 2017 and 2019",
@@ -53,6 +57,10 @@
       "vsixId": "a0ae318b-4f07-4f71-93cb-f21d3f03c6d3"
     },
     {
+      "name": "Clean Solution",
+      "vsixId": "55640f47-34bc-436b-8820-e7f64fbb31fc"
+    },
+    {
       "name": "Cloud Explorer for VS 2019 Preview",
       "vsixId": "Microsoft.VisualStudio.CloudExplorer.16.0"
     },
@@ -69,8 +77,20 @@
       "vsixId": "VSColorThemes.8643b166-c815-4f07-b9ec-64be1f7b8a59"
     },
     {
+      "name": "Command Task Runner",
+      "vsixId": "fc1aafb2-321e-41bd-ac37-03b09ea8ef31"
+    },
+    {
       "name": "Copy As Html",
       "vsixId": "CopyAsHtml.42374550-426a-400e-96f9-237682e8dea6"
+    },
+    {
+      "name": "CSS Sorter",
+      "vsixId": "87534672-5a41-4ea1-a145-17f1a8f5502a"
+    },
+    {
+      "name": "CSS Tools 2019",
+      "vsixId": "1c63270f-485d-4810-99b8-e9d9de82610c"
     },
     {
       "name": "Double-Click Maximize",
@@ -81,12 +101,28 @@
       "vsixId": "a3112f81-e423-4f88-9f2c-e089a309e48e"
     },
     {
+      "name": "Editor Guidelines",
+      "vsixId": "Editor_Guidelines.Microsoft Corp..123716ef-b2ed-4fab-bbcf-1d5f84856ca3"
+    },
+    {
+      "name": "EditorConfig Language Service",
+      "vsixId": "1209461d-57f8-46a4-814a-dbe5fecef941"
+    },
+    {
       "name": "Extension Manager 2019",
       "vsixId": "4a196712-2c3f-4730-ad1d-e7cda4185eb2"
     },
     {
+      "name": "File Differ",
+      "vsixId": "ea5c68d6-cdae-4e79-bd46-2a39e95bb256"
+    },
+    {
       "name": "File Icons",
       "vsixId": "3a7b4930-a5fb-46ec-a9b8-9610c8f953b8"
+    },
+    {
+      "name": "File Nesting",
+      "vsixId": "6c799bc4-0d4c-4172-98bc-5d464b612dca"
     },
     {
       "name": "Fix Mixed Tabs",
@@ -97,8 +133,16 @@
       "vsixId": "473b51ac-c906-4c7a-959b-ec1983eb28bb"
     },
     {
+      "name": "Git Extensions",
+      "vsixId": "GitExtensions..550013F4-337C-4750-8967-DDEEEC2EB497"
+    },
+    {
       "name": "GitHub Extension for Visual Studio",
       "vsixId": "c3d3dc68-c977-411f-b3e8-03b0dccf7dfc"
+    },
+    {
+      "name": "Glyphfriend 2019",
+      "vsixId": "Glyphfriend.VS2019.RionWilliams.da26054d-2c11-4d71-87c2-a4fa188a09c2"
     },
     {
       "name": "Google Cloud Tools for Visual Studio",
@@ -129,6 +173,10 @@
       "vsixId": "2a20580c-7be4-4440-bcd6-8dcf5aa2004e"
     },
     {
+      "name": "LESS Compiler",
+      "vsixId": "d32c5250-fa82-4da6-9732-5518fabebfef"
+    },
+    {
       "name": "License Header Manager",
       "vsixId": "4c570677-8476-4d33-bd0c-da36c89287c8"
     },
@@ -149,12 +197,32 @@
       "vsixId": "d279c680-2465-4297-af80-8dd01be88430"
     },
     {
+      "name": "Microsoft Code Analysis 2019",
+      "vsixId": "16454f43-db71-416c-a4f6-b168864a5abf"
+    },
+    {
       "name": "Middle Click Scroll",
       "vsixId": "MiddleClickScroll.263a3239-a004-40e6-b790-4fd371832c85"
     },
     {
+      "name": "Midnight Lights",
+      "vsixId": "MidnightLights.e1e706e2-05d3-4da9-8754-652cd8ab65f4"
+    },
+    {
       "name": "ML.NET Model Builder (Preview)",
       "vsixId": "FE96D051-645F-4309-AE99-107A776B0DA2"
+    },
+    {
+      "name": "Mongo DB Tools",
+      "vsixId": "MongoDBTools.b3d88e59-3b54-4be2-b712-a03b40519a06"
+    },
+    {
+      "name": "Night Owl - Theme",
+      "vsixId": "NightOwl.e1e706e2-05d3-4da9-8754-652cd8ab65f4"
+    },
+    {
+      "name": "Npgsql PostgreSQL Integration",
+      "vsixId": "Npgsql.VSIX.07074491-d0c6-4138-9d44-ea3f8920e84b"
     },
     {
       "name": "NPM Task Runner",
@@ -165,12 +233,24 @@
       "vsixId": "NUnit.NUnit3TestAdapter"
     },
     {
+      "name": "One Dark Pro",
+      "vsixId": "OneDarkPro.e1e706e2-05d3-4da9-8754-652cd8ab65f4"
+    },
+    {
+      "name": "Open Command Line",
+      "vsixId": "f4ab1e64-5d35-4f06-bad9-bf414f4b3bbb"
+    },
+    {
       "name": "Output enhancer",
       "vsixId": "VSOutputEnhancer.Nikolay Balakin.a06be4c3-f97e-425c-8a0d-bdef08ac2abb"
     },
     {
       "name": "Package Installer",
       "vsixId": "fdd64809-376e-4542-92ce-808a8df06bcc"
+    },
+    {
+      "name": "Package Security Alerts",
+      "vsixId": "1fd37423-142f-4267-8221-93163d573b90"
     },
     {
       "name": "Peek Help",
@@ -185,12 +265,20 @@
       "vsixId": "PowerQuerySDK.Microsoft.30831070-f420-4649-a031-6f679996b182"
     },
     {
+      "name": "Presenter",
+      "vsixId": "Present.dc6d02e5-f97d-4946-9e1a-37a52a916395"
+    },
+    {
       "name": "Pretty Paste",
       "vsixId": "PasteR..5f7b47b4-c3d1-4252-bc32-ed92bbb93a8d"
     },
     {
       "name": "Productivity Power Tools 2017/2019",
       "vsixId": "ProductivityPowerPack.0d5b9d71-e118-46de-a20c-555176e53900"
+    },
+    {
+      "name": "Project System Tools",
+      "vsixId": "B6213233-1C34-4F76-9DD5-F6D520C32AA3"
     },
     {
       "name": "Pull Requests for Visual Studio",
@@ -205,6 +293,10 @@
       "vsixId": "dcad2d98-1e91-4090-81a0-ec0641347bf8"
     },
     {
+      "name": "Security IntelliSense",
+      "vsixId": "SecurityIntelliSense"
+    },
+    {
       "name": "Shrink Empty Lines",
       "vsixId": "SyntacticLineCompression.4452fb8f-b348-49eb-9499-76669d3f9c75"
     },
@@ -217,16 +309,16 @@
       "vsixId": "SolutionErrorVisualizer.a392f96b-6b33-4b53-b4bb-3376a05f986c"
     },
     {
-      "name": "SQLite/SQL Server Compact Toolbox",
-      "vsixId": "41521019-e4c7-480c-8ea8-fc4a2c6f50aa"
-    },
-    {
-      "name": "Syntax Highlighting Pack",
-      "vsixId": "4773ce75-6f30-4269-9557-1f7c30a47be2"
+      "name": "SVG Viewer",
+      "vsixId": "SvgViewer.7a08d0d4-985c-4415-93d5-ddd9135d8f4f"
     },
     {
       "name": "Time Stamp Margin",
       "vsixId": "TimeStampMargin.255e8b14-4a53-4eb7-89a7-7ab741c1f612"
+    },
+    {
+      "name": "Visual Studio Color Theme Designer",
+      "vsixId": "VisualStudioColorThemeDesigner.3287F970-A416-4025-BAFC-CCC004723F57"
     },
     {
       "name": "Visual Studio IntelliCode",
@@ -239,6 +331,14 @@
     {
       "name": "Web Compiler",
       "vsixId": "148ffa77-d70a-407f-892b-9ee542346862"
+    },
+    {
+      "name": "Web Essentials 2019",
+      "vsixId": "509fc133-d9a6-4cf7-a558-e00fd11e0f9f"
+    },
+    {
+      "name": "WebPack Task Runner",
+      "vsixId": "471a020e-77f5-4c77-8ff0-59e08b6c5ba3"
     },
     {
       "name": "Windows IoT Core Project Templates for VS 2017+",
