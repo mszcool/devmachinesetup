@@ -1,0 +1,9 @@
+github/super-linter
+mcr.microsoft.com/azure-cli
+mcr.microsoft.com/azureiotedge-agent
+mcr.microsoft.com/dotnet/aspnet
+mcr.microsoft.com/dotnet/sdk
+mcr.microsoft.com/mssql/server
+postgres
+rabbitmq
+redis

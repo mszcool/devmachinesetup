@@ -1,0 +1,7 @@
+mcr.microsoft.com/cosmosdb/windows/azure-cosmos-emulator
+mcr.microsoft.com/azure-storage/azurite
+mcr.microsoft.com/windows/servercore/iis
+mcr.microsoft.com/powershell
+mcr.microsoft.com/azure-functions/dotnet:2.0
+mcr.microsoft.com/azure-functions/dotnet:3.0
+mcr.microsoft.com/azureiotedge-agent
