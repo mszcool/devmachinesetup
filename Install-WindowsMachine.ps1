@@ -300,6 +300,11 @@ if ( $dev ) {
     npm install -g autorest@3.0.6187
 
     npm install -g swagger-tools@0.10.4
+    
+    # Dotnet artifacts credential provider for .NET Core and .NET Framework.
+    # Note: assumes VS 2019 or dotnet has been installed on the system.
+    # Details: https://github.com/Microsoft/artifacts-credprovider
+    Invoke-Expression "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
 
 }
 
