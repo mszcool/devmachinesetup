@@ -528,7 +528,7 @@ if [ $instCLIs == 1 ]; then
     # curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
     # mv ./linux-amd64/* ~/clis
     # rm ./linux-amd64 -R
-    curl -L https://git.io/get_helm.sh | bash
+    curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
     # Cloud Foundry CLI
     curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx

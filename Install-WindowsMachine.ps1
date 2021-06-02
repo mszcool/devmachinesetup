@@ -140,6 +140,8 @@ if ( $tools ) {
 
     winget install --silent 1password
 
+    winget install --silent KeePass
+
     winget install --silent "Microsoft.PowerToys"
 
     winget install --silent 7zip
@@ -158,6 +160,8 @@ if ( $tools ) {
 #
 if ( $userTools ) {
 
+    winget install --silent Signal
+
     winget install --silent whatsapp
 
     winget install --silent slack
@@ -169,8 +173,6 @@ if ( $userTools ) {
     winget install --silent win32diskimager
 
     winget install --silent calibre
-
-    winget install --silent PowerToys
     
     scoop install advancedrenamer --global
 }
