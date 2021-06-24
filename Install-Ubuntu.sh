@@ -444,6 +444,10 @@ case $instDotNetCore in
         #echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
         # shellcheck disable=SC1090
         source ~/.profile
+	
+	# Credential Artifact Provider
+	# From https://github.com/Microsoft/artifacts-credprovider
+	wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
         ;;
 
     none)
