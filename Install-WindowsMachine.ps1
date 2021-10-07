@@ -76,9 +76,12 @@ if ( $prepOS ) {
     # Enable Console Prompting for PowerShell
     Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name "ConsolePrompting" -Value $True
 
+    # Install git using winget
+    winget install --source winget --silent microsoft/git
+    winget install --source winget --silent "Git Large File Storage"
+
     # Install Scoop, which is more convenient for CLIs and command line dev tools
     Invoke-Expression (new-object net.webclient).downloadstring('https://get.scoop.sh')
-    scoop install git
 
     # Install Windows Features
     Enable-WindowsOptionalFeature -FeatureName NetFx4-AdvSrvs -Online -NoRestart
@@ -138,19 +141,17 @@ function PreparePowerShell() {
 
 if ( $tools ) {
 
-    winget install --silent 1password
+    winget install --source winget --silent 1password
 
-    winget install --silent KeePass
+    winget install --source winget --silent KeePass
 
-    winget install --silent "Microsoft.PowerToys"
+    winget install --source msstore --silent --accept-package-agreements "Microsoft PowerToys"
 
-    winget install --silent 7zip
+    winget install --source winget --silent 7zip
 
-    winget install --silent "Adobe Acrobat Reader DC"
+    winget install --source msstore --silent --accept-package-agreements "Adobe Acrobat Reader DC"
 
-    winget install --silent chrome
-
-    winget install --silent firefox
+    winget install --source winget --silent "Google Chrome"
 
 }
 
@@ -160,21 +161,70 @@ if ( $tools ) {
 #
 if ( $userTools ) {
 
-    winget install --silent Signal
+    winget install --source winget --silent "Microsoft Teams"
 
-    winget install --silent whatsapp
+    winget install --source winget --silent "OpenWhisperSystems.Signal"
 
-    winget install --silent slack
+    winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
 
-    winget install --silent "Microsoft Teams"
+    winget install --source msstore --silent --accept-package-agreements "Telegram Desktop"
 
-    winget install --silent Rufus
+    winget install --source msstore --silent --accept-package-agreements "Messenger"
 
-    winget install --silent win32diskimager
+    winget install --source msstore --silent --accept-package-agreements "Slack"
 
-    winget install --silent calibre
+    winget install --source msstore --silent --accept-package-agreements "ZOOM Cloud Meetings"
+
+    winget install --source msstore --silent --accept-package-agreements Rufus
+
+    winget install --source winget --silent win32diskimager
+
+    winget install --source winget --silent calibre
     
-    scoop install advancedrenamer --global
+    winget install --source winget --silent "Advanced Renamer"
+
+    # Store Apps which I use on a regular basis
+
+    winget install --source winget --silent "CrystalDiskMark"
+
+    winget install --source msstore --silent --accept-package-agreements "Cinebench"
+
+    winget install --source winget --silent "Logi Tune"
+
+    winget install --source msstore --silent --accept-package-agreements "QuickLook"
+    
+    winget install --source msstore --silent --accept-package-agreements "EarTrumpet"
+
+    winget install --source msstore --silent --accept-package-agreements "WorkingHours" # "WorkingHours — Time Tracking / Timesheet"
+
+    winget install --source msstore --silent --accept-package-agreements "Netflix"
+    
+    winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
+
+    winget install --source msstore --silent --accept-package-agreements "Disney+"
+
+    winget install --source msstore --silent --accept-package-agreements "Ico Converter"
+
+    winget install --source msstore --silent --accept-package-agreements "Adobe Photoshop Express: Image Editor, Adjustments, Filters, Effects, Borders"
+
+    winget install --source msstore --silent --accept-package-agreements "FeedLab"
+
+    winget install --source msstore --silent --accept-package-agreements "MSN Money"
+
+    winget install --source msstore --silent --accept-package-agreements "Microsoft News"
+
+    winget install --source msstore --silent --accept-package-agreements "MSN Weather"
+
+    winget install --source msstore --silent --accept-package-agreements "Surface Audio"
+
+    winget install --source msstore --silent --accept-package-agreements "Dynamics AX 2012 Expenses"
+
+    winget install --source msstore --silent --accept-package-agreements "Speedtest by Ookla"
+
+    winget install --source msstore --silent --accept-package-agreements "Spotify Music"
+
+    winget install --source msstore --silent --accept-package-agreements "9WZDNCRD2G0J" # Microsoft Sway
+
 }
 
 
@@ -183,11 +233,23 @@ if ( $userTools ) {
 #
 if ( $ittools ) {
 
-    # Had to update to have git in the profile and enable scoop to continue working.
-    scoop uninstall git
-    scoop install git --global
-    scoop install git-lfs --global
-    scoop install gitextensions --global
+    winget install --source winget --silent "Microsoft.PowerShell"
+
+    winget install --source msstore --silent --accept-package-agreements "Subnet Manager"
+
+    winget install --source msstore --silent --accept-package-agreements "IP Calculator"
+
+    winget install --source msstore --silent --accept-package-agreements "Nightingale REST Client"
+
+    winget install --source msstore --silent --accept-package-agreements "MQTT-Explorer"
+
+    winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04 LTS"
+
+    winget install --source msstore --silent --accept-package-agreements "Ubuntu 20.04 LTS"
+
+    winget install --source winget --silent "GitExtensionsTeam.GitExtensions"
+
+    # Scoop based packages
 
     scoop install sudo --global
 
@@ -201,8 +263,6 @@ if ( $ittools ) {
 
     scoop install busybox --global
 
-    scoop install pwsh --global
-
     scoop install sysinternals --global
 
 }
@@ -213,33 +273,43 @@ if ( $ittools ) {
 #
 if ( $devTools ) {
 
+    winget install --source winget --silent "Microsoft.AzureDataStudio"
+
+    winget install --source winget --silent "Microsoft.AzureStorageExplorer"
+
+    winget install --source winget --silent "Microsoft.AzureStorageEmulator"
+
+    winget install --source winget --silent "Microsoft.AzureFunctionsCoreTools"
+
+    winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
+
+    winget install --source msstore --silent --accept-package-agreements "Cosmos DB Studio"
+
+    winget install --source winget --silent "Microsoft.azure-iot-explorer"
+
+    winget install --source winget --silent "3T.Robo3T"
+
+    winget install --source winget --silent "Postman.Postman"
+    
+    winget install --source winget --silent "ILSpy"
+    
+    winget install --source winget --silent "Telerik.Fiddler"
+    
+    winget install --source winget --silent "RicoSuter.NSwagStudio" 
+
+    # Scoop-based installs
+
     scoop bucket add extras
     scoop bucket add versions
-
-    scoop install azuredatastudio --global
-
-    scoop install robo3t --global
-
-    scoop install heidisql --global
 
     scoop install sqlitestudio --global
 
     scoop install servicebusexplorer --global
-
-    scoop install storageexplorer --global
-
-    scoop install postman --global
-
-    scoop install ilspy --global
-
-    scoop install fiddler --global
     
     scoop install jmeter --global
 
     scoop install ngrok --global
-
-    scoop install nswagstudio --global
-
+    
     scoop install lessmsi --global
 
 }
@@ -260,7 +330,7 @@ if ( $docker -eq "cli" ) {
 }
 elseif ( $docker -eq "desktop" ) {
 
-    winget install --silent DockerDesktop
+    winget install --source winget --silent DockerDesktop
 
 }
 
@@ -270,28 +340,20 @@ elseif ( $docker -eq "desktop" ) {
 #
 if ( $dev ) {
 
-    scoop bucket add extras
-    scoop bucket add versions
+    winget install --source winget --silent "Microsoft.OpenJDK.16"
 
-    scoop bucket add java
-    scoop install openjdk --global
+    winget install --source winget --silent "GoLang.Go"
 
-    scoop install go --global
+    winget install --source winget --silent "Python 3.9"
 
-    scoop install python --global
-    
     # Reference : https://pypi.org/project/autopep8/
     python -m pip install --upgrade autopep8
 
-    scoop install php --global
+    winget install --source winget --silent "Scala.Scala.2"
 
-    scoop install scala --global
+    winget install --source winget --silent "sbt.sbt"
 
-    scoop install sbt --global
-
-    scoop install maven --global
-
-    scoop install nodejs --global
+    winget install --source winget --silent "OpenJS.NodeJS"
 
     npm install -g moment
 
@@ -302,7 +364,12 @@ if ( $dev ) {
     npm install -g autorest@3.0.6187
 
     npm install -g swagger-tools@0.10.4
+
+    scoop bucket add extras
+    scoop bucket add versions
     
+    scoop install maven --global
+
     # Dotnet artifacts credential provider for .NET Core and .NET Framework.
     # Note: assumes VS 2019 or dotnet has been installed on the system.
     # Details: https://github.com/Microsoft/artifacts-credprovider
@@ -319,6 +386,8 @@ if ( $clis ) {
     scoop install azure-cli --global
     $azcliext = Get-Content "$originalExecPath\az-cli.extensions"
     $azcliext | ForEach-Object { az extension add --name $_ }
+
+    scoop install bicep --global
 
     scoop install aws --global
 
@@ -351,9 +420,7 @@ if ( $clis ) {
 if ( $instVsCode ) {
 
     # First install Visual Studio Code
-    scoop bucket add extras
-    scoop bucket add versions
-    scoop install vscode --global
+    winget install --source winget --silent "Microsoft.VisualStudioCode"
 
     # Start installing all extensions
     $vsCodeExtensions = Get-Content "$originalExecPath\vscode.extensions"
@@ -366,7 +433,7 @@ if ( $instVsCode ) {
 # [installVs] Installing a version of Visual Studio (based on Chocolatey)
 #
 if ($installVs) {
-    winget install --silent "Visual Studio $vsEdition"
+    winget install --source winget --silent "Visual Studio $vsEdition"
 }
 
 
@@ -375,9 +442,7 @@ if ($installVs) {
 #
 if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "intelliJ")) {
 
-    scoop bucket add extras
-    scoop bucket add jetbrains
-    scoop install IntelliJ-IDEA --global
+    winget install --source winget --silent "JetBrains.IntelliJIDEA.Community"
 
 }
 if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "eclipse-sts")) {
