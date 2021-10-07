@@ -77,7 +77,7 @@ if ( $prepOS ) {
     Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name "ConsolePrompting" -Value $True
 
     # Install git using winget
-    winget install --source winget --silent microsoft/git
+    winget install --source winget --silent "Git.Git"
     winget install --source winget --silent "Git Large File Storage"
 
     # Install Scoop, which is more convenient for CLIs and command line dev tools
@@ -167,7 +167,7 @@ if ( $userTools ) {
 
     winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
 
-    winget install --source msstore --silent --accept-package-agreements "Telegram Desktop"
+    winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
 
     winget install --source msstore --silent --accept-package-agreements "Messenger"
 
