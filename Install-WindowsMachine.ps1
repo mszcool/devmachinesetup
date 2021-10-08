@@ -233,6 +233,8 @@ if ( $userTools ) {
 #
 if ( $ittools ) {
 
+    winget install --source msstore --silent --accept-package-agreements "Royal TS V6"
+    
     winget install --source winget --silent "Microsoft.PowerShell"
 
     winget install --source msstore --silent --accept-package-agreements "Subnet Manager"
@@ -272,6 +274,8 @@ if ( $ittools ) {
 # [devTools] All tools needed for development
 #
 if ( $devTools ) {
+
+    winget install --source winget --silent "Microsoft PowerBI Desktop"
 
     winget install --source winget --silent "Microsoft.AzureDataStudio"
 
