@@ -128,7 +128,7 @@ function ExtractZipArchive($zipFile, $outPath) {
 #
 function PreparePowerShell() {
     Write-Information "Installing PackageManagement if needed..."
-    Install-Module -Name PackageManagement -Force -MinimumVersion 1.4.6 -Scope CurrentUser -AllowClobber
+    Install-Module -Name PackageManagement -Force -MinimumVersion 1.4.6 -Scope CurrentUser -AllowClobber -SkipPublisherCheck
     #Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
     Write-Information "Installing PowerShellGet if neeed..."
     Install-Module -Name PowerShellGet -Force
