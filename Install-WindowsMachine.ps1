@@ -115,6 +115,14 @@ function CreatePathIfNotExists($pathName) {
 
 
 #
+# Refreshes the environment variable PATH
+#
+function RefreshEnvPath() {
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
+}
+
+
+#
 # Extract a ZIP file
 #
 function ExtractZipArchive($zipFile, $outPath) {
@@ -131,7 +139,7 @@ function PreparePowerShell() {
     Install-Module -Name PackageManagement -Force -MinimumVersion 1.4.6 -Scope CurrentUser -AllowClobber -SkipPublisherCheck
     #Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
     Write-Information "Installing PowerShellGet if neeed..."
-    Install-Module -Name PowerShellGet -Force
+    Install-Module -Name PowerShellGet -Force -AllowClobber
 }
 
 
@@ -305,6 +313,7 @@ if ( $devTools ) {
 
     scoop bucket add extras
     scoop bucket add versions
+    scoop update
 
     scoop install sqlitestudio --global
 
@@ -326,6 +335,7 @@ if ( $docker -eq "cli" ) {
 
     scoop bucket add extras
     scoop bucket add versions
+    scoop update
 
     scoop install docker --global
     scoop install docker-machine --global
@@ -334,7 +344,9 @@ if ( $docker -eq "cli" ) {
 }
 elseif ( $docker -eq "desktop" ) {
 
-    winget install --source winget --silent DockerDesktop
+    winget install --source winget --silent "Docker.DockerDesktop"
+
+    RefreshEnvPath
 
 }
 
@@ -359,6 +371,8 @@ if ( $dev ) {
 
     winget install --source winget --silent "OpenJS.NodeJS"
 
+    RefreshEnvPath
+
     npm install -g moment
 
     npm install -g bower
@@ -377,7 +391,7 @@ if ( $dev ) {
     # Dotnet artifacts credential provider for .NET Core and .NET Framework.
     # Note: assumes VS 2019 or dotnet has been installed on the system.
     # Details: https://github.com/Microsoft/artifacts-credprovider
-    Invoke-Expression "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
 
 }
 
@@ -452,6 +466,8 @@ if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "intelliJ")) {
 if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "eclipse-sts")) {
 
     scoop bucket add extras
+    scoop update
+
     scoop install sts --global
 
 }
@@ -465,11 +481,11 @@ if ( $instPrettyPrompt ) {
     PreparePowerShell
 
     Write-Information "Installing posh-git...."
-    Install-Module -Name posh-git -Scope CurrentUser -Force
+    Install-Module -Name posh-git -Force
     Write-Information "Installing oh-my-posh..."
-    Install-Module -Name oh-my-posh -Scope CurrentUser -Force
+    Install-Module -Name oh-my-posh -Force
     Write-Information "Installing PSReadLine..."
-    Install-Module -Name PSReadLine -Scope CurrentUser -SkipPublisherCheck -Force
+    Install-Module -Name PSReadLine -SkipPublisherCheck -Force
 
     # Then write to the PowerShell Profile
     if ( ! [System.IO.File]::Exists($PROFILE) ) {

@@ -1,6 +1,6 @@
 alias
 application-insights
-azure-cli-iot-ext
+azure-iot
 dev-spaces
 image-copy-extension
 azure-devops
