@@ -356,6 +356,10 @@ elseif ( $docker -eq "desktop" ) {
 #
 if ( $dev ) {
 
+    winget install --id "Microsoft.dotnet" --version
+    
+    winget install --id "Microsoft.dotnet" --version 3.1.410.15736
+    
     winget install --source winget --silent "Microsoft.OpenJDK.16"
 
     winget install --source winget --silent "GoLang.Go"
