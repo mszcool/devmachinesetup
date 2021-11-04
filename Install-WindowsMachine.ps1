@@ -381,7 +381,8 @@ if ( $dev ) {
 
     npm install -g bower
 
-    npm install -g gulp
+    # Removed due to security issues/vulnerabilities
+    # npm install -g gulp
     
     npm install -g autorest@3.0.6187
 
@@ -443,6 +444,9 @@ if ( $instVsCode ) {
 
     # First install Visual Studio Code
     winget install --source winget --silent "Microsoft.VisualStudioCode"
+
+    # Refresh the Path
+    RefreshEnvPath
 
     # Start installing all extensions
     $vsCodeExtensions = Get-Content "$originalExecPath\vscode.extensions"
