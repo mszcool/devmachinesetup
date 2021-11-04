@@ -67,8 +67,8 @@ ms-vscode.node-debug
 ms-vscode.powershell
 ms-vscode.Theme-MarkdownKit
 ms-vscode.Theme-MaterialKit
-ms-vscode.typescript-javascript-grammar
 ms-vscode.vscode-node-azure-pack
+ms-vscode.vscode-typescript
 ms-vsliveshare.vsliveshare
 ms-vsliveshare.vsliveshare-audio
 ms-vsliveshare.vsliveshare-pack
@@ -101,4 +101,4 @@ vscjava.vscode-java-test
 vscjava.vscode-maven
 vscjava.vscode-spring-boot-dashboard
 vscjava.vscode-spring-initializr
-vscoss.vscode-ansible
+redhat.ansible
