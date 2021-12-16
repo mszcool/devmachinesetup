@@ -18,7 +18,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none --dotnetmono --vscode --moreDevTools --intellij --prompt"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 3|5|6|none --devTools --prompt"
 }
 
 instEnduser=0
@@ -31,14 +31,11 @@ instDockerEngine=0
 instCLIs=0
 instNodeJs=0
 instDotNetCore="none"
-instDotNetMono=0
 instJava="none"
 instScala=0
 instRuby=0
 instGoLang=0
-instVsCode=0
-instIntelliJ=0
-instMoreDevTools=0
+instDevTools=0
 
 while :; do
     case $1 in
@@ -69,14 +66,8 @@ while :; do
             instCLIs=1
             instPython=1    # Many CLIs require python
             ;;
-        --vscode)
-            instVsCode=1
-            ;;
-        --moreDevTools)
-            instMoreDevTools=1
-            ;;
-        --intellij)
-            instIntelliJ=1
+        --devTools)
+            instDevTools=1
             ;;
         --python)
             instPython=1
@@ -108,9 +99,6 @@ while :; do
             else
                 instDotNetCore=3
             fi
-            ;;
-        --dotnetmono)
-            instDotNetMono=1
             ;;
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
@@ -150,6 +138,10 @@ if [ $instBase == 1 ]; then
     sudo apt install -y dos2unix
     sudo apt install -y unzip
     sudo apt install -y curl
+    
+    # Packages needed for USBIPD for USB support in WSL 2
+    # https://devblogs.microsoft.com/commandline/connecting-usb-devices-to-wsl/
+    sudo apt install -y linux-tools-5.4.0-77-generic hwdata   
 
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D6BC243565B2087BC3F897C9277A7293F59E4889
     if [ "$ver" == "16.04" ]; then
@@ -362,9 +354,11 @@ esac
 # Installing Scala SBT with package manager
 #
 if [ $instScala == 1 ]; then
-    echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    #echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
     sudo apt update
+    sudo apt-get install -y apt-transport-https curl gnupg
     sudo apt install -y sbt
 fi
 
@@ -404,7 +398,7 @@ fi
 #
 # Installing .Net core runtimes
 #
-if [ "$instDotNetCore" != "none" ]; then   
+if [ "$instDotNetCore" != "none" ]; then
     curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 
@@ -416,6 +410,7 @@ if [ "$instDotNetCore" != "none" ]; then
         wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
     fi
     sudo dpkg -i packages-microsoft-prod.deb
+    rm packages-microsoft-prod.deb
     
     # Needed on Ubuntu 18.04 in WSL
     if [ "$ver" == "18.04" ]; then
@@ -431,40 +426,43 @@ if [ "$instDotNetCore" != "none" ]; then
 fi 
 
 case $instDotNetCore in
-    2)
-        sudo apt install -y dotnet-sdk-2.2
-        sudo apt install -y powershell
-        ;;
-
     3)
         sudo apt install -y dotnet-sdk-3.1
-        sudo apt install -y powershell
         # Alternatively
         #dotnet tool install -g powershell
         #echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
         # shellcheck disable=SC1090
         source ~/.profile
-	
-	# Credential Artifact Provider
-	# From https://github.com/Microsoft/artifacts-credprovider
-	wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
         ;;
+	
+    6)
+    	sudo apt install -y dotnet-sdk-6.0
+	;;
 
     none)
         ;;
 esac
 
+if [ "$instDotNetCore" != "none" ]; then
+	# PowerShell for the .NET Developer
+	sudo apt install -y powershell
+	
+	# Dotnet Core Tools
+	dotnet tool install --global dotnet-ef
+	dotnet tool install --global dotnet-trace
+	dotnet tool install --global dotnet-dump
+	dotnet tool install --global dotnet-counters
+	dotnet tool install --global dotnet-gcdump
+	dotnet tool install --global dotnet-format
+	dotnet tool install --global dotnet-aspnet-codegenerator
+	dotnet tool install --global dotnet-ildasm
+	dotnet tool install --global Microsoft.dotnet-openapi
+	dotnet tool install --global Swashbuckle.AspNetCore.Cli
+	dotnet tool install --global NSwag.ConsoleCore
 
-#
-# Installing Mono for .NET
-#
-if [ $instDotNetMono == 1 ]; then
-    sudo apt install gnupg ca-certificates
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-    
-    sudo apt update
-    sudo apt install -y mono-devel
+	# Credential Artifact Provider
+	# From https://github.com/Microsoft/artifacts-credprovider
+	wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
 fi
 
 
@@ -527,7 +525,6 @@ if [ $instCLIs == 1 ]; then
     krew install krew
     krew install exec-as
     
-
     # Helm CLI
     # curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
     # mv ./linux-amd64/* ~/clis
@@ -556,54 +553,76 @@ fi
 
 
 #
-# Installing IntelliJ IDEA Communtiy from un-supported package source
-# https://launchpad.net/~mmk2410/+archive/ubuntu/intellij-idea
-#
-if [ $instIntelliJ == 1 ]; then
-    sudo snap install intellij-idea-community --classic --edge
-fi
-
-
-#
-# Installing Visual Studio Code and most used extensions
-#
-if [ $instVsCode == 1 ]; then
-    sudo snap install --classic code 
-    #sudo snap install --classic code-insiders
-
-    # Start installing all extensions
-    dos2unix vscode.extensions
-    while read -r vscodeext; do 
-        code --install-extension "$vscodeext"
-    done < vscode.extensions
-fi
-
-
-#
 # Installing cloud tools such as Azure Data Studio etc.
 #
-if [ $instMoreDevTools == 1 ]; then
+if [ $instDevTools == 1 ]; then
 
+   # Visual Studio Code
+   #sudo snap install --classic code 
+   #sudo snap install --classic code-insiders
+   wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+   sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+   sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+   rm -f packages.microsoft.gpg
+   
+   sudo apt install apt-transport-https
+   sudo apt update
+   sudo apt install code # or code-insiders
+
+   # Start installing all extensions
+   dos2unix vscode.extensions
+   while read -r vscodeext; do 
+       code --install-extension "$vscodeext"
+   done < vscode.extensions
+    
+   # IntelliJ IDEA
+   #sudo snap install intellij-idea-community --classic --edge
+   sudo add-apt-repository ppa:mmk2410/intellij-idea
+   sudo apt-get update
+   sudo apt install intellij-idea-community
+
+   # .NET Mono (needed for some dev tools)
+   sudo apt install gnupg ca-certificates
+   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+   echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+    
+   sudo apt update
+   sudo apt install -y mono-devel
+   
    # Azure Data Studio
    wget -O azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
    sudo dpkg -i ./azuredatastudio-linux.deb
    
    # Azure Storage Explorer
-   sudo snap install storage-explorer
-   sudo snap connect storage-explorer:password-manager-service :password-manager-service
+   #sudo snap install storage-explorer
+   #sudo snap connect storage-explorer:password-manager-service :password-manager-service
    
    # Postman
-   sudo snap install postman
+   #sudo snap install postman
    
    # MQTT Explorer
-   sudo snap install mqtt-explorer
+   #sudo snap install mqtt-explorer
    
    # Arduino IDE
-   sudo snap install arduino
-   sudo usermod -a -G dialout "$USER"
+   #sudo snap install arduino
+   #sudo usermod -a -G dialout "$USER"
+   currentPath=$PWD
+   mkdir ~/arduino
+   cd ~/arduino/
+   wget https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
+   tar -xvf ./arduino-1.8.15-linux64.tar.xz
+   sudo ~/arduino/arduino-1.8.15/install.sh
+   cd $PWD
+   
+   # GitExtensions
+   sudo apt install -y kdiff3
+   wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
+   sudo mkdir /usr/bin/gitextensions
+   unzip "gitextensions.zip" -d "/usr/bin/gitextensions"
    
    # Redis Desktop Manager
-   sudo snap install redis-desktop-manager
+   sudo apt -y install redis-tools
+   #sudo snap install redis-desktop-manager
    
    # Installing the Cascadia code font
    sudo apt install -y unzip
