@@ -242,6 +242,8 @@ if ( $userTools ) {
 if ( $ittools ) {
 
     winget install --source winget --silent "gerardog.gsudo"
+    
+    winget install --source winget --silent "dorssel.usbipd-win"
 
     winget install --source msstore --silent --accept-package-agreements "Royal TS V6"
     
