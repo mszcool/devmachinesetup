@@ -330,7 +330,12 @@ fi
 # Installing Go Language
 #
 if [ $instGoLang == 1 ]; then
-    sudo apt install -y golang-go
+    wget -O go.tar.gz https://go.dev/dl/go1.17.5.linux-amd64.tar.gz
+    mkdir ~/go
+    tar -xvf go.tar.gz -C ~/
+    echo "export PATH=\"\$PATH:~/go/bin\"" >> ~/.profile
+    rm ~/go.tar.gz
+    source ~/.profile
 fi
 
 
