@@ -675,9 +675,10 @@ if [ $instDevTools == 1 ]; then
    sudo apt install -y kdiff3
    wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
    mkdir ~/tools/gitextensions
-   unzip "gitextensions.zip" -d "~/tools"
+   unzip gitextensions.zip -d ~/tools
    cd ~/
    cp ~/tools/GitExtensions/Plugins/Newtonsoft.Json.dll ~/tools/GitExtensions
+   chmod u+x ~/tools/GitExtensions/gitext.sh
    
    # Redis Desktop Manager
    sudo apt install -y redis-tools
