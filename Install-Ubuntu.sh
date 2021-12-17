@@ -226,9 +226,10 @@ fi
 #
 if [ $instPython == 1 ]; then
     sudo apt install -y python3
-    sudo apt install -y python3-pip  
-    sudo rm /usr/bin/python
-    sudo ln /usr/bin/python3 /usr/bin/python
+    sudo apt install -y python3-pip
+    sudo apt install -y python3-venv
+    #sudo rm /usr/bin/python
+    #sudo ln /usr/bin/python3 /usr/bin/python
     sudo -H python -m pip install --upgrade pip
 
     # Create a default virtual environment
