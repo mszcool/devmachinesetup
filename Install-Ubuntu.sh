@@ -557,6 +557,16 @@ fi
 #
 if [ $instDevTools == 1 ]; then
 
+   # Switch to the home directory
+   currentPath=$PWD
+   cd ~/
+   mkdir ~/tools
+   
+   # Install Microsoft Edge
+   wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
+   sudo dpkg -i ~/edge.deb
+   rm ~/edge.deb
+   
    # Visual Studio Code
    #sudo snap install --classic code 
    #sudo snap install --classic code-insiders
@@ -585,40 +595,51 @@ if [ $instDevTools == 1 ]; then
    sudo apt install gnupg ca-certificates
    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-    
    sudo apt update
    sudo apt install -y mono-devel
    
    # Azure Data Studio
-   wget -O azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
-   sudo dpkg -i ./azuredatastudio-linux.deb
+   wget -O ~/azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
+   sudo dpkg -i ~/azuredatastudio-linux.deb
+   rm ~/azuredatastudio-linux.deb
    
    # Azure Storage Explorer
    #sudo snap install storage-explorer
    #sudo snap connect storage-explorer:password-manager-service :password-manager-service
+   wget -O ~/azurestorageexplorer.tar.gz https://go.microsoft.com/fwlink/?LinkId=722418
+   mkdir ~/tools/azurestorageexplorer
+   tar -xvf --directory=~/tools/azurestorageexplorer ~/azurestorageexplorer.tar.gz
+   rm ~/azurestorageexplorer.tar.gz
+   cd ~/
    
    # Postman
    #sudo snap install postman
+   wget -O ~/postman.tar.gz https://dl.pstmn.io/download/latest/linux64
+   mkdir ~/tools/postman
+   tar -xvf --directory=~/tools/postman/ ~/postman.tar.gz
+   rm ~/postman.tar.gz
+   cd ~/
    
    # MQTT Explorer
    #sudo snap install mqtt-explorer
+   mkdir ~/tools/mqttexplorer
+   wget -O ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage https://github.com/thomasnordquist/MQTT-Explorer/releases/download/0.0.0-0.4.0-beta1/MQTT-Explorer-0.4.0-beta1.AppImage
+   chmod u+x ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage
    
    # Arduino IDE
    #sudo snap install arduino
    #sudo usermod -a -G dialout "$USER"
-   currentPath=$PWD
-   mkdir ~/arduino
-   cd ~/arduino/
-   wget https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
-   tar -xvf ./arduino-1.8.15-linux64.tar.xz
-   sudo ~/arduino/arduino-1.8.15/install.sh
-   cd $PWD
+   wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
+   tar -xvf --directory=~/tools/ ~/arduino.tar.xz
+   sudo ~/tools/arduino-1.8.15/install.sh
+   rm ~/arduino.tar.xz
    
    # GitExtensions
    sudo apt install -y kdiff3
    wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
-   sudo mkdir /usr/bin/gitextensions
-   unzip "gitextensions.zip" -d "/usr/bin/gitextensions"
+   mkdir ~/tools/gitextensions
+   unzip "gitextensions.zip" -d "~/tools/gitextensions"
+   cd ~/
    
    # Redis Desktop Manager
    sudo apt -y install redis-tools
@@ -631,6 +652,8 @@ if [ $instDevTools == 1 ]; then
    sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
    sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
 
+   # Switch back to the previous directory
+   cd $PWD
 fi
 
 
