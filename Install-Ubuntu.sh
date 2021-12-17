@@ -644,7 +644,7 @@ if [ $instDevTools == 1 ]; then
    #sudo snap connect storage-explorer:password-manager-service :password-manager-service
    wget -O ~/azurestorageexplorer.tar.gz https://go.microsoft.com/fwlink/?LinkId=722418
    mkdir ~/tools/azurestorageexplorer
-   tar -xvf --directory=~/tools/azurestorageexplorer ~/azurestorageexplorer.tar.gz
+   tar -xvf ~/azurestorageexplorer.tar.gz -C ~/tools/azurestorageexplorer
    rm ~/azurestorageexplorer.tar.gz
    cd ~/
    
@@ -652,7 +652,7 @@ if [ $instDevTools == 1 ]; then
    #sudo snap install postman
    wget -O ~/postman.tar.gz https://dl.pstmn.io/download/latest/linux64
    mkdir ~/tools/postman
-   tar -xvf --directory=~/tools/postman/ ~/postman.tar.gz
+   tar -xvf ~/postman.tar.gz -C ~/tools/postman/
    rm ~/postman.tar.gz
    cd ~/
    
@@ -666,7 +666,7 @@ if [ $instDevTools == 1 ]; then
    #sudo snap install arduino
    #sudo usermod -a -G dialout "$USER"
    wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
-   tar -xvf --directory=~/tools/ ~/arduino.tar.xz
+   tar -xvf ~/arduino.tar.xz -C ~/tools/
    sudo ~/tools/arduino-1.8.15/install.sh
    rm ~/arduino.tar.xz
    
