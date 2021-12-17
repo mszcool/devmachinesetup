@@ -365,6 +365,7 @@ case $instJava in
 	sudo apt install -y apt-transport-https
 	sudo apt update
 	sudo apt install -y msopenjdk-17
+	;;
 
     default)
         sudo apt-get install -y default-jdk
