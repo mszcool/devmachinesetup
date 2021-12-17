@@ -602,7 +602,7 @@ if [ $instDevTools == 1 ]; then
    wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
    sudo dpkg -i ~/edge.deb
    rm ~/edge.deb
-   sudo apt --fix-broken install
+   sudo apt -y --fix-broken install
    
    # Visual Studio Code
    #sudo snap install --classic code 
@@ -624,12 +624,12 @@ if [ $instDevTools == 1 ]; then
     
    # IntelliJ IDEA
    #sudo snap install intellij-idea-community --classic --edge
-   sudo add-apt-repository ppa:mmk2410/intellij-idea
-   sudo apt-get update
-   sudo apt install intellij-idea-community
+   sudo add-apt-repository -y ppa:mmk2410/intellij-idea
+   sudo apt -y update
+   sudo apt install -y intellij-idea-community
 
    # .NET Mono (needed for some dev tools)
-   sudo apt install gnupg ca-certificates
+   sudo apt install -y gnupg ca-certificates
    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
    sudo apt update
@@ -679,7 +679,7 @@ if [ $instDevTools == 1 ]; then
    cd ~/
    
    # Redis Desktop Manager
-   sudo apt -y install redis-tools
+   sudo apt install -y redis-tools
    #sudo snap install redis-desktop-manager
    
    # Installing the Cascadia code font
