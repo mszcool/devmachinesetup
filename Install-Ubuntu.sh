@@ -231,13 +231,27 @@ if [ $instPython == 1 ]; then
     sudo ln /usr/bin/python3 /usr/bin/python
     sudo -H python -m pip install --upgrade pip
 
-    sudo -H pip3 install numpy
-    sudo -H pip3 install pytest
-    sudo -H pip3 install mock
-    sudo -H pip3 install Pillow
-    sudo -H pip3 install GhostScript
-    sudo -H pip3 install matplotlib
-    sudo -H pip3 install autopep8
+    # Create a default virtual environment
+    existspythondefault=$(grep "source ~/pythonvenv/default/bin/activate" ~/.profile)
+    if [ "$existspythondefault" == "" ]; then
+       mkdir ~/pythonvenv
+       python3 -m venv ~/pythonvenv/default
+       echo "# mszcool default pyhton environment" >> ~/.profile
+       echo "source ~/pythonvenv/default/bin/activate" >> ~/.profile
+       source ~/.profile
+    else
+       # Ensure packages are installed in default environment, only
+       source ~/pythonvenv/default/bin/activate
+    fi
+    
+    # Now install packages into that default virtual environment
+    pip3 install numpy
+    pip3 install pytest
+    pip3 install mock
+    pip3 install Pillow
+    pip3 install GhostScript
+    pip3 install matplotlib
+    pip3 install autopep8
 fi
 
 
@@ -482,17 +496,24 @@ if [ $instCLIs == 1 ]; then
     fi
 
     # Install Azure CLI and plug-ins
-    # Workaround needed on WSL / Ubuntu 18.04 LTS for some reason:
-    sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
-    # After Workaround, can install azure CLI without issues
-    sudo -H pip3 install azure-cli
+    sudo apt update
+    sudo apt install ca-certificates curl apt-transport-https lsb-release gnupg
+    curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+    AZ_REPO=$(lsb_release -cs)
+    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
+    sudo apt update
+    sudo apt install azure-cli
+    
     dos2unix az-cli.extensions
     while read -r azext; do 
         az extension add --name "$azext"
     done < az-cli.extensions
 
     # Install other cloud provider CLIs
-    sudo -H pip3 install awscli
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "~/clis/awscliv2.zip"
+    unzip -d ~/clis/ ~/clis/awscliv2.zip
+    sudo ~/clis/aws/install
+    rm ~/clis/awscliv2.zip
 
     # Install Docker CLI
     #curl -L "https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz" | tar -xz
