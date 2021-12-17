@@ -602,6 +602,7 @@ if [ $instDevTools == 1 ]; then
    wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
    sudo dpkg -i ~/edge.deb
    rm ~/edge.deb
+   sudo apt --fix-broken install
    
    # Visual Studio Code
    #sudo snap install --classic code 
@@ -611,9 +612,9 @@ if [ $instDevTools == 1 ]; then
    sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
    rm -f packages.microsoft.gpg
    
-   sudo apt install apt-transport-https
-   sudo apt update
-   sudo apt install code # or code-insiders
+   sudo apt -y install apt-transport-https
+   sudo apt -y update
+   sudo apt -y install code # or code-insiders
 
    # Start installing all extensions
    dos2unix vscode.extensions
