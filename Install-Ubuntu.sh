@@ -18,7 +18,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 3|5|6|none --devTools --prompt"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --devTools --prompt"
 }
 
 instEnduser=0
@@ -72,12 +72,12 @@ while :; do
         --python)
             instPython=1
             ;;
-	    --golang)
+	--golang)
             instGoLang=1
-	        ;;
-	    --ruby)
+	    ;;
+	--ruby)
             instRuby=1
-	        ;;
+	    ;;
         --nodejs)
             instNodeJs=1
             ;;
@@ -222,6 +222,54 @@ fi
 
 
 #
+# Install packages needed on a full server, only
+#
+if [ $instSshServer == 1 ]; then
+    sudo apt install -y openssh-server
+fi
+
+
+#
+# Install and configure sysstat tools (iostat, top etc.)
+#
+if [ $instSysstat == 1 ]; then
+    sudo apt-get install -y sysstat
+    awk '{gsub("ENABLED=\"false\"", "ENABLED=\"true\"")}1' /etc/default/sysstat | sudo tee /etc/default/sysstat
+    # Update /etc/cron.d/sysstat for more frequent intervals
+    # Change "5-55/10 * * * * root command -v debina-sa1 > /dev/null && debian-sa1 1 1"
+    # To     "*/2 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1"
+fi
+
+
+#
+# Install docker engine
+#
+if [ $instDockerEngine == 1 ]; then
+
+   sudo apt -y install \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg-agent \
+        software-properties-common
+
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+   
+   sudo apt-key fingerprint 0EBFCD88
+   
+   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+   
+   sudo apt update
+   sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
+   
+   # groupadd was not needed after the installation
+   #sudo groupadd docker
+   sudo usermod -aG docker "$USER"
+
+fi
+
+
+#
 # Installing Python
 #
 if [ $instPython == 1 ]; then
@@ -287,54 +335,6 @@ fi
 
 
 #
-# Install packages needed on a full server, only
-#
-if [ $instSshServer == 1 ]; then
-    sudo apt install -y openssh-server
-fi
-
-
-#
-# Install and configure sysstat tools (iostat, top etc.)
-#
-if [ $instSysstat == 1 ]; then
-    sudo apt-get install -y sysstat
-    awk '{gsub("ENABLED=\"false\"", "ENABLED=\"true\"")}1' /etc/default/sysstat | sudo tee /etc/default/sysstat
-    # Update /etc/cron.d/sysstat for more frequent intervals
-    # Change "5-55/10 * * * * root command -v debina-sa1 > /dev/null && debian-sa1 1 1"
-    # To     "*/2 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1"
-fi
-
-
-#
-# Install docker engine
-#
-if [ $instDockerEngine == 1 ]; then
-
-   sudo apt -y install \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg-agent \
-        software-properties-common
-
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-   
-   sudo apt-key fingerprint 0EBFCD88
-   
-   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-   
-   sudo apt update
-   sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
-   
-   # groupadd was not needed after the installation
-   #sudo groupadd docker
-   sudo usermod -aG docker "$USER"
-
-fi
-
-
-#
 # Installing Java with package manager
 #
 case $instJava in
@@ -357,6 +357,14 @@ case $instJava in
         sudo apt install -y oracle-java8-installer
         sudo apt install -y maven
         ;;
+	
+    msftjdk)
+        ubuntu_release=`lsb_release -rs`
+        wget https://packages.microsoft.com/config/ubuntu/${ubuntu_release}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+        sudo dpkg -i packages-microsoft-prod.deb
+	sudo apt install -y apt-transport-https
+	sudo apt update
+	sudo apt install -y msopenjdk-17
 
     default)
         sudo apt-get install -y default-jdk
