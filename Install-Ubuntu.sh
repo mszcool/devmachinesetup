@@ -278,7 +278,7 @@ if [ $instPython == 1 ]; then
     sudo apt install -y python3-venv
     #sudo rm /usr/bin/python
     #sudo ln /usr/bin/python3 /usr/bin/python
-    sudo -H python -m pip install --upgrade pip
+    sudo -H python3 -m pip install --upgrade pip
 
     # Create a default virtual environment
     existspythondefault=$(grep "source ~/pythonvenv/default/bin/activate" ~/.profile)
