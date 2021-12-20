@@ -241,6 +241,10 @@ if ( $userTools ) {
 #
 if ( $ittools ) {
 
+    winget install --source winget --silent "gerardog.gsudo"
+    
+    winget install --source winget --silent "dorssel.usbipd-win"
+
     winget install --source msstore --silent --accept-package-agreements "Royal TS V6"
     
     winget install --source winget --silent "Microsoft.PowerShell"
@@ -260,8 +264,6 @@ if ( $ittools ) {
     winget install --source winget --silent "GitExtensionsTeam.GitExtensions"
 
     # Scoop based packages
-
-    scoop install sudo --global
 
     scoop install curl grep sed less touch --global
 

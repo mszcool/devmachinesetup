@@ -18,7 +18,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|none --dotnetcore 2|3|none --dotnetmono --vscode --moreDevTools --intellij --prompt"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --devTools --prompt"
 }
 
 instEnduser=0
@@ -31,14 +31,11 @@ instDockerEngine=0
 instCLIs=0
 instNodeJs=0
 instDotNetCore="none"
-instDotNetMono=0
 instJava="none"
 instScala=0
 instRuby=0
 instGoLang=0
-instVsCode=0
-instIntelliJ=0
-instMoreDevTools=0
+instDevTools=0
 
 while :; do
     case $1 in
@@ -69,24 +66,18 @@ while :; do
             instCLIs=1
             instPython=1    # Many CLIs require python
             ;;
-        --vscode)
-            instVsCode=1
-            ;;
-        --moreDevTools)
-            instMoreDevTools=1
-            ;;
-        --intellij)
-            instIntelliJ=1
+        --devTools)
+            instDevTools=1
             ;;
         --python)
             instPython=1
             ;;
-	    --golang)
+	--golang)
             instGoLang=1
-	        ;;
-	    --ruby)
+	    ;;
+	--ruby)
             instRuby=1
-	        ;;
+	    ;;
         --nodejs)
             instNodeJs=1
             ;;
@@ -108,9 +99,6 @@ while :; do
             else
                 instDotNetCore=3
             fi
-            ;;
-        --dotnetmono)
-            instDotNetMono=1
             ;;
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
@@ -150,6 +138,10 @@ if [ $instBase == 1 ]; then
     sudo apt install -y dos2unix
     sudo apt install -y unzip
     sudo apt install -y curl
+    
+    # Packages needed for USBIPD for USB support in WSL 2
+    # https://devblogs.microsoft.com/commandline/connecting-usb-devices-to-wsl/
+    sudo apt install -y linux-tools-5.4.0-77-generic hwdata   
 
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D6BC243565B2087BC3F897C9277A7293F59E4889
     if [ "$ver" == "16.04" ]; then
@@ -230,56 +222,6 @@ fi
 
 
 #
-# Installing Python
-#
-if [ $instPython == 1 ]; then
-    sudo apt install -y python3
-    sudo apt install -y python3-pip  
-    sudo rm /usr/bin/python
-    sudo ln /usr/bin/python3 /usr/bin/python
-    sudo -H python -m pip install --upgrade pip
-
-    sudo -H pip3 install numpy
-    sudo -H pip3 install pytest
-    sudo -H pip3 install mock
-    sudo -H pip3 install Pillow
-    sudo -H pip3 install GhostScript
-    sudo -H pip3 install matplotlib
-    sudo -H pip3 install autopep8
-fi
-
-
-#
-# Installing Ruby on Rails
-#
-if [ $instRuby == 1 ]; then
-    # Ruby and Jekyll for GitHub Pages
-
-    sudo apt install -y ruby-full
-
-    # shellcheck disable=SC1090
-    {
-        echo "# Install Ruby Gems to ~/gems"
-        echo "export GEM_HOME=\"$HOME/gems\"" 
-        echo "export PATH=\"\$HOME/gems/bin:\$PATH\""
-    } >> ~/.bashrc
-
-    # shellcheck disable=SC1090
-    source ~/.bashrc
-
-    sudo gem install jekyll bundler
-fi
-
-
-#
-# Installing Go Language
-#
-if [ $instGoLang == 1 ]; then
-    sudo apt install -y golang-go
-fi
-
-
-#
 # Install packages needed on a full server, only
 #
 if [ $instSshServer == 1 ]; then
@@ -328,6 +270,76 @@ fi
 
 
 #
+# Installing Python
+#
+if [ $instPython == 1 ]; then
+    sudo apt install -y python3
+    sudo apt install -y python3-pip
+    sudo apt install -y python3-venv
+    #sudo rm /usr/bin/python
+    #sudo ln /usr/bin/python3 /usr/bin/python
+    sudo -H python -m pip install --upgrade pip
+
+    # Create a default virtual environment
+    existspythondefault=$(grep "source ~/pythonvenv/default/bin/activate" ~/.profile)
+    if [ "$existspythondefault" == "" ]; then
+       mkdir ~/pythonvenv
+       python3 -m venv ~/pythonvenv/default
+       echo "# mszcool default pyhton environment" >> ~/.profile
+       echo "source ~/pythonvenv/default/bin/activate" >> ~/.profile
+       source ~/.profile
+    else
+       # Ensure packages are installed in default environment, only
+       source ~/pythonvenv/default/bin/activate
+    fi
+    
+    # Now install packages into that default virtual environment
+    pip3 install numpy
+    pip3 install pytest
+    pip3 install mock
+    pip3 install Pillow
+    pip3 install GhostScript
+    pip3 install matplotlib
+    pip3 install autopep8
+fi
+
+
+#
+# Installing Ruby on Rails
+#
+if [ $instRuby == 1 ]; then
+    # Ruby and Jekyll for GitHub Pages
+
+    sudo apt install -y ruby-full
+
+    # shellcheck disable=SC1090
+    {
+        echo "# Install Ruby Gems to ~/gems"
+        echo "export GEM_HOME=\"$HOME/gems\"" 
+        echo "export PATH=\"\$HOME/gems/bin:\$PATH\""
+    } >> ~/.bashrc
+
+    # shellcheck disable=SC1090
+    source ~/.bashrc
+
+    sudo gem install jekyll bundler
+fi
+
+
+#
+# Installing Go Language
+#
+if [ $instGoLang == 1 ]; then
+    wget -O go.tar.gz https://go.dev/dl/go1.17.5.linux-amd64.tar.gz
+    mkdir ~/go
+    tar -xvf go.tar.gz -C ~/
+    echo "export PATH=\"\$PATH:~/go/bin\"" >> ~/.profile
+    rm ~/go.tar.gz
+    source ~/.profile
+fi
+
+
+#
 # Installing Java with package manager
 #
 case $instJava in
@@ -350,6 +362,15 @@ case $instJava in
         sudo apt install -y oracle-java8-installer
         sudo apt install -y maven
         ;;
+	
+    msftjdk)
+        ubuntu_release=`lsb_release -rs`
+        wget https://packages.microsoft.com/config/ubuntu/${ubuntu_release}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+        sudo dpkg -i packages-microsoft-prod.deb
+	sudo apt install -y apt-transport-https
+	sudo apt update
+	sudo apt install -y msopenjdk-17
+	;;
 
     default)
         sudo apt-get install -y default-jdk
@@ -362,9 +383,11 @@ esac
 # Installing Scala SBT with package manager
 #
 if [ $instScala == 1 ]; then
-    echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    #echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
     sudo apt update
+    sudo apt-get install -y apt-transport-https curl gnupg
     sudo apt install -y sbt
 fi
 
@@ -404,7 +427,7 @@ fi
 #
 # Installing .Net core runtimes
 #
-if [ "$instDotNetCore" != "none" ]; then   
+if [ "$instDotNetCore" != "none" ]; then
     curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
     sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 
@@ -416,6 +439,7 @@ if [ "$instDotNetCore" != "none" ]; then
         wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
     fi
     sudo dpkg -i packages-microsoft-prod.deb
+    rm packages-microsoft-prod.deb
     
     # Needed on Ubuntu 18.04 in WSL
     if [ "$ver" == "18.04" ]; then
@@ -431,40 +455,43 @@ if [ "$instDotNetCore" != "none" ]; then
 fi 
 
 case $instDotNetCore in
-    2)
-        sudo apt install -y dotnet-sdk-2.2
-        sudo apt install -y powershell
-        ;;
-
     3)
         sudo apt install -y dotnet-sdk-3.1
-        sudo apt install -y powershell
         # Alternatively
         #dotnet tool install -g powershell
         #echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
         # shellcheck disable=SC1090
         source ~/.profile
-	
-	# Credential Artifact Provider
-	# From https://github.com/Microsoft/artifacts-credprovider
-	wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
         ;;
+	
+    6)
+    	sudo apt install -y dotnet-sdk-6.0
+	;;
 
     none)
         ;;
 esac
 
+if [ "$instDotNetCore" != "none" ]; then
+	# PowerShell for the .NET Developer
+	sudo apt install -y powershell
+	
+	# Dotnet Core Tools
+	dotnet tool install --global dotnet-ef
+	dotnet tool install --global dotnet-trace
+	dotnet tool install --global dotnet-dump
+	dotnet tool install --global dotnet-counters
+	dotnet tool install --global dotnet-gcdump
+	dotnet tool install --global dotnet-format
+	dotnet tool install --global dotnet-aspnet-codegenerator
+	dotnet tool install --global dotnet-ildasm
+	dotnet tool install --global Microsoft.dotnet-openapi
+	dotnet tool install --global Swashbuckle.AspNetCore.Cli
+	dotnet tool install --global NSwag.ConsoleCore
 
-#
-# Installing Mono for .NET
-#
-if [ $instDotNetMono == 1 ]; then
-    sudo apt install gnupg ca-certificates
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-    
-    sudo apt update
-    sudo apt install -y mono-devel
+	# Credential Artifact Provider
+	# From https://github.com/Microsoft/artifacts-credprovider
+	wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
 fi
 
 
@@ -484,17 +511,24 @@ if [ $instCLIs == 1 ]; then
     fi
 
     # Install Azure CLI and plug-ins
-    # Workaround needed on WSL / Ubuntu 18.04 LTS for some reason:
-    sudo rm -rf /usr/lib/python3/dist-packages/PyYAML-*
-    # After Workaround, can install azure CLI without issues
-    sudo -H pip3 install azure-cli
+    sudo apt update
+    sudo apt install ca-certificates curl apt-transport-https lsb-release gnupg
+    curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+    AZ_REPO=$(lsb_release -cs)
+    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
+    sudo apt update
+    sudo apt install azure-cli
+    
     dos2unix az-cli.extensions
     while read -r azext; do 
         az extension add --name "$azext"
     done < az-cli.extensions
 
     # Install other cloud provider CLIs
-    sudo -H pip3 install awscli
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "~/clis/awscliv2.zip"
+    unzip -d ~/clis/ ~/clis/awscliv2.zip
+    sudo ~/clis/aws/install
+    rm ~/clis/awscliv2.zip
 
     # Install Docker CLI
     #curl -L "https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz" | tar -xz
@@ -527,7 +561,6 @@ if [ $instCLIs == 1 ]; then
     krew install krew
     krew install exec-as
     
-
     # Helm CLI
     # curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
     # mv ./linux-amd64/* ~/clis
@@ -556,54 +589,100 @@ fi
 
 
 #
-# Installing IntelliJ IDEA Communtiy from un-supported package source
-# https://launchpad.net/~mmk2410/+archive/ubuntu/intellij-idea
-#
-if [ $instIntelliJ == 1 ]; then
-    sudo snap install intellij-idea-community --classic --edge
-fi
-
-
-#
-# Installing Visual Studio Code and most used extensions
-#
-if [ $instVsCode == 1 ]; then
-    sudo snap install --classic code 
-    #sudo snap install --classic code-insiders
-
-    # Start installing all extensions
-    dos2unix vscode.extensions
-    while read -r vscodeext; do 
-        code --install-extension "$vscodeext"
-    done < vscode.extensions
-fi
-
-
-#
 # Installing cloud tools such as Azure Data Studio etc.
 #
-if [ $instMoreDevTools == 1 ]; then
+if [ $instDevTools == 1 ]; then
 
+   # Switch to the home directory
+   currentPath=$PWD
+   cd ~/
+   mkdir ~/tools
+   
+   # Install Microsoft Edge
+   wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
+   sudo dpkg -i ~/edge.deb
+   rm ~/edge.deb
+   sudo apt -y --fix-broken install
+   
+   # Visual Studio Code
+   #sudo snap install --classic code 
+   #sudo snap install --classic code-insiders
+   wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+   sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+   sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+   rm -f packages.microsoft.gpg
+   
+   sudo apt -y install apt-transport-https
+   sudo apt -y update
+   sudo apt -y install code # or code-insiders
+
+   # Start installing all extensions
+   dos2unix vscode.extensions
+   while read -r vscodeext; do 
+       code --install-extension "$vscodeext"
+   done < vscode.extensions
+    
+   # IntelliJ IDEA
+   #sudo snap install intellij-idea-community --classic --edge
+   sudo add-apt-repository -y ppa:mmk2410/intellij-idea
+   sudo apt -y update
+   sudo apt install -y intellij-idea-community
+
+   # .NET Mono (needed for some dev tools)
+   sudo apt install -y gnupg ca-certificates
+   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+   echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+   sudo apt update
+   sudo apt install -y mono-devel
+   
    # Azure Data Studio
-   wget -O azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
-   sudo dpkg -i ./azuredatastudio-linux.deb
+   wget -O ~/azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
+   sudo dpkg -i ~/azuredatastudio-linux.deb
+   rm ~/azuredatastudio-linux.deb
    
    # Azure Storage Explorer
-   sudo snap install storage-explorer
-   sudo snap connect storage-explorer:password-manager-service :password-manager-service
+   #sudo snap install storage-explorer
+   #sudo snap connect storage-explorer:password-manager-service :password-manager-service
+   wget -O ~/azurestorageexplorer.tar.gz https://go.microsoft.com/fwlink/?LinkId=722418
+   mkdir ~/tools/azurestorageexplorer
+   tar -xvf ~/azurestorageexplorer.tar.gz -C ~/tools/azurestorageexplorer
+   rm ~/azurestorageexplorer.tar.gz
+   cd ~/
    
    # Postman
-   sudo snap install postman
+   #sudo snap install postman
+   wget -O ~/postman.tar.gz https://dl.pstmn.io/download/latest/linux64
+   mkdir ~/tools/postman
+   tar -xvf ~/postman.tar.gz -C ~/tools/postman/
+   rm ~/postman.tar.gz
+   cd ~/
    
    # MQTT Explorer
-   sudo snap install mqtt-explorer
+   #sudo snap install mqtt-explorer
+   mkdir ~/tools/mqttexplorer
+   wget -O ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage https://github.com/thomasnordquist/MQTT-Explorer/releases/download/0.0.0-0.4.0-beta1/MQTT-Explorer-0.4.0-beta1.AppImage
+   chmod u+x ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage
    
    # Arduino IDE
-   sudo snap install arduino
-   sudo usermod -a -G dialout "$USER"
+   #sudo snap install arduino
+   #sudo usermod -a -G dialout "$USER"
+   wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
+   tar -xvf ~/arduino.tar.xz -C ~/tools/
+   sudo ~/tools/arduino-1.8.15/install.sh
+   rm ~/arduino.tar.xz
+   
+   # GitExtensions
+   sudo apt install -y kdiff3
+   wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
+   mkdir ~/tools/gitextensions
+   unzip gitextensions.zip -d ~/tools
+   cd ~/
+   cp ~/tools/GitExtensions/Plugins/Newtonsoft.Json.dll ~/tools/GitExtensions
+   chmod u+x ~/tools/GitExtensions/gitext.sh
    
    # Redis Desktop Manager
-   sudo snap install redis-desktop-manager
+   sudo apt install -y redis-tools
+   #sudo snap install redis-desktop-manager
    
    # Installing the Cascadia code font
    sudo apt install -y unzip
@@ -612,6 +691,8 @@ if [ $instMoreDevTools == 1 ]; then
    sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
    sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
 
+   # Switch back to the previous directory
+   cd $PWD
 fi
 
 
