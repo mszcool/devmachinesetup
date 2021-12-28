@@ -351,7 +351,6 @@ case $instJava in
         # Bug in OpenJDK 9 with missing directory for security classes
         # https://github.com/docker-library/openjdk/issues/101
         sudo ln -s "$JAVA_HOME/lib" "$JAVA_HOME/conf"
-        sudo apt install -y maven
         ;;
 
     oraclejdk)
@@ -360,23 +359,40 @@ case $instJava in
         echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
         echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
         sudo apt install -y oracle-java8-installer
-        sudo apt install -y maven
         ;;
 	
     msftjdk)
         ubuntu_release=`lsb_release -rs`
         wget https://packages.microsoft.com/config/ubuntu/${ubuntu_release}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
         sudo dpkg -i packages-microsoft-prod.deb
-	sudo apt install -y apt-transport-https
-	sudo apt update
-	sudo apt install -y msopenjdk-17
-	;;
+        sudo apt install -y apt-transport-https
+        sudo apt update
+        sudo apt install -y msopenjdk-17
+	    ;;
 
     default)
         sudo apt-get install -y default-jdk
-        sudo apt install -y maven
         ;;
+
 esac
+
+
+#
+# Installing additional tools used with Java
+#
+if [ "$instJava" != "none" ]; then
+
+    # Maven build tool suite
+    sudo apt install -y maven
+
+    # JMeter which relies on Java
+    currentPath=$PWD
+    cd ~/
+    mkdir ~/jmeter
+    wget -O apache-jmeter.tgz https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.4.3.tgz
+    tar -xvf ~/apache-jmeter.tgz -C ~/jmeter
+
+fi
 
 
 #
@@ -605,16 +621,8 @@ if [ $instDevTools == 1 ]; then
    sudo apt -y --fix-broken install
    
    # Visual Studio Code
-   #sudo snap install --classic code 
+   sudo snap install --classic code 
    #sudo snap install --classic code-insiders
-   wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-   sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
-   sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-   rm -f packages.microsoft.gpg
-   
-   sudo apt -y install apt-transport-https
-   sudo apt -y update
-   sudo apt -y install code # or code-insiders
 
    # Start installing all extensions
    dos2unix vscode.extensions
@@ -623,10 +631,10 @@ if [ $instDevTools == 1 ]; then
    done < vscode.extensions
     
    # IntelliJ IDEA
-   #sudo snap install intellij-idea-community --classic --edge
-   sudo add-apt-repository -y ppa:mmk2410/intellij-idea
-   sudo apt -y update
-   sudo apt install -y intellij-idea-community
+   sudo snap install intellij-idea-community --classic --edge
+   # sudo add-apt-repository -y ppa:mmk2410/intellij-idea
+   # sudo apt -y update
+   # sudo apt install -y intellij-idea-community
 
    # .NET Mono (needed for some dev tools)
    sudo apt install -y gnupg ca-certificates
@@ -641,36 +649,19 @@ if [ $instDevTools == 1 ]; then
    rm ~/azuredatastudio-linux.deb
    
    # Azure Storage Explorer
-   #sudo snap install storage-explorer
-   #sudo snap connect storage-explorer:password-manager-service :password-manager-service
-   wget -O ~/azurestorageexplorer.tar.gz https://go.microsoft.com/fwlink/?LinkId=722418
-   mkdir ~/tools/azurestorageexplorer
-   tar -xvf ~/azurestorageexplorer.tar.gz -C ~/tools/azurestorageexplorer
-   rm ~/azurestorageexplorer.tar.gz
-   cd ~/
+   sudo snap install storage-explorer
+   sudo snap connect storage-explorer:password-manager-service :password-manager-service
    
    # Postman
-   #sudo snap install postman
-   wget -O ~/postman.tar.gz https://dl.pstmn.io/download/latest/linux64
-   mkdir ~/tools/postman
-   tar -xvf ~/postman.tar.gz -C ~/tools/postman/
-   rm ~/postman.tar.gz
-   cd ~/
+   sudo snap install postman
    
    # MQTT Explorer
-   #sudo snap install mqtt-explorer
-   mkdir ~/tools/mqttexplorer
-   wget -O ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage https://github.com/thomasnordquist/MQTT-Explorer/releases/download/0.0.0-0.4.0-beta1/MQTT-Explorer-0.4.0-beta1.AppImage
-   chmod u+x ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage
-   
+   sudo snap install mqtt-explorer
+
    # Arduino IDE
-   #sudo snap install arduino
-   #sudo usermod -a -G dialout "$USER"
-   wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
-   tar -xvf ~/arduino.tar.xz -C ~/tools/
-   sudo ~/tools/arduino-1.8.15/install.sh
-   rm ~/arduino.tar.xz
-   
+   sudo snap install arduino
+   sudo usermod -a -G dialout "$USER"
+
    # GitExtensions
    sudo apt install -y kdiff3
    wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
@@ -682,7 +673,7 @@ if [ $instDevTools == 1 ]; then
    
    # Redis Desktop Manager
    sudo apt install -y redis-tools
-   #sudo snap install redis-desktop-manager
+   sudo snap install redis-desktop-manager
    
    # Installing the Cascadia code font
    sudo apt install -y unzip

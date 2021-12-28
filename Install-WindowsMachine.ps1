@@ -291,12 +291,6 @@ if ( $devTools ) {
 
     winget install --source winget --silent "Microsoft.AzureStorageExplorer"
 
-    winget install --source winget --silent "Microsoft.AzureStorageEmulator"
-
-    winget install --source winget --silent "Microsoft.AzureFunctionsCoreTools"
-
-    winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
-
     winget install --source msstore --silent --accept-package-agreements "Cosmos DB Studio"
 
     winget install --source winget --silent "Microsoft.azure-iot-explorer"
@@ -311,21 +305,22 @@ if ( $devTools ) {
     
     winget install --source winget --silent "RicoSuter.NSwagStudio" 
 
+    winget install --source msstore --silent --accept-package-agreements "9N278KMPHTRW" # SQLit
+
     # Scoop-based installs
 
     scoop bucket add extras
     scoop bucket add versions
     scoop update
 
-    scoop install sqlitestudio --global
+    #scoop install sqlitestudio --global
 
     scoop install servicebusexplorer --global
     
     scoop install jmeter --global
 
     scoop install ngrok --global
-    
-    scoop install lessmsi --global
+
 
 }
 
@@ -357,6 +352,12 @@ elseif ( $docker -eq "desktop" ) {
 # [dev] Developer Tools needed on every dev-machine
 #
 if ( $dev ) {
+
+    winget install --source winget --silent "Microsoft.AzureStorageEmulator"
+
+    winget install --source winget --silent "Microsoft.AzureFunctionsCoreTools"
+
+    winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
 
     winget install --id "Microsoft.dotnet" --version
     
