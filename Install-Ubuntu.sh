@@ -284,25 +284,36 @@ fi
 #
 if [ $instDockerEngine == 1 ]; then
 
-   sudo apt -y install \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg-agent \
-        software-properties-common
+    sudo apt -y install \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg-agent \
+            software-properties-common
 
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-   
-   sudo apt-key fingerprint 0EBFCD88
-   
-   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-   
-   sudo apt update
-   sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
-   
-   # groupadd was not needed after the installation
-   #sudo groupadd docker
-   sudo usermod -aG docker "$USER"
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    
+    sudo apt-key fingerprint 0EBFCD88
+    
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    
+    sudo apt update
+    sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
+    
+    # groupadd was not needed after the installation
+    #sudo groupadd docker
+    sudo usermod -aG docker "$USER"
+
+    # Also add the service start to the profile in case of WSL
+    if [ $isWsl == 1 ]; then
+        dockerEntryExists=$(cat ~/.profile | grep "# mszcool docker setup")
+        if [ ! "$dockerEntryExists" ]; then
+            echo "# mszcool docker setup" >> ~/.profile
+            echo "if service docker status 2>&1 | grep -q \"is not running\"; then" >> ~/.profile
+            echo "    wsl.exe -d \"${WSL_DISTRO_NAME}\" -u root -e /usr/sbin/service docker start >/dev/null 2>&1" >> ~/.profile
+            echo "fi" >> ~/.profile
+        fi
+    fi
 
 fi
 
