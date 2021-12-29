@@ -663,7 +663,7 @@ if [ $instDevTools == 1 ]; then
     # GitExtensions
     sudo apt install -y kdiff3
     wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
-    if [ -d "~/tools/gitextensions" ] then
+    if [ -d "~/tools/gitextensions" ]; then
         rm -R ~/tools/gitextensions
     fi
     mkdir ~/tools/gitextensions
