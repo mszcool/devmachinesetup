@@ -18,7 +18,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --homebrew --devTools --prompt --noWsl"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --homebrew --devTools --prompt --wslUsbSupport --noWsl"
 }
 
 instEnduser=0
@@ -38,6 +38,7 @@ instGoLang=0
 instDevTools=0
 instHomebrew=0
 isWsl=1
+instWslUsbSupport=0
 
 while :; do
     case $1 in
@@ -102,8 +103,11 @@ while :; do
                 instDotNetCore=3
             fi
             ;;
-        --instHomebrew)
+        --homebrew)
             instHomebrew=1
+            ;;
+        --wslUsbSupport)
+            instWslUsbSupport=1
             ;;
         --noWsl)
             isWsl=0
@@ -174,6 +178,26 @@ if [ $instBase == 1 ]; then
     sudo apt install -y libxml2
     sudo apt install -y build-essential
 
+fi
+
+
+#
+# Installing USBIP support for WSL2
+#
+if [ $instWslUsbSupport == 1 ]; then
+    # USBIP support enablement for WSL2
+    if [ $isWsl == 1 ]; then
+        sudo apt install linux-tools-5.4.0-77-generic hwdata
+
+        echo "Now update the sudoers secure path to include Defaults secure_path=\"/usr/lib/linux-tools/5.4.0-77-generic:/usr/local/sbin:...\""
+        read -p "Press ENTER to continue..." </dev/tty
+        sudo visudo
+
+        echo "Now you can run \"usbipd wsl attach --busid <busid>\" on Windows to attach a device"
+        read -p "Press ENTER to continue..." </dev/tty
+    else
+        echo "Please don't use the --noWsl switch if you want to install this! This is a safety-belt if that script is used for automated install on servers!"
+    fi
 fi
 
 
