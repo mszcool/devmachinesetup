@@ -253,15 +253,9 @@ if ( $ittools ) {
 
     winget install --source msstore --silent --accept-package-agreements "IP Calculator"
 
-    winget install --source msstore --silent --accept-package-agreements "Nightingale REST Client"
-
-    winget install --source msstore --silent --accept-package-agreements "MQTT-Explorer"
-
     winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04 LTS"
 
     winget install --source msstore --silent --accept-package-agreements "Ubuntu 20.04 LTS"
-
-    winget install --source winget --silent "GitExtensionsTeam.GitExtensions"
 
     # Scoop based packages
 
@@ -305,7 +299,17 @@ if ( $devTools ) {
     
     winget install --source winget --silent "RicoSuter.NSwagStudio" 
 
+    winget install --source winget --silent "GitExtensionsTeam.GitExtensions"
+
+    winget install --source msstore --silent --accept-package-agreements "Nightingale REST Client"
+
+    winget install --source msstore --silent --accept-package-agreements "MQTT-Explorer"
+
     winget install --source msstore --silent --accept-package-agreements "9N278KMPHTRW" # SQLit
+
+    winget install --source msstore --silent --accept-package-agreements "9NBJ2VZTW2BR" # Redis Manager
+
+    winget install --source msstore --silent --accept-package-agreements "9PGCV4V3BK4W" # DevToys
 
     # Scoop-based installs
 

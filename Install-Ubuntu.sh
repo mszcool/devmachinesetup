@@ -649,7 +649,7 @@ if [ $instDevTools == 1 ]; then
     # Switch to the home directory
     currentPath=$PWD
     cd ~/
-    if [ ! -d "~/tools "]; then
+    if [ ! -d "$HOME/tools" ]; then
         mkdir ~/tools
     fi
 
@@ -663,14 +663,14 @@ if [ $instDevTools == 1 ]; then
     # GitExtensions
     sudo apt install -y kdiff3
     wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
-    if [ -d "~/tools/gitextensions" ]; then
+    if [ -d "$HOME/tools/gitextensions" ]; then
         rm -R ~/tools/gitextensions
     fi
-    mkdir ~/tools/gitextensions
     unzip gitextensions.zip -d ~/tools
+    mv ~/tools/GitExtensions ~/tools/gitextensions
     cd ~/
-    cp ~/tools/GitExtensions/Plugins/Newtonsoft.Json.dll ~/tools/GitExtensions
-    chmod u+x ~/tools/GitExtensions/gitext.sh
+    cp ~/tools/gitextensions/Plugins/Newtonsoft.Json.dll ~/tools/gitextensions
+    chmod u+x ~/tools/gitextensions/gitext.sh
     rm -f gitextensions.zip
     
     # Redis Tools incl. CLI
@@ -726,7 +726,7 @@ if [ $instDevTools == 1 ]; then
         sudo snap install redis-desktop-manager
 
         # ServiceBusExplorer (should run on Mono)
-        if [ -d "~/tools/servicebusexplorer" ]; then
+        if [ -d "$HOME/tools/servicebusexplorer" ]; then
             rm -R ~/tools/servicebusexplorer
         fi
         mkdir ~/tools/servicebusexplorer
