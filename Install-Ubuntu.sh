@@ -111,6 +111,7 @@ while :; do
             ;;
         --noWsl)
             isWsl=0
+            ;;
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
             ;;
