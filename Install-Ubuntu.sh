@@ -743,6 +743,10 @@ if [ $instDevTools == 1 ]; then
         mkdir ~/tools/servicebusexplorer
         wget -O servicebusexplorer.zip $(curl -s https://api.github.com/repos/paolosalvatori/ServiceBusExplorer/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep .zip)
         unzip servicebusexplorer.zip -d ~/tools/servicebusexplorer
+        echo "#!/bin/bash" > ~/tools/servicebusexplorer/sbexp.sh
+        echo "DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" >> ~/tools/servicebusexplorer/sbexp.sh
+        echo "mono \"$DIR/ServiceBusExplorer.exe\" \"$@\" &" >> ~/tools/servicebusexplorer/sbexp.sh
+        chmod u+x ~/tools/servicebusexplorer/sbexp.sh
 
         # Installing the Cascadia code font
         sudo apt install -y unzip
