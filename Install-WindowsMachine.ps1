@@ -321,7 +321,6 @@ if ( $devTools ) {
 
     scoop install ngrok --global
 
-
 }
 
 

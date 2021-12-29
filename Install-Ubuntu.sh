@@ -18,7 +18,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --devTools --prompt"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --homebrew --devTools --prompt --noWsl"
 }
 
 instEnduser=0
@@ -36,6 +36,8 @@ instScala=0
 instRuby=0
 instGoLang=0
 instDevTools=0
+instHomebrew=0
+isWsl=1
 
 while :; do
     case $1 in
@@ -72,12 +74,12 @@ while :; do
         --python)
             instPython=1
             ;;
-	--golang)
+	    --golang)
             instGoLang=1
-	    ;;
-	--ruby)
+	        ;;
+	    --ruby)
             instRuby=1
-	    ;;
+	        ;;
         --nodejs)
             instNodeJs=1
             ;;
@@ -100,6 +102,11 @@ while :; do
                 instDotNetCore=3
             fi
             ;;
+        --instHomebrew)
+            instHomebrew=1
+            ;;
+        --noWsl)
+            isWsl=0
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
             ;;
@@ -167,6 +174,13 @@ if [ $instBase == 1 ]; then
     sudo apt install -y libxml2
     sudo apt install -y build-essential
 
+fi
+
+
+#
+# Installing homebrew (typically on desktops)
+#
+if [ $instHomebrew == 1 ]; then
     # Install 'homebrew' on Ubuntu per https://brew.sh/
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     #test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
@@ -177,7 +191,6 @@ if [ $instBase == 1 ]; then
     echo "eval $($(brew --prefix)/bin/brew shellenv)" >> ~/.profile
 
     brew update
-
 fi
 
 
@@ -373,7 +386,6 @@ case $instJava in
     default)
         sudo apt-get install -y default-jdk
         ;;
-
 esac
 
 
@@ -609,81 +621,119 @@ fi
 #
 if [ $instDevTools == 1 ]; then
 
-   # Switch to the home directory
-   currentPath=$PWD
-   cd ~/
-   mkdir ~/tools
-   
-   # Install Microsoft Edge
-   wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
-   sudo dpkg -i ~/edge.deb
-   rm ~/edge.deb
-   sudo apt -y --fix-broken install
-   
-   # Visual Studio Code
-   sudo snap install --classic code 
-   #sudo snap install --classic code-insiders
+    # Switch to the home directory
+    currentPath=$PWD
+    cd ~/
+    if [ ! -d "~/tools "]; then
+        mkdir ~/tools
+    fi
 
-   # Start installing all extensions
-   dos2unix vscode.extensions
-   while read -r vscodeext; do 
-       code --install-extension "$vscodeext"
-   done < vscode.extensions
+    # .NET Mono (needed for some dev tools)
+    sudo apt install -y gnupg ca-certificates
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+    sudo apt update
+    sudo apt install -y mono-devel
     
-   # IntelliJ IDEA
-   sudo snap install intellij-idea-community --classic --edge
-   # sudo add-apt-repository -y ppa:mmk2410/intellij-idea
-   # sudo apt -y update
-   # sudo apt install -y intellij-idea-community
+    # GitExtensions
+    sudo apt install -y kdiff3
+    wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
+    if [ -d "~/tools/gitextensions" ] then
+        rm -R ~/tools/gitextensions
+    fi
+    mkdir ~/tools/gitextensions
+    unzip gitextensions.zip -d ~/tools
+    cd ~/
+    cp ~/tools/GitExtensions/Plugins/Newtonsoft.Json.dll ~/tools/GitExtensions
+    chmod u+x ~/tools/GitExtensions/gitext.sh
+    rm -f gitextensions.zip
+    
+    # Redis Tools incl. CLI
+    sudo apt install -y redis-tools
 
-   # .NET Mono (needed for some dev tools)
-   sudo apt install -y gnupg ca-certificates
-   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-   echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-   sudo apt update
-   sudo apt install -y mono-devel
-   
-   # Azure Data Studio
-   wget -O ~/azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
-   sudo dpkg -i ~/azuredatastudio-linux.deb
-   rm ~/azuredatastudio-linux.deb
-   
-   # Azure Storage Explorer
-   sudo snap install storage-explorer
-   sudo snap connect storage-explorer:password-manager-service :password-manager-service
-   
-   # Postman
-   sudo snap install postman
-   
-   # MQTT Explorer
-   sudo snap install mqtt-explorer
+    # Ngrok redirection tool
+    curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null &&
+              echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list &&
+              sudo apt update && sudo apt install ngrok
 
-   # Arduino IDE
-   sudo snap install arduino
-   sudo usermod -a -G dialout "$USER"
+    # Some tools are installed differently in WSL or are not needed as available on Windows    
+    if [ $isWsl == 0 ]; then
 
-   # GitExtensions
-   sudo apt install -y kdiff3
-   wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
-   mkdir ~/tools/gitextensions
-   unzip gitextensions.zip -d ~/tools
-   cd ~/
-   cp ~/tools/GitExtensions/Plugins/Newtonsoft.Json.dll ~/tools/GitExtensions
-   chmod u+x ~/tools/GitExtensions/gitext.sh
-   
-   # Redis Desktop Manager
-   sudo apt install -y redis-tools
-   sudo snap install redis-desktop-manager
-   
-   # Installing the Cascadia code font
-   sudo apt install -y unzip
-   wget -O "cascadiacodepl.zip" "https://github.com/microsoft/cascadia-code/releases/download/v2005.15/CascadiaCode_2005.15.zip"
-   unzip "cascadiacodepl.zip" -d "./cascadiacodepl"
-   sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
-   sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
+        # Install Microsoft Edge
+        wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
+        sudo dpkg -i ~/edge.deb
+        rm ~/edge.deb
+        sudo apt -y --fix-broken install
 
-   # Switch back to the previous directory
-   cd $PWD
+        # Visual Studio Code
+        sudo snap install --classic code 
+        #sudo snap install --classic code-insiders
+
+        # Start installing all extensions
+        dos2unix vscode.extensions
+        while read -r vscodeext; do 
+            code --install-extension "$vscodeext"
+        done < vscode.extensions
+
+        # IntelliJ IDEA Community
+        sudo snap install intellij-idea-community --classic --edge
+
+        # Azure Data Studio
+        wget -O ~/azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
+        sudo dpkg -i ~/azuredatastudio-linux.deb
+        rm ~/azuredatastudio-linux.deb
+
+        # Azure Storage Explorer
+        sudo snap install storage-explorer
+        sudo snap connect storage-explorer:password-manager-service :password-manager-service
+
+        # Postman
+        sudo snap install postman
+
+        # MQTT Explorer
+        sudo snap install mqtt-explorer
+
+        # Arduino IDE
+        sudo snap install arduino
+        sudo usermod -a -G dialout "$USER"
+
+        # Redis Desktop Manager
+        sudo snap install redis-desktop-manager
+
+        # ServiceBusExplorer (should run on Mono)
+        if [ -d "~/tools/servicebusexplorer" ]; then
+            rm -R ~/tools/servicebusexplorer
+        fi
+        mkdir ~/tools/servicebusexplorer
+        wget -O servicebusexplorer.zip $(curl -s https://api.github.com/repos/paolosalvatori/ServiceBusExplorer/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep .zip)
+        unzip servicebusexplorer.zip -d ~/tools/servicebusexplorer
+
+        # Installing the Cascadia code font
+        sudo apt install -y unzip
+        wget -O "cascadiacodepl.zip" "https://github.com/microsoft/cascadia-code/releases/download/v2005.15/CascadiaCode_2005.15.zip"
+        unzip "cascadiacodepl.zip" -d "./cascadiacodepl"
+        sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
+        sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
+
+    else
+
+        # Installing tools in WSL for development against WSL filesystem (performance reasons)
+
+        # IntelliJ IDEA
+        sudo add-apt-repository -y ppa:mmk2410/intellij-idea
+        sudo apt -y update
+        sudo apt install -y intellij-idea-community
+
+        # Arduino IDE
+        wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
+        tar -xvf ~/arduino.tar.xz -C ~/tools/
+        sudo ~/tools/arduino-1.8.15/install.sh
+        rm ~/arduino.tar.xz
+
+    fi
+
+    # Switch back to the previous directory
+    cd $PWD
 fi
 
 
