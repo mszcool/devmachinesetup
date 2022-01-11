@@ -18,7 +18,7 @@
 
 show_help()  {
     echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --devTools --prompt"
+    echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|5|6|none --homebrew --devTools --prompt --wslUsbSupport --noWsl"
 }
 
 instEnduser=0
@@ -36,6 +36,9 @@ instScala=0
 instRuby=0
 instGoLang=0
 instDevTools=0
+instHomebrew=0
+isWsl=1
+instWslUsbSupport=0
 
 while :; do
     case $1 in
@@ -72,12 +75,12 @@ while :; do
         --python)
             instPython=1
             ;;
-	--golang)
+	    --golang)
             instGoLang=1
-	    ;;
-	--ruby)
+	        ;;
+	    --ruby)
             instRuby=1
-	    ;;
+	        ;;
         --nodejs)
             instNodeJs=1
             ;;
@@ -99,6 +102,15 @@ while :; do
             else
                 instDotNetCore=3
             fi
+            ;;
+        --homebrew)
+            instHomebrew=1
+            ;;
+        --wslUsbSupport)
+            instWslUsbSupport=1
+            ;;
+        --noWsl)
+            isWsl=0
             ;;
         -?*)
             echo "WARN: ignoring unknown option $1" >&2
@@ -167,6 +179,33 @@ if [ $instBase == 1 ]; then
     sudo apt install -y libxml2
     sudo apt install -y build-essential
 
+fi
+
+
+#
+# Installing USBIP support for WSL2
+#
+if [ $instWslUsbSupport == 1 ]; then
+    # USBIP support enablement for WSL2
+    if [ $isWsl == 1 ]; then
+        sudo apt install linux-tools-5.4.0-77-generic hwdata
+
+        echo "Now update the sudoers secure path to include Defaults secure_path=\"/usr/lib/linux-tools/5.4.0-77-generic:/usr/local/sbin:...\""
+        read -p "Press ENTER to continue..." </dev/tty
+        sudo visudo
+
+        echo "Now you can run \"usbipd wsl attach --busid <busid>\" on Windows to attach a device"
+        read -p "Press ENTER to continue..." </dev/tty
+    else
+        echo "Please don't use the --noWsl switch if you want to install this! This is a safety-belt if that script is used for automated install on servers!"
+    fi
+fi
+
+
+#
+# Installing homebrew (typically on desktops)
+#
+if [ $instHomebrew == 1 ]; then
     # Install 'homebrew' on Ubuntu per https://brew.sh/
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     #test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
@@ -177,7 +216,6 @@ if [ $instBase == 1 ]; then
     echo "eval $($(brew --prefix)/bin/brew shellenv)" >> ~/.profile
 
     brew update
-
 fi
 
 
@@ -246,25 +284,36 @@ fi
 #
 if [ $instDockerEngine == 1 ]; then
 
-   sudo apt -y install \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg-agent \
-        software-properties-common
+    sudo apt -y install \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg-agent \
+            software-properties-common
 
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-   
-   sudo apt-key fingerprint 0EBFCD88
-   
-   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-   
-   sudo apt update
-   sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
-   
-   # groupadd was not needed after the installation
-   #sudo groupadd docker
-   sudo usermod -aG docker "$USER"
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    
+    sudo apt-key fingerprint 0EBFCD88
+    
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    
+    sudo apt update
+    sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
+    
+    # groupadd was not needed after the installation
+    #sudo groupadd docker
+    sudo usermod -aG docker "$USER"
+
+    # Also add the service start to the profile in case of WSL
+    if [ $isWsl == 1 ]; then
+        dockerEntryExists=$(cat ~/.profile | grep "# mszcool docker setup")
+        if [ ! "$dockerEntryExists" ]; then
+            echo "# mszcool docker setup" >> ~/.profile
+            echo "if service docker status 2>&1 | grep -q \"is not running\"; then" >> ~/.profile
+            echo "    wsl.exe -d \"${WSL_DISTRO_NAME}\" -u root -e /usr/sbin/service docker start >/dev/null 2>&1" >> ~/.profile
+            echo "fi" >> ~/.profile
+        fi
+    fi
 
 fi
 
@@ -278,7 +327,7 @@ if [ $instPython == 1 ]; then
     sudo apt install -y python3-venv
     #sudo rm /usr/bin/python
     #sudo ln /usr/bin/python3 /usr/bin/python
-    sudo -H python -m pip install --upgrade pip
+    sudo -H python3 -m pip install --upgrade pip
 
     # Create a default virtual environment
     existspythondefault=$(grep "source ~/pythonvenv/default/bin/activate" ~/.profile)
@@ -351,7 +400,6 @@ case $instJava in
         # Bug in OpenJDK 9 with missing directory for security classes
         # https://github.com/docker-library/openjdk/issues/101
         sudo ln -s "$JAVA_HOME/lib" "$JAVA_HOME/conf"
-        sudo apt install -y maven
         ;;
 
     oraclejdk)
@@ -360,23 +408,39 @@ case $instJava in
         echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
         echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
         sudo apt install -y oracle-java8-installer
-        sudo apt install -y maven
         ;;
 	
     msftjdk)
         ubuntu_release=`lsb_release -rs`
         wget https://packages.microsoft.com/config/ubuntu/${ubuntu_release}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
         sudo dpkg -i packages-microsoft-prod.deb
-	sudo apt install -y apt-transport-https
-	sudo apt update
-	sudo apt install -y msopenjdk-17
-	;;
+        sudo apt install -y apt-transport-https
+        sudo apt update
+        sudo apt install -y msopenjdk-17
+	    ;;
 
     default)
         sudo apt-get install -y default-jdk
-        sudo apt install -y maven
         ;;
 esac
+
+
+#
+# Installing additional tools used with Java
+#
+if [ "$instJava" != "none" ]; then
+
+    # Maven build tool suite
+    sudo apt install -y maven
+
+    # JMeter which relies on Java
+    currentPath=$PWD
+    cd ~/
+    mkdir ~/jmeter
+    wget -O apache-jmeter.tgz https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.4.3.tgz
+    tar -xvf ~/apache-jmeter.tgz -C ~/jmeter
+
+fi
 
 
 #
@@ -593,106 +657,123 @@ fi
 #
 if [ $instDevTools == 1 ]; then
 
-   # Switch to the home directory
-   currentPath=$PWD
-   cd ~/
-   mkdir ~/tools
-   
-   # Install Microsoft Edge
-   wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
-   sudo dpkg -i ~/edge.deb
-   rm ~/edge.deb
-   sudo apt -y --fix-broken install
-   
-   # Visual Studio Code
-   #sudo snap install --classic code 
-   #sudo snap install --classic code-insiders
-   wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-   sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
-   sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-   rm -f packages.microsoft.gpg
-   
-   sudo apt -y install apt-transport-https
-   sudo apt -y update
-   sudo apt -y install code # or code-insiders
+    # Switch to the home directory
+    currentPath=$PWD
+    cd ~/
+    if [ ! -d "$HOME/tools" ]; then
+        mkdir ~/tools
+    fi
 
-   # Start installing all extensions
-   dos2unix vscode.extensions
-   while read -r vscodeext; do 
-       code --install-extension "$vscodeext"
-   done < vscode.extensions
+    # .NET Mono (needed for some dev tools)
+    sudo apt install -y gnupg ca-certificates
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+    sudo apt update
+    sudo apt install -y mono-devel
     
-   # IntelliJ IDEA
-   #sudo snap install intellij-idea-community --classic --edge
-   sudo add-apt-repository -y ppa:mmk2410/intellij-idea
-   sudo apt -y update
-   sudo apt install -y intellij-idea-community
+    # GitExtensions
+    sudo apt install -y kdiff3
+    wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
+    if [ -d "$HOME/tools/gitextensions" ]; then
+        rm -R ~/tools/gitextensions
+    fi
+    unzip gitextensions.zip -d ~/tools
+    mv ~/tools/GitExtensions ~/tools/gitextensions
+    cd ~/
+    cp ~/tools/gitextensions/Plugins/Newtonsoft.Json.dll ~/tools/gitextensions
+    chmod u+x ~/tools/gitextensions/gitext.sh
+    rm -f gitextensions.zip
+    
+    # Redis Tools incl. CLI
+    sudo apt install -y redis-tools
 
-   # .NET Mono (needed for some dev tools)
-   sudo apt install -y gnupg ca-certificates
-   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-   echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-   sudo apt update
-   sudo apt install -y mono-devel
-   
-   # Azure Data Studio
-   wget -O ~/azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
-   sudo dpkg -i ~/azuredatastudio-linux.deb
-   rm ~/azuredatastudio-linux.deb
-   
-   # Azure Storage Explorer
-   #sudo snap install storage-explorer
-   #sudo snap connect storage-explorer:password-manager-service :password-manager-service
-   wget -O ~/azurestorageexplorer.tar.gz https://go.microsoft.com/fwlink/?LinkId=722418
-   mkdir ~/tools/azurestorageexplorer
-   tar -xvf ~/azurestorageexplorer.tar.gz -C ~/tools/azurestorageexplorer
-   rm ~/azurestorageexplorer.tar.gz
-   cd ~/
-   
-   # Postman
-   #sudo snap install postman
-   wget -O ~/postman.tar.gz https://dl.pstmn.io/download/latest/linux64
-   mkdir ~/tools/postman
-   tar -xvf ~/postman.tar.gz -C ~/tools/postman/
-   rm ~/postman.tar.gz
-   cd ~/
-   
-   # MQTT Explorer
-   #sudo snap install mqtt-explorer
-   mkdir ~/tools/mqttexplorer
-   wget -O ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage https://github.com/thomasnordquist/MQTT-Explorer/releases/download/0.0.0-0.4.0-beta1/MQTT-Explorer-0.4.0-beta1.AppImage
-   chmod u+x ~/tools/mqttexplorer/mqttexplorer-0.4.0.AppImage
-   
-   # Arduino IDE
-   #sudo snap install arduino
-   #sudo usermod -a -G dialout "$USER"
-   wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
-   tar -xvf ~/arduino.tar.xz -C ~/tools/
-   sudo ~/tools/arduino-1.8.15/install.sh
-   rm ~/arduino.tar.xz
-   
-   # GitExtensions
-   sudo apt install -y kdiff3
-   wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
-   mkdir ~/tools/gitextensions
-   unzip gitextensions.zip -d ~/tools
-   cd ~/
-   cp ~/tools/GitExtensions/Plugins/Newtonsoft.Json.dll ~/tools/GitExtensions
-   chmod u+x ~/tools/GitExtensions/gitext.sh
-   
-   # Redis Desktop Manager
-   sudo apt install -y redis-tools
-   #sudo snap install redis-desktop-manager
-   
-   # Installing the Cascadia code font
-   sudo apt install -y unzip
-   wget -O "cascadiacodepl.zip" "https://github.com/microsoft/cascadia-code/releases/download/v2005.15/CascadiaCode_2005.15.zip"
-   unzip "cascadiacodepl.zip" -d "./cascadiacodepl"
-   sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
-   sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
+    # Ngrok redirection tool
+    curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null &&
+              echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list &&
+              sudo apt update && sudo apt install ngrok
 
-   # Switch back to the previous directory
-   cd $PWD
+    # Some tools are installed differently in WSL or are not needed as available on Windows    
+    if [ $isWsl == 0 ]; then
+
+        # Install Microsoft Edge
+        wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
+        sudo dpkg -i ~/edge.deb
+        rm ~/edge.deb
+        sudo apt -y --fix-broken install
+
+        # Visual Studio Code
+        sudo snap install --classic code 
+        #sudo snap install --classic code-insiders
+
+        # Start installing all extensions
+        dos2unix vscode.extensions
+        while read -r vscodeext; do 
+            code --install-extension "$vscodeext"
+        done < vscode.extensions
+
+        # IntelliJ IDEA Community
+        sudo snap install intellij-idea-community --classic --edge
+
+        # Azure Data Studio
+        wget -O ~/azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
+        sudo dpkg -i ~/azuredatastudio-linux.deb
+        rm ~/azuredatastudio-linux.deb
+
+        # Azure Storage Explorer
+        sudo snap install storage-explorer
+        sudo snap connect storage-explorer:password-manager-service :password-manager-service
+
+        # Postman
+        sudo snap install postman
+
+        # MQTT Explorer
+        sudo snap install mqtt-explorer
+
+        # Arduino IDE
+        sudo snap install arduino
+        sudo usermod -a -G dialout "$USER"
+
+        # Redis Desktop Manager
+        sudo snap install redis-desktop-manager
+
+        # ServiceBusExplorer (should run on Mono)
+        if [ -d "$HOME/tools/servicebusexplorer" ]; then
+            rm -R ~/tools/servicebusexplorer
+        fi
+        mkdir ~/tools/servicebusexplorer
+        wget -O servicebusexplorer.zip $(curl -s https://api.github.com/repos/paolosalvatori/ServiceBusExplorer/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep .zip)
+        unzip servicebusexplorer.zip -d ~/tools/servicebusexplorer
+        echo "#!/bin/bash" > ~/tools/servicebusexplorer/sbexp.sh
+        echo "DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" >> ~/tools/servicebusexplorer/sbexp.sh
+        echo "mono \"$DIR/ServiceBusExplorer.exe\" \"$@\" &" >> ~/tools/servicebusexplorer/sbexp.sh
+        chmod u+x ~/tools/servicebusexplorer/sbexp.sh
+
+        # Installing the Cascadia code font
+        sudo apt install -y unzip
+        wget -O "cascadiacodepl.zip" "https://github.com/microsoft/cascadia-code/releases/download/v2005.15/CascadiaCode_2005.15.zip"
+        unzip "cascadiacodepl.zip" -d "./cascadiacodepl"
+        sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
+        sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
+
+    else
+
+        # Installing tools in WSL for development against WSL filesystem (performance reasons)
+
+        # IntelliJ IDEA
+        sudo add-apt-repository -y ppa:mmk2410/intellij-idea
+        sudo apt -y update
+        sudo apt install -y intellij-idea-community
+
+        # Arduino IDE
+        wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
+        tar -xvf ~/arduino.tar.xz -C ~/tools/
+        sudo ~/tools/arduino-1.8.15/install.sh
+        rm ~/arduino.tar.xz
+
+    fi
+
+    # Switch back to the previous directory
+    cd $PWD
 fi
 
 
