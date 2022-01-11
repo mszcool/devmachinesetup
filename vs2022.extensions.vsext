@@ -1,0 +1,200 @@
+{
+  "id": "5f39349c-5592-4726-bbf0-15b4ab7b1e83",
+  "name": "My Visual Studio extensions",
+  "description": "A collection of my Visual Studio extensions",
+  "version": "1.0",
+  "extensions": [
+    {
+      "name": "Add New File (64-bit)",
+      "vsixId": "d48e8f25-661b-4970-8b66-03f051ba5fc3"
+    },
+    {
+      "name": "Align Assignments 2022",
+      "vsixId": "AlignAssignments2022.41858b2d-ff0b-4a43-80b0-f1b2d6084935"
+    },
+    {
+      "name": "Bot Framework v4 SDK Templates for Visual Studio",
+      "vsixId": "BotBuilderV4.fbe0fc50-a6f1-4500-82a2-189314b7bea2"
+    },
+    {
+      "name": "Clean Solution",
+      "vsixId": "55640f47-34bc-436b-8820-e7f64fbb31fc"
+    },
+    {
+      "name": "CodeMaid VS2022",
+      "vsixId": "9079e73d-3fbb-4e07-8dab-f44fa5d8e8b5"
+    },
+    {
+      "name": "Copy As Html 2022",
+      "vsixId": "CopyAsHtml2022.42374550-426a-400e-96f9-237682e8dea6"
+    },
+    {
+      "name": "Double-Click Maximize 2022",
+      "vsixId": "DoubleClickMaximize2022.050825c2-33a4-4b7d-b3af-bd46bd99a265"
+    },
+    {
+      "name": "Editor Enhancements",
+      "vsixId": "13a2ec1a-6b20-46a9-af99-b1064b00c9a8"
+    },
+    {
+      "name": "Editor Guidelines",
+      "vsixId": "EditorGuidelines.f7dfa085-35e4-4844-8842-48298d5eaee0"
+    },
+    {
+      "name": "Extension Manager 2022",
+      "vsixId": "4a196712-2c3f-4730-ad1d-e7cda4185eb3"
+    },
+    {
+      "name": "File Differ",
+      "vsixId": "ea5c68d6-cdae-4e79-bd46-2a39e95bb256"
+    },
+    {
+      "name": "File Icons",
+      "vsixId": "3a7b4930-a5fb-46ec-a9b8-9610c8f953b8"
+    },
+    {
+      "name": "Fix Mixed Tabs 2022",
+      "vsixId": "FixMixedTabs2022.9f1d3050-b986-4b10-ae36-97c6efc5e968"
+    },
+    {
+      "name": "Git Extensions",
+      "vsixId": "GitExtensions..555013F5-337C-4750-8967-DDEEEC2EB497"
+    },
+    {
+      "name": "Grunt Snippet Pack",
+      "vsixId": "09fdacb9-6989-453c-9504-6dd52cb46313"
+    },
+    {
+      "name": "Gulp Snippet Pack",
+      "vsixId": "17c6719c-d92f-4bdb-a145-ea2d6dd70900"
+    },
+    {
+      "name": "HTML Snippet Pack",
+      "vsixId": "7f30a50b-8211-40cf-b881-bd1eb2866478"
+    },
+    {
+      "name": "Indent Guides for VS 2022",
+      "vsixId": "IndentGuide2022.SteveDower.0a67eb97-becd-451f-aa29-851d9fe5dd2b"
+    },
+    {
+      "name": "Insert Guid",
+      "vsixId": "9def4441-acfd-4dd6-bffd-4531a57dee37"
+    },
+    {
+      "name": "JavaScript Snippet Pack",
+      "vsixId": "2a20580c-7be4-4440-bcd6-8dcf5aa2004e"
+    },
+    {
+      "name": "Live Share 2022",
+      "vsixId": "Microsoft.VisualStudio.LiveShare.2022"
+    },
+    {
+      "name": "Markdown Editor (64-bit)",
+      "vsixId": "9ca64947-e9ca-4543-bfb8-6cce9be19fd7"
+    },
+    {
+      "name": "Match Margin 2022",
+      "vsixId": "MatchMargin2022.d85a25b5-f7b3-46a9-997e-a2d669dc2c93"
+    },
+    {
+      "name": "Microsoft Child Process Debugging Power Tool 2022",
+      "vsixId": "f8c241c7-5ff0-425a-935d-5739a9d69bed"
+    },
+    {
+      "name": "Microsoft Visual Studio Installer Projects 2022",
+      "vsixId": "VSInstallerProjects2022"
+    },
+    {
+      "name": "Middle Click Scroll 2022",
+      "vsixId": "MiddleClickScroll2022.263a3239-a004-40e6-b790-4fd371832c85"
+    },
+    {
+      "name": "Midnight Lights",
+      "vsixId": "MidnightLights.e1e706e2-05d3-4da9-8754-652cd8ab65f4"
+    },
+    {
+      "name": "ML.NET Model Builder 2022",
+      "vsixId": "A274A0E2-E41E-40CC-A694-8D5D14BBD2D0"
+    },
+    {
+      "name": "Night Owl",
+      "vsixId": "NightOwl.97416395-DBA1-48FE-B9CA-3474533BDA58"
+    },
+    {
+      "name": "NPM Task Runner",
+      "vsixId": "c5203f5f-4785-4c09-b383-688a100a9f5d"
+    },
+    {
+      "name": "One Dark Pro",
+      "vsixId": "OneDarkPro.e1e706e2-05d3-4da9-8754-652cd8ab65f4"
+    },
+    {
+      "name": "Output enhancer",
+      "vsixId": "VSOutputEnhancer.Nikolay Balakin.a06be4c3-f97e-425c-8a0d-bdef08ac2abb"
+    },
+    {
+      "name": "Package Installer",
+      "vsixId": "6ffd6f4d-bbe0-489a-8f6a-33f440773f14"
+    },
+    {
+      "name": "Peek Help 2022",
+      "vsixId": "PeekHelp2022.51f43c96-8220-43bf-a922-390a361e7640"
+    },
+    {
+      "name": "Productivity Power Tools 2022",
+      "vsixId": "ProductivityPowerPack2022.0d5b9d71-e118-46de-a20c-555176e53900"
+    },
+    {
+      "name": "Project System Tools 2022",
+      "vsixId": "cb5b6a78-6fa1-4830-a272-760862eb77af"
+    },
+    {
+      "name": "Rest Client",
+      "vsixId": "RestClientVS.a7b4a362-3ce8-4953-9b19-a35166f2cbfd"
+    },
+    {
+      "name": "ResXManager",
+      "vsixId": "43b35fe0-1f30-48de-887a-68256474202a"
+    },
+    {
+      "name": "Shrink Empty Lines 2022",
+      "vsixId": "SyntacticLineCompression2022.4452fb8f-b348-49eb-9499-76669d3f9c75"
+    },
+    {
+      "name": "Single-project MSIX Packaging Tools for VS 2022",
+      "vsixId": "Microsoft.SingleProjectMSIXPackagingTools.Dev17"
+    },
+    {
+      "name": "Solution Error Visualizer 2022",
+      "vsixId": "SolutionErrorVisualizer2022.a392f96b-6b33-4b53-b4bb-3376a05f986c"
+    },
+    {
+      "name": "SQLite and SQL Server Compact Toolbox",
+      "vsixId": "41521019-e4c7-480c-8ea8-fc4a2c6f50aa"
+    },
+    {
+      "name": "SVG Viewer",
+      "vsixId": "SvgViewer.7a08d0d4-985c-4415-93d5-ddd9135d8f4f"
+    },
+    {
+      "name": "Time Stamp Margin 2022",
+      "vsixId": "TimeStampMargin2022.255e8b14-4a53-4eb7-89a7-7ab741c1f612"
+    },
+    {
+      "name": "TypeScript Definition Generator",
+      "vsixId": "cad7b20b-4b83-4ca6-bf24-ca36a494241c"
+    },
+    {
+      "name": "Visual Studio Theme Pack",
+      "vsixId": "VisualStudioThemePack.453e3fa1-2e0e-467e-abbd-1d08fe6468d1"
+    },
+    {
+      "name": "VS Theme Colors 2022",
+      "vsixId": "6ad27930-f7a1-4888-a172-c6fa4440e7a1"
+    },
+    {
+      "name": "WebPack Task Runner",
+      "vsixId": "471a020e-77f5-4c77-8ff0-59e08b6c5ba3"
+    }
+  ]
+}
