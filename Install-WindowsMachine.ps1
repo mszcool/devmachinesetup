@@ -253,9 +253,9 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
 
     winget install --source msstore --silent --accept-package-agreements "IP Calculator"
 
-    winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04 LTS"
+    winget install --source msstore --silent --accept-package-agreements "Ubuntu"
 
-    winget install --source msstore --silent --accept-package-agreements "Ubuntu 20.04 LTS"
+    winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04.5 LTS"
 
 }
 
