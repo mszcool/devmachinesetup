@@ -252,6 +252,10 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
     winget install --source msstore --silent --accept-package-agreements "Subnet Manager"
 
     winget install --source msstore --silent --accept-package-agreements "IP Calculator"
+    
+    # Install WSL Kernel and then Distributions
+    Invoke-WebRequest https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile "$env:TEMP\wsl_update_x64.msi"
+    msiexec /i "$env:TEMP\wsl_update_x64.msi" /passive
 
     winget install --source msstore --silent --accept-package-agreements "Ubuntu"
 
