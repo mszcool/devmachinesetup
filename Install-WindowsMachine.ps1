@@ -173,13 +173,13 @@ if ( $userTools ) {
 
     winget install --source winget --silent "Microsoft Teams"
 
-    winget install --source winget --silent "OpenWhisperSystems.Signal"
+    #winget install --source winget --silent "OpenWhisperSystems.Signal"
 
-    winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
+    #winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
 
-    winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
+    #winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
 
-    winget install --source msstore --silent --accept-package-agreements "Messenger"
+    #winget install --source msstore --silent --accept-package-agreements "Messenger"
 
     winget install --source msstore --silent --accept-package-agreements "Slack"
 
@@ -272,11 +272,10 @@ if ( $ittools -eq "all" ) {
     scoop install jq --global
 
     scoop install openssl --global
-    
-    scoop install win32-openssh --global
 
     scoop install busybox --global
 
+    scoop bucket add extras
     scoop install sysinternals --global
 
 }
@@ -370,9 +369,9 @@ if ( $dev ) {
 
     winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
 
-    winget install --id "Microsoft.dotnet" --version
+    winget install --id "Microsoft.dotnet.SDK 6.0"
     
-    winget install --id "Microsoft.dotnet" --version 3.1.410.15736
+    winget install --id "Microsoft.dotnet.SDK.3_1"
     
     winget install --source winget --silent "Microsoft.OpenJDK.16"
 
@@ -510,6 +509,8 @@ if ( $prettyPrompt ) {
     Write-Information "Installing PSReadLine..."
     Install-Module -Name PSReadLine -SkipPublisherCheck -Force
 
+    RefreshEnvPath
+
     # Then write to the PowerShell Profile
     if ( ! [System.IO.File]::Exists($PROFILE) ) {
         $f = [System.IO.File]::CreateText($PROFILE)
@@ -517,7 +518,7 @@ if ( $prettyPrompt ) {
     }
 
     # A bit hacky, but this is a bit of spare-time, hence limited time to optimize:)
-    $profileContent = Get-Content -Path $PROFILE
+    $profileContent = Get-Content -Raw -Path $PROFILE
     if ( [System.String]::IsNullOrEmpty($profileContent) ) { $profileContent = "" }
     if ( ! $profileContent.Contains("posh-git") ) { Add-Content -Path $PROFILE -Value 'Import-Module posh-git' }
     if ( ! $profileContent.Contains("shellName") ) { Add-Content -Path $PROFILE -Value '$shellName = $(oh-my-posh get shell)' }
