@@ -171,15 +171,15 @@ if ( $tools ) {
 #
 if ( $userTools ) {
 
-    winget install --source winget --silent "Microsoft Teams"
+    #winget install --source winget --silent "Microsoft Teams"
 
-    #winget install --source winget --silent "OpenWhisperSystems.Signal"
+    winget install --source winget --silent "OpenWhisperSystems.Signal"
 
-    #winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
+    winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
 
-    #winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
+    winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
 
-    #winget install --source msstore --silent --accept-package-agreements "Messenger"
+    winget install --source msstore --silent --accept-package-agreements "Messenger"
 
     winget install --source msstore --silent --accept-package-agreements "Slack"
 
@@ -205,11 +205,11 @@ if ( $userTools ) {
     
     winget install --source msstore --silent --accept-package-agreements "WorkingHours" # "WorkingHours — Time Tracking / Timesheet"
 
-    winget install --source msstore --silent --accept-package-agreements "Netflix"
+    #winget install --source msstore --silent --accept-package-agreements "Netflix"
     
-    winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
+    #winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
 
-    winget install --source msstore --silent --accept-package-agreements "Disney+"
+    #winget install --source msstore --silent --accept-package-agreements "Disney+"
 
     winget install --source msstore --silent --accept-package-agreements "Ico Converter"
 
@@ -294,7 +294,7 @@ if ( $devTools ) {
 
     winget install --source msstore --silent --accept-package-agreements "Cosmos DB Studio"
 
-    winget install --source winget --silent "Microsoft.azure-iot-explorer"
+    #winget install --source winget --silent "Microsoft.azure-iot-explorer"
 
     winget install --source winget --silent "3T.Robo3T"
 
@@ -363,7 +363,9 @@ elseif ( $docker -eq "desktop" ) {
 #
 if ( $dev ) {
 
-    winget install --source winget --silent "Microsoft.AzureStorageEmulator"
+    # azurite is replacing Azure Storage Emulator
+    #winget install --source winget --silent "Microsoft.AzureStorageEmulator"
+    npm install -g azurite
 
     winget install --source winget --silent "Microsoft.AzureFunctionsCoreTools"
 
