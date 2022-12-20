@@ -54,7 +54,6 @@ while :; do
             ;;
         --prompt)
             instPrompt=1
-            instGoLang=1
             ;;
         --sshsrv)
             instSshServer=1
@@ -75,12 +74,12 @@ while :; do
         --python)
             instPython=1
             ;;
-	    --golang)
+       --golang)
             instGoLang=1
-	        ;;
-	    --ruby)
+	    ;;
+       --ruby)
             instRuby=1
-	        ;;
+	    ;;
         --nodejs)
             instNodeJs=1
             ;;
@@ -127,8 +126,8 @@ done
 # Check Ubuntu Version
 #
 ver=$(lsb_release -r | cut -f 2)
-if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ]; then 
-    echo "Only Ubuntu 16.04, 18.04 and 20.04 have been tested!"
+if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ] && [ "$ver" != "22.04" ]; then 
+    echo "Only Ubuntu 16.04, 18.04, 20.04, and 22.04 have been tested!"
     exit 
 fi
 
@@ -188,14 +187,16 @@ fi
 if [ $instWslUsbSupport == 1 ]; then
     # USBIP support enablement for WSL2
     if [ $isWsl == 1 ]; then
-        sudo apt install linux-tools-5.4.0-77-generic hwdata
-
-        echo "Now update the sudoers secure path to include Defaults secure_path=\"/usr/lib/linux-tools/5.4.0-77-generic:/usr/local/sbin:...\""
-        read -p "Press ENTER to continue..." </dev/tty
-        sudo visudo
+        # Following new instructions per https://github.com/dorssel/usbipd-win/wiki/WSL-support
+	sudo apt install linux-tools-virtual hwdata
+        sudo update-alternatives --install /usr/local/bin/usbip usbip `ls /usr/lib/linux-tools/*/usbip | tail -n1` 20
+        
+        #echo "Now update the sudoers secure path to include Defaults secure_path=\"/usr/lib/linux-tools/5.4.0-77-generic:/usr/local/sbin:...\""
+        #read -p "Press ENTER to continue..." </dev/tty
+        #sudo visudo
 
         echo "Now you can run \"usbipd wsl attach --busid <busid>\" on Windows to attach a device"
-        read -p "Press ENTER to continue..." </dev/tty
+        #read -p "Press ENTER to continue..." </dev/tty
     else
         echo "Please don't use the --noWsl switch if you want to install this! This is a safety-belt if that script is used for automated install on servers!"
     fi
@@ -295,7 +296,7 @@ if [ $instDockerEngine == 1 ]; then
     
     sudo apt-key fingerprint 0EBFCD88
     
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     
     sudo apt update
     sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
@@ -403,7 +404,7 @@ case $instJava in
         ;;
 
     oraclejdk)
-        sudo add-apt-repository ppa:webupd8team/java
+        sudo add-apt-repository -y ppa:webupd8team/java
         sudo apt update
         echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
         echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
@@ -501,18 +502,31 @@ if [ "$instDotNetCore" != "none" ]; then
         wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
     elif [ "$ver" == "20.04" ]; then
         wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
+    elif [ "$ver" == "22.04" ]; then
+	wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
     fi
+    
+    # Add preference for Microsoft packages to avoid conflict of dotnet core packages from Ubuntu repo
+    # Per Stackoverflow https://stackoverflow.com/questions/73753672/a-fatal-error-occurred-the-folder-usr-share-dotnet-host-fxr-does-not-exist
+    # shellcheck disable=SC1090
+    sudo touch /etc/apt/preferences.d/microsoft-dotnet.pref
+    {
+        printf "Package: *\n"
+	printf "Pin: origin \"packages.microsoft.com\"\n"
+	printf "Pin-Priority: 1001"
+    } | sudo tee /etc/apt/preferences.d/microsoft-dotnet.pref
+    
     sudo dpkg -i packages-microsoft-prod.deb
     rm packages-microsoft-prod.deb
     
     # Needed on Ubuntu 18.04 in WSL
     if [ "$ver" == "18.04" ]; then
-        sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
+        sudo add-apt-repository -y "deb http://security.ubuntu.com/ubuntu xenial-security main"
         sudo apt update 
         sudo apt install -y libicu55
     fi
 
-    sudo add-apt-repository universe
+    sudo add-apt-repository -y universe
     sudo apt update
     sudo apt install -y apt-transport-https
     sudo apt update
@@ -783,37 +797,28 @@ fi
 #
 if [ $instPrompt == 1 ]; then
 
-    go get -u github.com/justjanne/powerline-go
+    sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
+    sudo chmod +x /usr/local/bin/oh-my-posh
 
-    goPathExists=$(grep GOPATH ~/.bashrc)
-    if [ ! "$goPathExists" ]; then
-        # shellcheck disable=SC1090
-        {
-            echo ""
-            echo "GOPATH=$HOME/go"
-        } >> ~/.bashrc
-    fi
-
-    # shellcheck disable=SC1090
-    promptIsThere=$(grep "#mszcool_prompt" ~/.bashrc)
-    if [ ! "$promptIsThere" ]; then
-        # shellcheck disable=SC1090
-        {
-            printf "\n"
-            printf "#mszcool_prompt_start\n"
-            printf "function _update_ps1() {\n"
-            printf "  PS1=\"\$(\$GOPATH/bin/powerline-go -error \$?)\\\n\\\$ \"\n"
-            printf "}\n"
-            printf "if [ \"\$TERM\" != \"linux\" ] && [ -f \"\$GOPATH/bin/powerline-go\" ]; then\n"
-            printf "    PROMPT_COMMAND=\"_update_ps1; \$PROMPT_COMMAND\"\n"
-            printf "fi\n"
-            printf "#mszcool_prompt\n"
-        } >> ~/.bashrc
-    fi
-
-    # shellcheck disable=SC1090
-    source ~/.profile
-    # shellcheck disable=SC1090
+    mkdir ~/.poshthemes
+    wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip
+    unzip ~/.poshthemes/themes.zip -d ~/.poshthemes
+    chmod u+rw ~/.poshthemes/*.omp.*
+    rm ~/.poshthemes/themes.zip
     source ~/.bashrc
 
+    # Install the fonts with oh-my-posh
+    oh-my-posh font install Meslo
+    oh-my-posh font install CascadiaCode
+    
+    # Next, automatically apply the theme in the profile
+    promptIsThere=$(grep "#mszcool_prompt" ~/.profile)
+    if [ ! "$promptIsThere" ]; then
+        shellName=$(oh-my-posh get shell)
+	# shellcheck disable=SC1090
+	echo "#mszcool_prompt" >> ~/.profile
+	oh-my-posh init $shellName --config "~/.poshthemes/iterm2.omp.json" >> ~/.profile
+    fi
+
+    source ~/.profile
 fi

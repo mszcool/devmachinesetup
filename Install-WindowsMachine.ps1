@@ -171,7 +171,7 @@ if ( $tools ) {
 #
 if ( $userTools ) {
 
-    #winget install --source winget --silent "Microsoft Teams"
+    winget install --source winget --silent "Microsoft Teams"
 
     winget install --source winget --silent "OpenWhisperSystems.Signal"
 
@@ -203,13 +203,13 @@ if ( $userTools ) {
 
     winget install --source msstore --silent --accept-package-agreements "QuickLook"
     
-    winget install --source msstore --silent --accept-package-agreements "WorkingHours" # "WorkingHours — Time Tracking / Timesheet"
+    winget install --source msstore --silent --accept-package-agreements --id "49297T.Partl.ClockOut_jr9bq2af9farr" # "WorkingHours — Time Tracking / Timesheet"
 
-    #winget install --source msstore --silent --accept-package-agreements "Netflix"
+    winget install --source msstore --silent --accept-package-agreements "Netflix"
     
-    #winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
+    winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
 
-    #winget install --source msstore --silent --accept-package-agreements "Disney+"
+    winget install --source msstore --silent --accept-package-agreements "Disney+"
 
     winget install --source msstore --silent --accept-package-agreements "Ico Converter"
 
@@ -259,7 +259,7 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
 
     winget install --source msstore --silent --accept-package-agreements "Ubuntu"
 
-    winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04.5 LTS"
+    #winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04.5 LTS"
 
 }
 
@@ -294,7 +294,7 @@ if ( $devTools ) {
 
     winget install --source msstore --silent --accept-package-agreements "Cosmos DB Studio"
 
-    #winget install --source winget --silent "Microsoft.azure-iot-explorer"
+    winget install --source winget --silent "Microsoft.azure-iot-explorer"
 
     winget install --source winget --silent "3T.Robo3T"
 
@@ -363,9 +363,7 @@ elseif ( $docker -eq "desktop" ) {
 #
 if ( $dev ) {
 
-    # azurite is replacing Azure Storage Emulator
-    #winget install --source winget --silent "Microsoft.AzureStorageEmulator"
-    npm install -g azurite
+    winget install --source winget --silent "Microsoft.AzureStorageEmulator"
 
     winget install --source winget --silent "Microsoft.AzureFunctionsCoreTools"
 
