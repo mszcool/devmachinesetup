@@ -260,6 +260,8 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
     winget install --source msstore --silent --accept-package-agreements "Ubuntu"
 
     #winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04.5 LTS"
+    
+    winget --source install --source winget --silent --id GnuPG.Gpg4win
 
 }
 
@@ -275,9 +277,10 @@ if ( $ittools -eq "all" ) {
 
     scoop install busybox --global
 
-    scoop bucket add extras
+    scoop bucket add extras    
     scoop install sysinternals --global
 
+    scoop install 1password-cli --global
 }
 
 
