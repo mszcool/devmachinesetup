@@ -189,9 +189,9 @@ if ( $userTools ) {
 
     winget install --source winget --silent win32diskimager
 
-    winget install --source winget --silent calibre
+    winget install --source winget --silent --id "calibre.calibre"
     
-    winget install --source winget --silent "Advanced Renamer"
+    winget install --source msstore --silent --accept-package-agreements --id "57028Mikestudio.407396261787C_3gr5127hgmae2"
 
     # Store Apps which I use on a regular basis
 
@@ -261,7 +261,7 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
 
     #winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04.5 LTS"
     
-    winget --source install --source winget --silent --id GnuPG.Gpg4win
+    winget install --source winget --silent --id GnuPG.Gpg4win
 
 }
 
