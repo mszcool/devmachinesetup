@@ -178,6 +178,18 @@ if [ $instBase == 1 ]; then
     sudo apt install -y libxml2
     sudo apt install -y build-essential
 
+    sudo apt install -y ansible
+    sudo apt install -y vagrant
+    if [ $isWsl == 1 ]; then
+        vagrantExportIsHere=$(grep "VAGRANT_DEFAULT_PROVIDER" ~/.profile)
+        if [ ! "$promptIsThere" ]; then
+            # shellcheck disable=SC1090
+            echo "export VAGRANT_DEFAULT_PROVIDER=\"hyperv\"" >> ~/.profile
+            echo "export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS=1" >> ~/.profile
+            echo "export VAGRANT_WSL_WINDOWS_ACCESS_USER_HOME_PATH=\"/mnt/c/Users/marioszp\"" >> ~/.profile
+        fi
+    fi
+
 fi
 
 

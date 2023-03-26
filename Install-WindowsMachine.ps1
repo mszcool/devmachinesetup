@@ -263,6 +263,8 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
     
     winget install --source winget --silent --id GnuPG.Gpg4win
 
+    winget install --source winget --silent --id Hashicorp.Vagrant
+
 }
 
 if ( $ittools -eq "all" ) {
