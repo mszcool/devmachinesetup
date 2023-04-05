@@ -116,7 +116,6 @@ if ( $prepOS ) {
 
     # Install git using winget
     winget install --source winget --silent "Git.Git"
-    winget install --source winget --silent "Git Large File Storage"
 
     RefreshEnvPath
 
@@ -240,6 +239,10 @@ if ( $userTools ) {
 # [ittools] IT-oriented tools
 #
 if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
+
+    winget install --source winget --silent --id GitHub.GitLFS
+    
+    winget install --source winget --silent --id GitHub.cli
 
     winget install --source winget --silent "gerardog.gsudo"
     
