@@ -286,6 +286,8 @@ if ( $ittools -eq "all" ) {
     scoop install sysinternals --global
 
     scoop install 1password-cli --global
+    
+    scoop install scrcpy --global
 }
 
 
