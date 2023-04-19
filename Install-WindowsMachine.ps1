@@ -261,12 +261,12 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
     msiexec /i "$env:TEMP\wsl_update_x64.msi" /passive
 
     winget install --source msstore --silent --accept-package-agreements "Ubuntu"
-
-    #winget install --source msstore --silent --accept-package-agreements "Ubuntu 18.04.5 LTS"
     
     winget install --source winget --silent --id GnuPG.Gpg4win
 
     winget install --source winget --silent --id Hashicorp.Vagrant
+    
+    winget install --source winget --silent --id RaspberryPiFoundation.RaspberryPiImager
 
 }
 
@@ -288,6 +288,10 @@ if ( $ittools -eq "all" ) {
     scoop install 1password-cli --global
     
     scoop install scrcpy --global
+    
+    # One of the best USB Bootable drive creation tools available
+    # https://github.com/ventoy/Ventoy
+    scoop install ventoy --global
 }
 
 
