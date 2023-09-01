@@ -423,6 +423,8 @@ if ( $dev ) {
 
     npm install -g swagger-tools@0.10.4
 
+    npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false
+
     scoop bucket add extras
     scoop bucket add versions
     
