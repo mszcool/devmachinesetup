@@ -389,7 +389,9 @@ if ( $dev ) {
 
     winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
 
-    winget install --id "Microsoft.dotnet.SDK 6.0"
+    winget install --id "Microsoft.dotnet.SDK.7"
+
+    winget install --id "Microsoft.dotnet.SDK.6"
     
     winget install --id "Microsoft.dotnet.SDK.3_1"
     
