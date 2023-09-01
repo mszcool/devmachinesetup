@@ -10,6 +10,9 @@ Param
     [Switch]
     $userTools,
 
+    [Switch]
+    $userToolsSkipPersonal,
+
     [Parameter(Mandatory = $False)]
     [ValidateSet("no", "all", "basic")]
     $ittools = "no",
@@ -29,6 +32,9 @@ Param
 
     [Switch]
     $hyperv,
+
+    [Switch]
+    $noWsl,
 
     [Parameter(Mandatory = $False)]
     [ValidateSet("no", "plain", "full")]
@@ -119,6 +125,10 @@ if ( $prepOS ) {
 
     RefreshEnvPath
 
+    winget install --source winget --silent --id GitHub.GitLFS
+
+    RefreshEnvPath
+
     # Install Scoop, which is more convenient for CLIs and command line dev tools
     Invoke-RestMethod "https://get.scoop.sh" -outfile "$env:TEMP\installScoop.ps1"
     Invoke-Expression -Command "$env:TEMP\installScoop.ps1 -RunAsAdmin"
@@ -128,8 +138,14 @@ if ( $prepOS ) {
     Enable-WindowsOptionalFeature -FeatureName NetFx4Extended-ASPNET45 -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName WCF-Services45 -Online -NoRestart
     Enable-WindowsOptionalFeature -FeatureName WCF-TCP-PortSharing45 -Online -NoRestart
-    Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
-    Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
+
+    if ( $hyperv -or (-not $noWsl) ) {
+        Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
+    }
+
+    if ( -not $noWsl ) {
+        Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
+    }
 
     if ( $hyperv ) {
         Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
@@ -171,44 +187,44 @@ if ( $tools ) {
 if ( $userTools ) {
 
     winget install --source winget --silent "Microsoft Teams"
-
-    winget install --source winget --silent "OpenWhisperSystems.Signal"
-
-    winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
-
-    winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
-
-    winget install --source msstore --silent --accept-package-agreements "Messenger"
+    
+    winget install --source msstore --silent --accept-package-agreements "ZOOM Cloud Meetings"
 
     winget install --source msstore --silent --accept-package-agreements "Slack"
 
-    winget install --source msstore --silent --accept-package-agreements "ZOOM Cloud Meetings"
-
     winget install --source msstore --silent --accept-package-agreements Rufus
 
-    winget install --source winget --silent win32diskimager
+    if ( -not $userToolsSkipPersonal ) {
 
-    winget install --source winget --silent --id "calibre.calibre"
+        winget install --source winget --silent "OpenWhisperSystems.Signal"
     
-    winget install --source msstore --silent --accept-package-agreements --id "57028Mikestudio.407396261787C_3gr5127hgmae2"
+        winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
+    
+        winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
+    
+        winget install --source msstore --silent --accept-package-agreements "Messenger"
 
-    # Store Apps which I use on a regular basis
+        winget install --source winget --silent --id "calibre.calibre"
 
-    winget install --source winget --silent "CrystalDiskMark"
+        # Store apps which I use on personal devices or personal+work devices, only (but not on pure work VMs)
 
-    winget install --source msstore --silent --accept-package-agreements "Cinebench"
+        winget install --source winget --silent "CrystalDiskMark"
 
-    winget install --source winget --silent "Logi Tune"
+        winget install --source msstore --silent --accept-package-agreements "Cinebench"
+    
+        winget install --source msstore --silent --accept-package-agreements "Netflix"
+        
+        winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
+    
+        winget install --source msstore --silent --accept-package-agreements "Disney+"
+    
+        winget install --source msstore --silent --accept-package-agreements "Spotify Music"
+
+    }
+
+    # Store Apps which I use on all machines a regular basis
 
     winget install --source msstore --silent --accept-package-agreements "QuickLook"
-    
-    winget install --source msstore --silent --accept-package-agreements --id "49297T.Partl.ClockOut_jr9bq2af9farr" # "WorkingHours — Time Tracking / Timesheet"
-
-    winget install --source msstore --silent --accept-package-agreements "Netflix"
-    
-    winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
-
-    winget install --source msstore --silent --accept-package-agreements "Disney+"
 
     winget install --source msstore --silent --accept-package-agreements "Ico Converter"
 
@@ -222,13 +238,7 @@ if ( $userTools ) {
 
     winget install --source msstore --silent --accept-package-agreements "MSN Weather"
 
-    #winget install --source msstore --silent --accept-package-agreements "Surface Audio"
-
-    #winget install --source msstore --silent --accept-package-agreements "Dynamics AX 2012 Expenses"
-
     winget install --source msstore --silent --accept-package-agreements "Speedtest by Ookla"
-
-    winget install --source msstore --silent --accept-package-agreements "Spotify Music"
 
     winget install --source msstore --silent --accept-package-agreements "9WZDNCRD2G0J" # Microsoft Sway
 
@@ -239,8 +249,6 @@ if ( $userTools ) {
 # [ittools] IT-oriented tools
 #
 if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
-
-    winget install --source winget --silent --id GitHub.GitLFS
     
     winget install --source winget --silent --id GitHub.cli
 
@@ -256,11 +264,13 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
 
     winget install --source msstore --silent --accept-package-agreements "IP Calculator"
     
-    # Install WSL Kernel and then Distributions
-    Invoke-WebRequest https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile "$env:TEMP\wsl_update_x64.msi"
-    msiexec /i "$env:TEMP\wsl_update_x64.msi" /passive
-
-    winget install --source msstore --silent --accept-package-agreements "Ubuntu"
+    if ( -not $noWsl ) {
+        # Install WSL Kernel and then Distributions
+        Invoke-WebRequest https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile "$env:TEMP\wsl_update_x64.msi"
+        msiexec /i "$env:TEMP\wsl_update_x64.msi" /passive
+    
+        winget install --source msstore --silent --accept-package-agreements "Ubuntu"
+    }
     
     winget install --source winget --silent --id GnuPG.Gpg4win
 
@@ -302,13 +312,13 @@ if ( $devTools ) {
 
     winget install --source winget --silent "Microsoft PowerBI Desktop"
 
+    winget install --source winget --silent "GitExtensionsTeam.GitExtensions"
+
     winget install --source winget --silent "Microsoft.AzureDataStudio"
 
     winget install --source winget --silent "Microsoft.AzureStorageExplorer"
 
     winget install --source msstore --silent --accept-package-agreements "Cosmos DB Studio"
-
-    winget install --source winget --silent "Microsoft.azure-iot-explorer"
 
     winget install --source winget --silent "3T.Robo3T"
 
@@ -316,11 +326,7 @@ if ( $devTools ) {
     
     winget install --source winget --silent "ILSpy"
     
-    winget install --source winget --silent "Telerik.Fiddler"
-    
     winget install --source winget --silent "RicoSuter.NSwagStudio" 
-
-    winget install --source winget --silent "GitExtensionsTeam.GitExtensions"
 
     winget install --source msstore --silent --accept-package-agreements "Nightingale REST Client"
 
