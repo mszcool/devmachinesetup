@@ -252,24 +252,28 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
     
     winget install --source winget --silent --id GitHub.cli
 
-    winget install --source winget --silent "gerardog.gsudo"
+    winget install --source winget --silent "gerardog.gsudo"    
     
-    winget install --source winget --silent "dorssel.usbipd-win"
-
     winget install --source msstore --silent --accept-package-agreements "Royal TS V6"
     
     winget install --source winget --silent "Microsoft.PowerShell"
-
+    
     winget install --source msstore --silent --accept-package-agreements "Subnet Manager"
-
+    
     winget install --source msstore --silent --accept-package-agreements "IP Calculator"
     
     if ( -not $noWsl ) {
         # Install WSL Kernel and then Distributions
         Invoke-WebRequest https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile "$env:TEMP\wsl_update_x64.msi"
         msiexec /i "$env:TEMP\wsl_update_x64.msi" /passive
-    
+        
         winget install --source msstore --silent --accept-package-agreements "Ubuntu"
+
+        # Used for pipe relaying that enables re-using Windows ssh-agent on WSL2
+        winget install --silent --source winget --id jstarks.npiperelay
+
+        # Used for USBIP on WSL2
+        winget install --source winget --silent "dorssel.usbipd-win"
     }
     
     winget install --source winget --silent --id GnuPG.Gpg4win
