@@ -164,7 +164,9 @@ if [ $instBase == 1 ]; then
 	elif [ "$ver" == "18.04" ]; then
 		echo "deb http://miktex.org/download/ubuntu bionic universe" | sudo tee /etc/apt/sources.list.d/miktex.list
 	elif [ "$ver" == "20.04" ]; then
-	echo "deb [arch=amd64] http://miktex.org/download/ubuntu focal universe" | sudo tee /etc/apt/sources.list.d/miktex.list
+		echo "deb [arch=amd64] http://miktex.org/download/ubuntu focal universe" | sudo tee /etc/apt/sources.list.d/miktex.list
+	elif [ "$ver" == "22.04" ]; then
+		echo "deb [arch=amd64] http://miktex.org/download/ubuntu jammy universe" | sudo tee /etc/apt/sources.list.d/miktex.list
 	fi 
 	sudo apt update
 	sudo apt install -y miktex
@@ -200,7 +202,7 @@ fi
 #
 # Installing WSL2 SSH Agent Passthrough with Windows SSH Agent
 #
-if [ $instWslSshPassthrough == 1 && $isWsl == 1 ]; then
+if [[ "$instWslSshPassthrough" == "1" && "$isWsl" == "1" ]]; then
 
 	# Requires socat on Windows and npiperelay.exe on Windows Host
 	sudo apt install socat -y
@@ -229,7 +231,7 @@ if [ $instWslSshPassthrough == 1 && $isWsl == 1 ]; then
 				(setsid socat UNIX-LISTEN:\$SSH_AUTH_SOCK,fork EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &) >/dev/null 2>&1
 			fi
 			# mszcool ssh wsl2 sharing end            
-		EOL   
+EOL
 	fi
 fi
 
@@ -491,7 +493,7 @@ if [ "$instJava" != "none" ]; then
 	currentPath=$PWD
 	cd ~/
 	mkdir ~/jmeter
-	wget -O apache-jmeter.tgz https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.4.3.tgz
+	wget -O apache-jmeter.tgz https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz
 	tar -xvf ~/apache-jmeter.tgz -C ~/jmeter
 
 fi
@@ -556,7 +558,7 @@ if [ "$instDotNetCore" != "none" ]; then
 	elif [ "$ver" == "20.04" ]; then
 		wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
 	elif [ "$ver" == "22.04" ]; then
-	wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
+		wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
 	fi
 	
 	# Add preference for Microsoft packages to avoid conflict of dotnet core packages from Ubuntu repo
@@ -564,7 +566,7 @@ if [ "$instDotNetCore" != "none" ]; then
 	# shellcheck disable=SC1090
 	sudo touch /etc/apt/preferences.d/microsoft-dotnet.pref
 	{
-		printf "Package: *\n"
+	    printf "Package: *\n"
 	    printf "Pin: origin \"packages.microsoft.com\"\n"
 	    printf "Pin-Priority: 1001"
 	} | sudo tee /etc/apt/preferences.d/microsoft-dotnet.pref
@@ -607,6 +609,7 @@ case $instDotNetCore in
 		sudo apt install -y dotnet-sdk-3.1
 		sudo apt install -y dotnet-sdk-6.0
 		sudo apt install -y dotnet-sdk-7.0
+                ;;
 
 	none)
 		;;
