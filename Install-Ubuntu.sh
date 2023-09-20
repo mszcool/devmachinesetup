@@ -226,6 +226,9 @@ if [[ "$instWslSshPassthrough" == "1" && "$isWsl" == "1" ]]; then
 					rm \$SSH_AUTH_SOCK
 				fi
 				echo "Starting SSH-Agent relay..."
+				# This requires the .ssh directory to exist, hence create it if it does not.
+			        mkdir -p "$HOME/.ssh"
+    				# Now, if the directory exists, we can create the redirect socket with socat
 				# setsid to force new session to keep running
 				# set socat to listen on \$SSH_AUTH_SOCK and forward to npiperelay which then forwards to openssh-ssh-agent on windows
 				(setsid socat UNIX-LISTEN:\$SSH_AUTH_SOCK,fork EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &) >/dev/null 2>&1
