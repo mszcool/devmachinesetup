@@ -879,10 +879,11 @@ if [ $instPrompt == 1 ]; then
 	# Next, automatically apply the theme in the profile
 	promptIsThere=$(grep "#mszcool_prompt" ~/.bashrc)
 	if [ ! "$promptIsThere" ]; then
-		shellName=$(oh-my-posh get shell)
-	# shellcheck disable=SC1090
-	echo "#mszcool_prompt" >> ~/.bashrc
-	oh-my-posh init $shellName --config "~/.poshthemes/iterm2.omp.json" >> ~/.bashrc
+		# The below did output the name of the bash-script instead of the name of the shell:
+  		# shellName=$(oh-my-posh get shell)
+		# shellcheck disable=SC1090
+		echo "#mszcool_prompt" >> ~/.bashrc
+		oh-my-posh init bash --config "~/.poshthemes/iterm2.omp.json" >> ~/.bashrc
 	fi
 
 	source ~/.bashrc
