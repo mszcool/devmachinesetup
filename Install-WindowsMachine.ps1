@@ -41,10 +41,6 @@ Param
     $vsCode = "no",
 
     [Parameter(Mandatory = $False)]
-    [ValidateSet("no", "Community", "Professional", "Enterprise")]
-    $visualStudio = "no",
-
-    [Parameter(Mandatory = $False)]
     [ValidateSet("no", "intelliJ", "eclipse-sts", "all")]
     $otherIde = "no",
 
@@ -108,7 +104,7 @@ $originalExecPath = Get-Location
 #
 # Simple Parameter validation
 #
-if ( $prepOS -and ($tools -or $userTools -or ( $ittools -ne "no" ) -or $dev -or $devTools -or ( $docker -ne "no" ) -or $clis -or ( $vsCode -ne "no" )  -or ( $visualStudio -ne "no" ) -or ( $otherIde -ne "no" ) -or $prettyPrompt) ) {
+if ( $prepOS -and ($tools -or $userTools -or ( $ittools -ne "no" ) -or $dev -or $devTools -or ( $docker -ne "no" ) -or $clis -or ( $vsCode -ne "no" )  -or ( $otherIde -ne "no" ) -or $prettyPrompt) ) {
     throw "Running the script with -prepOS does not allow you to use any other switches. First run -prepOS and then run with any other allowed combination of switches!"
 }
 
@@ -186,11 +182,13 @@ if ( $tools ) {
 #
 if ( $userTools ) {
 
-    winget install --source winget --silent "Microsoft Teams"
+    # Removed, included in latest Windows and Office
+    # winget install --source winget --silent "Microsoft Teams"
     
     winget install --source msstore --silent --accept-package-agreements "ZOOM Cloud Meetings"
 
-    winget install --source msstore --silent --accept-package-agreements "Slack"
+    # Removed, do not really need it for now
+    # winget install --source msstore --silent --accept-package-agreements "Slack"
 
     winget install --source msstore --silent --accept-package-agreements Rufus
 
@@ -253,9 +251,7 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
     winget install --source winget --silent --id GitHub.cli
 
     winget install --source winget --silent "gerardog.gsudo"    
-    
-    winget install --source msstore --silent --accept-package-agreements "Royal TS V6"
-    
+      
     winget install --source winget --silent "Microsoft.PowerShell"
     
     winget install --source msstore --silent --accept-package-agreements "Subnet Manager"
@@ -387,34 +383,47 @@ elseif ( $docker -eq "desktop" ) {
 #
 if ( $dev ) {
 
-    winget install --source winget --silent "Microsoft.AzureStorageEmulator"
+    # Removed, running in container
+    # winget install --source winget --silent "Microsoft.AzureStorageEmulator"
 
     winget install --source winget --silent "Microsoft.AzureFunctionsCoreTools"
 
-    winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
+    # Removed, running in container
+    # winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
 
     winget install --id "Microsoft.dotnet.SDK.7"
 
     winget install --id "Microsoft.dotnet.SDK.6"
     
-    winget install --id "Microsoft.dotnet.SDK.3_1"
+    # Removed, out of support
+    # winget install --id "Microsoft.dotnet.SDK.3_1"
     
     winget install --source winget --silent "Microsoft.OpenJDK.16"
 
     winget install --source winget --silent "GoLang.Go"
 
-    winget install --source winget --silent "Python 3.9"
+    winget install --source winget --silent "Python.Python.3.11"
 
     # Reference : https://pypi.org/project/autopep8/
     python -m pip install --upgrade autopep8
 
-    winget install --source winget --silent "Scala.Scala.2"
+    # Removed, not doing Scala for now
+    # winget install --source winget --silent "Scala.Scala.2"
 
-    winget install --source winget --silent "sbt.sbt"
+    # Removed, not doing Scala for now
+    # winget install --source winget --silent "sbt.sbt"
 
-    winget install --source winget --silent "OpenJS.NodeJS"
+    # Replaced with nvm for Windows
+    # winget install --source winget --silent "OpenJS.NodeJS"
+    winget install --source winget --silent --id "CoreyButler.NVMforWindows"
 
     RefreshEnvPath
+
+    # Workaround for RefreshEnvPath not working properly after nvm winget install
+    $env:PATH = "$env:PATH;$env:USERPROFILE\AppData\Roaming\nvm"
+
+    nvm install lts
+    nvm use lts
 
     npm install -g moment
 
@@ -423,9 +432,9 @@ if ( $dev ) {
     # Removed due to security issues/vulnerabilities
     # npm install -g gulp
     
-    npm install -g autorest@3.0.6187
+    npm install -g autorest        # try with latest instead of @3.0.6187
 
-    npm install -g swagger-tools@0.10.4
+    npm install -g swagger-tools   # try with latest instead of @0.10.4
 
     npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false
 
@@ -471,7 +480,8 @@ if ( $clis ) {
 
     scoop install draft --global
 
-    scoop install cloudfoundry-cli@7.1.0 --global
+    # Removed, no CF work, anymore
+    # scoop install cloudfoundry-cli@7.1.0 --global
 
     scoop install openshift-origin-client --global
 
@@ -498,22 +508,14 @@ if ( ($vsCode -eq "plain") -or ($vsCode -eq "full") ) {
 
 
 #
-# [installVs] Installing a version of Visual Studio (based on Chocolatey)
-#
-if ($visualStudio -ne "no") {
-    winget install --source winget --silent "Visual Studio $visualStudio"
-}
-
-
-#
 # [installOtherIde] Installing Eclipse and/or IntelliJ if required
 #
-if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "intelliJ")) {
+if (($otherIde -eq "all") -or ($otherIde -eq "intelliJ")) {
 
     winget install --source winget --silent "JetBrains.IntelliJIDEA.Community"
 
 }
-if (($installOtherIDE -eq "all") -or ($installOtherIDE -eq "eclipse-sts")) {
+if (($otherIde -eq "all") -or ($otherIde -eq "eclipse-sts")) {
 
     scoop bucket add extras
     scoop update
