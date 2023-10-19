@@ -184,6 +184,9 @@ if [ $instBase == 1 ]; then
 	sudo apt install -y libxml2
 	sudo apt install -y build-essential
 
+	sudo apt install -y pandoc
+	sudo apt install -y texlive-latex-recommended
+
 	sudo apt install -y ansible
 	sudo apt install -y vagrant
 	if [ $isWsl == 1 ]; then
