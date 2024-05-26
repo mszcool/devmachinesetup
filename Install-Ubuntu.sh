@@ -221,8 +221,9 @@ if [[ "$instWslSshPassthrough" == "1" && "$isWsl" == "1" ]]; then
 			export SSH_AUTH_SOCK=\$HOME/.ssh/agent.sock
 			# need \`ps -ww\` to get non-truncated command for matching
 			# use square brackets to generate a regex match for the process we want but that doesn't match the grep command running it!
-			ALREADY_RUNNING=\$(ps -auxww | grep -q "[n]piperelay.exe -ei -s //./pipe/openssh-ssh-agent"; echo \$?)
-			if [[ \$ALREADY_RUNNING != "0" ]]; then
+                        RUNNING_CHECK=\$(ps -auxww | grep "[n]piperelay.exe -ei -s //./pipe/openssh-ssh-agent")
+			if [[ \$RUNNING_CHECK == *"npiperelay.exe"* ]]; then RUNNING_AGENT="yes"; else RUNNING_AGENT="no"; fi
+   			if [ "\$RUNNING_AGENT" == "no" ]; then
 				if [[ -S \$SSH_AUTH_SOCK ]]; then
 					# not expecting the socket to exist as the forwarding command isn't running (http://www.tldp.org/LDP/abs/html/fto.html)
 					echo "removing previous socket..."
