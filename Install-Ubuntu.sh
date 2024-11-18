@@ -75,12 +75,12 @@ while :; do
 		--python)
 			instPython=1
 			;;
-	   --golang)
+     		--golang)
 			instGoLang=1
-		;;
-	   --ruby)
+			;;
+	     	--ruby)
 			instRuby=1
-		;;
+			;;
 		--nodejs)
 			instNodeJs=1
 			;;
@@ -130,8 +130,8 @@ done
 # Check Ubuntu Version
 #
 ver=$(lsb_release -r | cut -f 2)
-if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ] && [ "$ver" != "22.04" ]; then 
-	echo "Only Ubuntu 16.04, 18.04, 20.04, and 22.04 have been tested!"
+if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ] && [ "$ver" != "22.04" ] && [ "$ver" != "24.04" ]; then 
+	echo "Only Ubuntu 16.04, 18.04, 20.04, 22.04, 24.04 have been tested!"
 	exit 
 fi
 
@@ -223,19 +223,22 @@ if [[ "$instWslSshPassthrough" == "1" && "$isWsl" == "1" ]]; then
 			# use square brackets to generate a regex match for the process we want but that doesn't match the grep command running it!
                         RUNNING_CHECK=\$(ps -auxww | grep "[n]piperelay.exe -ei -s //./pipe/openssh-ssh-agent")
 			if [[ \$RUNNING_CHECK == *"npiperelay.exe"* ]]; then RUNNING_AGENT="yes"; else RUNNING_AGENT="no"; fi
+			# Test if I can retrieve the keys
+			ssh-add -l
+			if [ $? == 1 ]; then RUNNING_AGENT="no"; fi
    			if [ "\$RUNNING_AGENT" == "no" ]; then
-				if [[ -S \$SSH_AUTH_SOCK ]]; then
-					# not expecting the socket to exist as the forwarding command isn't running (http://www.tldp.org/LDP/abs/html/fto.html)
-					echo "removing previous socket..."
-					rm \$SSH_AUTH_SOCK
-				fi
-				echo "Starting SSH-Agent relay..."
-				# This requires the .ssh directory to exist, hence create it if it does not.
-			        mkdir -p "$HOME/.ssh"
-    				# Now, if the directory exists, we can create the redirect socket with socat
-				# setsid to force new session to keep running
-				# set socat to listen on \$SSH_AUTH_SOCK and forward to npiperelay which then forwards to openssh-ssh-agent on windows
-				(setsid socat UNIX-LISTEN:\$SSH_AUTH_SOCK,fork EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &) >/dev/null 2>&1
+				\tif [[ -S \$SSH_AUTH_SOCK ]]; then
+					\t\t# not expecting the socket to exist as the forwarding command isn't running (http://www.tldp.org/LDP/abs/html/fto.html)
+					\t\techo "removing previous socket..."
+					\t\trm \$SSH_AUTH_SOCK
+				\tfi
+				\techo "Starting SSH-Agent relay..."
+				\t# This requires the .ssh directory to exist, hence create it if it does not.
+			        \tmkdir -p "$HOME/.ssh"
+    				\t# Now, if the directory exists, we can create the redirect socket with socat
+				\t# setsid to force new session to keep running
+				\t# set socat to listen on \$SSH_AUTH_SOCK and forward to npiperelay which then forwards to openssh-ssh-agent on windows
+				\t(setsid socat UNIX-LISTEN:\$SSH_AUTH_SOCK,fork EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &) >/dev/null 2>&1
 			fi
 			# mszcool ssh wsl2 sharing end            
 EOL
@@ -558,15 +561,7 @@ if [ "$instDotNetCore" != "none" ]; then
 	curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
 	sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 
-	if [ "$ver" == "16.04" ]; then        
-		wget -q https://packages.microsoft.com/config/ubuntu/16.04/packages-microsoft-prod.deb
-	elif [ "$ver" == "18.04" ]; then
-		wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-	elif [ "$ver" == "20.04" ]; then
-		wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
-	elif [ "$ver" == "22.04" ]; then
-		wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
-	fi
+	wget -q "https://packages.microsoft.com/config/ubuntu/$ver/packages-microsoft-prod.deb"
 	
 	# Add preference for Microsoft packages to avoid conflict of dotnet core packages from Ubuntu repo
 	# Per Stackoverflow https://stackoverflow.com/questions/73753672/a-fatal-error-occurred-the-folder-usr-share-dotnet-host-fxr-does-not-exist
@@ -611,11 +606,15 @@ case $instDotNetCore in
 	7)
 		sudo apt install -y dotnet-sdk-7.0
 		;;
+	8)
+		sudo apt install -y dotnet-sdk-8.0
+		;;
 
 	all)
 		sudo apt install -y dotnet-sdk-3.1
 		sudo apt install -y dotnet-sdk-6.0
 		sudo apt install -y dotnet-sdk-7.0
+		sudo apt install -y dotnet-sdk-8.0
                 ;;
 
 	none)
