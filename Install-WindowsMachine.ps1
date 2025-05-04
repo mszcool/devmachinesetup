@@ -1,4 +1,3 @@
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingInvokeExpression', '', Justification='Following installation instructions from scoop.sh')]
 Param
 (
     [Switch]
@@ -41,7 +40,7 @@ Param
     $vsCode = "no",
 
     [Parameter(Mandatory = $False)]
-    [ValidateSet("no", "intelliJ", "eclipse-sts", "all")]
+    [ValidateSet("no", "intelliJ", "all")]
     $otherIde = "no",
 
     [Switch]
@@ -125,9 +124,8 @@ if ( $prepOS ) {
 
     RefreshEnvPath
 
-    # Install Scoop, which is more convenient for CLIs and command line dev tools
-    Invoke-RestMethod "https://get.scoop.sh" -outfile "$env:TEMP\installScoop.ps1"
-    Invoke-Expression -Command "$env:TEMP\installScoop.ps1 -RunAsAdmin"
+    # Install Chocolatey through winget
+    winget install --source winget --silent --id Chocolatey.Chocolatey
 
     # Install Windows Features
     Enable-WindowsOptionalFeature -FeatureName NetFx4-AdvSrvs -Online -NoRestart
@@ -282,26 +280,27 @@ if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
 
 if ( $ittools -eq "all" ) {
 
-    # Scoop based packages
-
-    scoop install curl grep sed less touch --global
-
-    scoop install jq --global
-
-    scoop install openssl --global
-
-    scoop install busybox --global
-
-    scoop bucket add extras    
-    scoop install sysinternals --global
-
-    scoop install 1password-cli --global
+    winget install --source winget --silent --id cURL.cURL
     
-    scoop install scrcpy --global
+    winget install --source winget --silent --id GnuWin32.Grep
+    
+    winget install --source winget --silent --id mbuilov.sed
+    
+    winget install --source winget --silent --id jftuga.less
+    
+    winget install --source winget --silent --id jqlang.jq
+
+    winget install --source winget --silent --id ShiningLight.OpenSSL.Light
+
+    winget install --source winget --silent --id Microsoft.Sysinternals
+
+    winget install --source winget --silent --id AgileBits.1Password.CLI
+    
+    winget install --source winget --silent --id Genymobile.scrcpy
     
     # One of the best USB Bootable drive creation tools available
     # https://github.com/ventoy/Ventoy
-    scoop install ventoy --global
+    winget install --source winget --silent --id Ventoy.Ventoy
 }
 
 
@@ -338,19 +337,9 @@ if ( $devTools ) {
 
     winget install --source msstore --silent --accept-package-agreements "9PGCV4V3BK4W" # DevToys
 
-    # Scoop-based installs
-
-    scoop bucket add extras
-    scoop bucket add versions
-    scoop update
-
-    #scoop install sqlitestudio --global
-
-    scoop install servicebusexplorer --global
+    winget install --source winget --silent --id paolosalvatori.ServiceBusExplorer
     
-    scoop install jmeter --global
-
-    scoop install ngrok --global
+    winget install --source winget --silent --id DEVCOM.JMeter
 
 }
 
@@ -360,13 +349,8 @@ if ( $devTools ) {
 #
 if ( $docker -eq "cli" ) {
 
-    scoop bucket add extras
-    scoop bucket add versions
-    scoop update
-
-    scoop install docker --global
-    scoop install docker-machine --global
-    scoop install docker-compose --global
+    winget install --source winget --silent --id Docker.DockerCLI
+    winget install --source winget --silent --id Docker.DockerCompose
 
 }
 elseif ( $docker -eq "desktop" ) {
@@ -391,12 +375,9 @@ if ( $dev ) {
     # Removed, running in container
     # winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
 
-    winget install --id "Microsoft.dotnet.SDK.7"
+    winget install --id "Microsoft.dotnet.SDK.8"
 
-    winget install --id "Microsoft.dotnet.SDK.6"
-    
-    # Removed, out of support
-    # winget install --id "Microsoft.dotnet.SDK.3_1"
+    winget install --id "Microsoft.dotnet.SDK.9"
     
     winget install --source winget --silent "Microsoft.OpenJDK.16"
 
@@ -438,11 +419,6 @@ if ( $dev ) {
 
     npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false
 
-    scoop bucket add extras
-    scoop bucket add versions
-    
-    scoop install maven --global
-
     # Dotnet artifacts credential provider for .NET Core and .NET Framework.
     # Note: assumes VS 2019 or dotnet has been installed on the system.
     # Details: https://github.com/Microsoft/artifacts-credprovider
@@ -456,13 +432,17 @@ if ( $dev ) {
 #
 if ( $clis ) {
 
-    scoop install azure-cli --global
+    winget install --source winget --silent --id  Microsoft.AzureCLI
     $azcliext = Get-Content "$originalExecPath\az-cli.extensions"
     $azcliext | ForEach-Object { az extension add --name $_ }
 
-    scoop install bicep --global
+    winget install --source winget --silent --id  Microsoft.Bicep
 
-    scoop install aws --global
+    winget install --source winget --silent --id Microsoft.Azd
+
+    winget install --source winget --silent --id Microsoft.Azure.DataCLI
+
+    winget install --source winget --silent --id Amazon.AWSCLI
 
     PreparePowerShell
 
@@ -470,20 +450,15 @@ if ( $clis ) {
 
     Install-Module -Name AzureAD -Force -SkipPublisherCheck
 
-    scoop install armclient --global
+    choco install ARMClient --force --force-dependencies
     
-    scoop install nuget --global
+    winget install --source winget --silent --id Microsoft.NuGet
 
-    scoop install kubectl --global
+    winget install --source winget --silent --id Kubernetes.kubectl
 
-    scoop install helm --global
+    winget install --source winget --silent --id Helm.Helm
 
-    scoop install draft --global
-
-    # Removed, no CF work, anymore
-    # scoop install cloudfoundry-cli@7.1.0 --global
-
-    scoop install openshift-origin-client --global
+    winget install --source winget --silent --id RedHat.OpenShift-Client
 
 }
 
@@ -513,14 +488,6 @@ if ( ($vsCode -eq "plain") -or ($vsCode -eq "full") ) {
 if (($otherIde -eq "all") -or ($otherIde -eq "intelliJ")) {
 
     winget install --source winget --silent "JetBrains.IntelliJIDEA.Community"
-
-}
-if (($otherIde -eq "all") -or ($otherIde -eq "eclipse-sts")) {
-
-    scoop bucket add extras
-    scoop update
-
-    scoop install sts --global
 
 }
 
