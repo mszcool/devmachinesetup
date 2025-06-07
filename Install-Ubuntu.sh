@@ -225,7 +225,7 @@ if [[ "$instWslSshPassthrough" == "1" && "$isWsl" == "1" ]]; then
 			if [[ \$RUNNING_CHECK == *"npiperelay.exe"* ]]; then RUNNING_AGENT="yes"; else RUNNING_AGENT="no"; fi
 			# Test if I can retrieve the keys
 			ssh-add -l
-			if [ \$? == 1 ]; then RUNNING_AGENT="no"; fi
+			if [ \$? != 0 ]; then RUNNING_AGENT="no"; fi
    			if [ "\$RUNNING_AGENT" == "no" ]; then
 				if [[ -S \$SSH_AUTH_SOCK ]]; then
 					# not expecting the socket to exist as the forwarding command isn't running (http://www.tldp.org/LDP/abs/html/fto.html)
