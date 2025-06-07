@@ -225,20 +225,20 @@ if [[ "$instWslSshPassthrough" == "1" && "$isWsl" == "1" ]]; then
 			if [[ \$RUNNING_CHECK == *"npiperelay.exe"* ]]; then RUNNING_AGENT="yes"; else RUNNING_AGENT="no"; fi
 			# Test if I can retrieve the keys
 			ssh-add -l
-			if [ $? == 1 ]; then RUNNING_AGENT="no"; fi
+			if [ \$? == 1 ]; then RUNNING_AGENT="no"; fi
    			if [ "\$RUNNING_AGENT" == "no" ]; then
-				\tif [[ -S \$SSH_AUTH_SOCK ]]; then
-					\t\t# not expecting the socket to exist as the forwarding command isn't running (http://www.tldp.org/LDP/abs/html/fto.html)
-					\t\techo "removing previous socket..."
-					\t\trm \$SSH_AUTH_SOCK
-				\tfi
-				\techo "Starting SSH-Agent relay..."
-				\t# This requires the .ssh directory to exist, hence create it if it does not.
-			        \tmkdir -p "$HOME/.ssh"
-    				\t# Now, if the directory exists, we can create the redirect socket with socat
-				\t# setsid to force new session to keep running
-				\t# set socat to listen on \$SSH_AUTH_SOCK and forward to npiperelay which then forwards to openssh-ssh-agent on windows
-				\t(setsid socat UNIX-LISTEN:\$SSH_AUTH_SOCK,fork EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &) >/dev/null 2>&1
+				if [[ -S \$SSH_AUTH_SOCK ]]; then
+					# not expecting the socket to exist as the forwarding command isn't running (http://www.tldp.org/LDP/abs/html/fto.html)
+					echo "removing previous socket..."
+					rm \$SSH_AUTH_SOCK
+				fi
+				echo "Starting SSH-Agent relay..."
+				# This requires the .ssh directory to exist, hence create it if it does not.
+			        mkdir -p "$HOME/.ssh"
+    				# Now, if the directory exists, we can create the redirect socket with socat
+				# setsid to force new session to keep running
+				# set socat to listen on \$SSH_AUTH_SOCK and forward to npiperelay which then forwards to openssh-ssh-agent on windows
+				(setsid socat UNIX-LISTEN:\$SSH_AUTH_SOCK,fork EXEC:"npiperelay.exe -ei -s //./pipe/openssh-ssh-agent",nofork &) >/dev/null 2>&1
 			fi
 			# mszcool ssh wsl2 sharing end            
 EOL
