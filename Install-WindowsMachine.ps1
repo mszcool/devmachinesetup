@@ -162,7 +162,7 @@ if ( $tools ) {
 
     winget install --source winget --silent 1password
 
-    winget install --source winget --silent KeePass
+    winget install --source winget --silent KeePassXCTeam.KeePassXC
 
     winget install --source msstore --silent --accept-package-agreements "Microsoft PowerToys"
 
@@ -170,7 +170,7 @@ if ( $tools ) {
 
     winget install --source msstore --silent --accept-package-agreements "Adobe Acrobat Reader DC"
 
-    winget install --source winget --silent "Google Chrome"
+    winget install --source winget --silent Google.Chrome
 
 }
 
@@ -247,8 +247,6 @@ if ( $userTools ) {
 if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
     
     winget install --source winget --silent --id GitHub.cli
-
-    winget install --source winget --silent "gerardog.gsudo"    
       
     winget install --source winget --silent "Microsoft.PowerShell"
     
@@ -320,8 +318,6 @@ if ( $devTools ) {
     winget install --source msstore --silent --accept-package-agreements "Cosmos DB Studio"
 
     winget install --source winget --silent "3T.Robo3T"
-
-    winget install --source winget --silent "Postman.Postman"
     
     winget install --source winget --silent "ILSpy"
     
@@ -401,7 +397,7 @@ if ( $dev ) {
     RefreshEnvPath
 
     # Workaround for RefreshEnvPath not working properly after nvm winget install
-    $env:PATH = "$env:PATH;$env:USERPROFILE\AppData\Roaming\nvm"
+    $env:PATH = "$env:PATH;$env:USERPROFILE\AppData\Local\nvm"
 
     nvm install lts
     nvm use lts
@@ -433,6 +429,7 @@ if ( $dev ) {
 if ( $clis ) {
 
     winget install --source winget --silent --id  Microsoft.AzureCLI
+    $env:PATH = "$env:PATH;$env:ProgramFiles\Microsoft SDKs\Azure\CLI2\wbin\"
     $azcliext = Get-Content "$originalExecPath\az-cli.extensions"
     $azcliext | ForEach-Object { az extension add --name $_ }
 
