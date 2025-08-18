@@ -323,13 +323,13 @@ if ( $devTools ) {
     
     winget install --source winget --silent "RicoSuter.NSwagStudio" 
 
+    winget install --source winget --silent --id "qishibo.AnotherRedisDesktopManager"
+
+    winget install --source winget --silent --accept-package-agreements "thomasnordquist.MQTT-Explorer"
+    
     winget install --source msstore --silent --accept-package-agreements "Nightingale REST Client"
 
-    winget install --source msstore --silent --accept-package-agreements "MQTT-Explorer"
-
     winget install --source msstore --silent --accept-package-agreements "9N278KMPHTRW" # SQLit
-
-    winget install --source msstore --silent --accept-package-agreements "9NBJ2VZTW2BR" # Redis Manager
 
     winget install --source msstore --silent --accept-package-agreements "9PGCV4V3BK4W" # DevToys
 

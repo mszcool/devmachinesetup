@@ -5,13 +5,11 @@ dev-spaces
 image-copy-extension
 azure-devops
 azure-firewall
-db-up
 eventgrid
 front-door
 interactive
 ip-group
 log-analytics
 resource-graph
-spring-cloud
 virtual-wan
 webapp
