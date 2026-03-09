@@ -178,6 +178,9 @@ if [ $instBase == 1 ]; then
 	# Git including enabling large-file-store scenarios (git-lfs)
 	sudo apt install -y git
 	sudo apt install -y git-lfs
+	if [ $isWsl == 1 ]; then
+		git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"
+	fi
 	
 	sudo apt install -y jq
 	sudo apt install -y zlib1g-dev
