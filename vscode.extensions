@@ -50,6 +50,7 @@ ms-kubernetes-tools.kind-vscode
 ms-kubernetes-tools.kubernetes-opa-vscode
 ms-kubernetes-tools.vscode-aks-tools
 ms-kubernetes-tools.vscode-kubernetes-tools
+ms-mssql.mssql
 ms-python.python
 ms-toolsai.vscode-ai
 ms-vscode-remote.remote-containers

@@ -1,524 +1,453 @@
 Param
 (
-    [Switch]
-    $prepOS,
+    [ValidateSet("arm64", "x64")]
+    [string] $architecture,
 
-    [Switch]
-    $tools,
+    [Switch] $prepOS,
+    [Switch] $tools,
+    [Switch] $userTools,
+    [Switch] $userToolsSkipPersonal,
 
-    [Switch]
-    $userTools,
-
-    [Switch]
-    $userToolsSkipPersonal,
-
-    [Parameter(Mandatory = $False)]
     [ValidateSet("no", "all", "basic")]
-    $ittools = "no",
+    [string] $ittools = "no",
 
-    [Switch]
-    $dev,
+    [Switch] $dev,
+    [Switch] $devTools,
 
-    [Switch]
-    $devTools,
-
-    [Parameter(Mandatory = $False)]
     [ValidateSet("no", "desktop", "cli")]
-    $docker = "no",
+    [string] $docker = "no",
 
-    [Switch]
-    $clis,
+    [Switch] $clis,
+    [Switch] $hyperv,
+    [Switch] $noWsl,
 
-    [Switch]
-    $hyperv,
-
-    [Switch]
-    $noWsl,
-
-    [Parameter(Mandatory = $False)]
     [ValidateSet("no", "plain", "full")]
-    $vsCode = "no",
+    [string] $vsCode = "no",
 
-    [Parameter(Mandatory = $False)]
     [ValidateSet("no", "intelliJ", "all")]
-    $otherIde = "no",
+    [string] $otherIde = "no",
 
-    [Switch]
-    $prettyPrompt
-
+    [Switch] $prettyPrompt
 )
 
-
-# winget is becoming a part of Windows 10, but for now, you need to install it
-Write-Information "***********************************************************************************************************"
-Write-Information "Please make sure to have winget installed: https://docs.microsoft.com/en-us/windows/package-manager/winget/"
-Write-Information "***********************************************************************************************************"
-
-
-#
-# Function to create a path if it does not exist
-#
-function CreatePathIfNotExists($pathName) {
-    if (!(Test-Path -Path $pathName)) {
-        New-Item -ItemType directory -Path $pathName
+# Store product IDs are separate because Store selects architecture for the device.
+$packageGroups = @{
+    PrepOS = @{
+        Winget = @("Git.Git") # Git for Windows includes Git LFS.
+    }
+    Tools = @{
+        Winget = @(
+            "AgileBits.1Password"
+            "KeePassXCTeam.KeePassXC"
+            "Microsoft.PowerToys"
+            "7zip.7zip"
+            "Google.Chrome"
+        )
+        Store = @("XPDP273C0XHQH2") # Adobe Acrobat Reader DC
+    }
+    UserTools = @{
+        Winget = @("Zoom.Zoom")
+        Store = @(
+            "9PC3H3V7Q9CH" # Rufus
+            "9NV4BS3L1H4S" # QuickLook
+            "9WZDNCRFJ27N" # Adobe Express Photos (formerly Photoshop Express)
+            "9WZDNCRFHV4V" # MSN Money
+            "9WZDNCRFHVFW" # Microsoft News
+            "9WZDNCRFJ3Q2" # MSN Weather
+            "9NBLGGH4Z1JC" # Speedtest by Ookla
+        )
+    }
+    Personal = @{
+        Winget = @(
+            "OpenWhisperSystems.Signal"
+            "calibre.calibre"
+            "CrystalDewWorld.CrystalDiskMark"
+        )
+        Store = @(
+            "9NKSQGP7F2NH" # WhatsApp
+            "9NZTWSQNTD0S" # Telegram Desktop
+            "9PGZKJC81Q7J" # Cinebench
+            "9WZDNCRFJ3TJ" # Netflix
+            "9P6RC76MSMMJ" # Prime Video
+            "9NXQXXLFST89" # Disney+
+            "9NCBCSZSJRSB" # Spotify
+        )
+    }
+    ITBasic = @{
+        Winget = @(
+            "GitHub.cli"
+            "Microsoft.PowerShell"
+            "GnuPG.Gpg4win"
+            "RaspberryPiFoundation.RaspberryPiImager"
+        )
+        Store = @("9NBLGGH4252J") # Subnet Manager
+    }
+    WSL = @{
+        Winget = @(
+            "Microsoft.WSL"
+            "jstarks.npiperelay"
+            "dorssel.usbipd-win"
+        )
+        Store = @("9PDXGNCFSCZV") # Ubuntu
+    }
+    Virtualization = @{
+        Winget = @("Hashicorp.Vagrant")
+    }
+    ITAll = @{
+        Winget = @(
+            "BurntSushi.ripgrep.MSVC"
+            "mbuilov.sed"
+            "jftuga.less"
+            "jqlang.jq"
+            "ShiningLight.OpenSSL.Light"
+            "Microsoft.Sysinternals.Suite"
+            "AgileBits.1Password.CLI"
+            "Genymobile.scrcpy"
+            "Ventoy.Ventoy"
+        )
+    }
+    DevTools = @{
+        Winget = @(
+            "Microsoft.PowerBI"
+            "GitExtensionsTeam.GitExtensions"
+            "Microsoft.VisualStudioCode"
+            "Microsoft.Azure.StorageExplorer"
+            "MongoDB.Compass.Full"
+            "icsharpcode.ILSpy"
+            "qishibo.AnotherRedisDesktopManager"
+            "thomasnordquist.MQTT-Explorer"
+            "paolosalvatori.ServiceBusExplorer"
+        )
+        Store = @(
+            "9N2T6F9F5ZDN" # Nightingale REST Client
+            "9N278KMPHTRW" # SQLit
+            "9PGCV4V3BK4W" # DevToys
+        )
+    }
+    DockerCLI = @{
+        Winget = @("Docker.DockerCLI", "Docker.DockerCompose")
+    }
+    DockerDesktop = @{
+        Winget = @("Docker.DockerDesktop")
+    }
+    Dev = @{
+        Winget = @(
+            "Microsoft.Azure.FunctionsCoreTools"
+            "Microsoft.DotNet.SDK.8"
+            "Microsoft.DotNet.SDK.9"
+            "Microsoft.DotNet.SDK.10"
+            "Microsoft.OpenJDK.21"
+            "GoLang.Go"
+            "Python.Python.3.13"
+            "OpenJS.NodeJS.LTS"
+        )
+    }
+    CLIs = @{
+        Winget = @(
+            "Microsoft.AzureCLI"
+            "Microsoft.Bicep"
+            "Microsoft.Azd"
+            "Amazon.AWSCLI"
+            "Kubernetes.kubectl"
+            "Helm.Helm"
+        )
+    }
+    VSCode = @{
+        Winget = @("Microsoft.VisualStudioCode")
+    }
+    IntelliJ = @{
+        Winget = @("JetBrains.IntelliJIDEA")
+    }
+    PrettyPrompt = @{
+        Winget = @("JanDeDobbeleer.OhMyPosh")
     }
 }
 
+$moduleGroups = @{
+    Preparation = @(
+        @{ Name = "PackageManagement"; MinimumVersion = "1.4.6"; Scope = "CurrentUser"; AllowClobber = $true }
+        @{ Name = "PowerShellGet"; AllowClobber = $true }
+    )
+    CLIs = @(
+        @{ Name = "Az"; AllowClobber = $true }
+        @{ Name = "Microsoft.Graph" }
+    )
+    PrettyPrompt = @(
+        @{ Name = "posh-git" }
+        @{ Name = "PSReadLine"; SkipPublisherCheck = $true }
+    )
+}
 
-#
-# Refreshes the environment variable PATH
-#
+$npmPackages = @("autorest", "vsts-npm-auth")
+$pipPackages = @("autopep8")
+$devToolsCodeExtensions = @("ms-mssql.mssql")
+$promptFonts = @("Meslo", "CascadiaCode")
+$installedArchitectures = @{}
+
+function Get-NativeArchitecture {
+    # Query the processor, not the architecture of an emulated PowerShell process.
+    $processor = Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop |
+        Select-Object -First 1
+    switch ($processor.Architecture) {
+        12 { return "arm64" }
+        9 { return "x64" }
+        default { throw "Unsupported or unknown processor architecture '$($processor.Architecture)'. Only ARM64 and x64 are supported." }
+    }
+}
+
 function RefreshEnvPath() {
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
+        [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
 
+function Install-WinGetPackage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Id,
 
-#
-# Extract a ZIP file
-#
-function ExtractZipArchive($zipFile, $outPath) {
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipFile, $outPath)
+        [ValidateSet("winget", "msstore")]
+        [string] $Source = "winget"
+    )
+
+    # Native errors are handled below, including when the caller uses PowerShell 7's opt-in preference.
+    $ErrorActionPreference = "Stop"
+    $PSNativeCommandUseErrorActionPreference = $false
+    $common = @(
+        "install", "--id", $Id, "--exact", "--source", $Source, "--silent",
+        "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"
+    )
+    $candidates = @($architecture)
+    if ($Source -eq "msstore") {
+        $candidates = @("store")
+    }
+    elseif ($architecture -eq "arm64") {
+        $candidates += "x64"
+    }
+
+    foreach ($candidate in $candidates) {
+        $installArguments = $common
+        if ($candidate -ne "store") {
+            $installArguments += @("--architecture", $candidate)
+        }
+
+        Write-Information "Installing $Id from $Source ($candidate)..."
+        & winget @installArguments | Out-Host
+        $exitCode = $LASTEXITCODE
+        $result = "{0:X8}" -f ($exitCode -band 0xFFFFFFFFL)
+
+        if ($result -in @("00000000", "8A15002B", "8A150061", "8A15010D")) {
+            $installedArchitectures[$Id] = $candidate
+            return
+        }
+        if ($result -in @("8A150109", "00000BC2")) {
+            Write-Warning "$Id was installed, but Windows needs to be restarted."
+            $installedArchitectures[$Id] = $candidate
+            return
+        }
+        # Only installer selection failure permits fallback; never retry a failed installation.
+        if (($result -eq "8A150010") -and ($candidate -eq "arm64")) {
+            Write-Warning "$Id has no applicable ARM64 installer. Trying x64 (emulated on Windows on Arm)."
+            continue
+        }
+
+        throw "WinGet failed for $Id from $Source ($candidate), exit code $exitCode (0x$result). Check the WinGet output/logs; no further architecture fallback was attempted."
+    }
 }
 
+function Install-PackageGroup {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({ $packageGroups.ContainsKey($_) })]
+        [string] $Name
+    )
 
-#
-# Function to prepare PowerShell itself
-#
-function PreparePowerShell() {
-    Write-Information "Installing PackageManagement if needed..."
-    Install-Module -Name PackageManagement -Force -MinimumVersion 1.4.6 -Scope CurrentUser -AllowClobber -SkipPublisherCheck
-    #Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    Write-Information "Installing PowerShellGet if neeed..."
-    Install-Module -Name PowerShellGet -Force -AllowClobber
+    $group = $packageGroups[$Name]
+    foreach ($id in $group.Winget) {
+        Install-WinGetPackage -Id $id
+    }
+    foreach ($id in $group.Store) {
+        Install-WinGetPackage -Id $id -Source "msstore"
+    }
 }
 
+function Install-ModuleGroup {
+    param([string] $Name)
 
-#
-# Store the location of the original script execution
-#
-$originalExecPath = Get-Location
-
-
-#
-# Simple Parameter validation
-#
-if ( $prepOS -and ($tools -or $userTools -or ( $ittools -ne "no" ) -or $dev -or $devTools -or ( $docker -ne "no" ) -or $clis -or ( $vsCode -ne "no" )  -or ( $otherIde -ne "no" ) -or $prettyPrompt) ) {
-    throw "Running the script with -prepOS does not allow you to use any other switches. First run -prepOS and then run with any other allowed combination of switches!"
+    foreach ($module in $moduleGroups[$Name]) {
+        Install-Module @module -Force -ErrorAction Stop
+    }
 }
 
+function Invoke-SetupCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Command,
+        [string[]] $Arguments = @()
+    )
 
-#
-# [prepOS] Installing Operating System Components as well as chocolatey itself. Needs to happen before ANY other runs!
-#
-if ( $prepOS ) {
-    # Enable Console Prompting for PowerShell
-    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name "ConsolePrompting" -Value $True
+    $ErrorActionPreference = "Stop"
+    $PSNativeCommandUseErrorActionPreference = $false
+    & $Command @Arguments | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Command failed with exit code $LASTEXITCODE."
+    }
+}
 
-    # Install git using winget
-    winget install --source winget --silent "Git.Git"
+function Install-PythonPackages {
+    # PEP 514 tags distinguish ARM64 and x64 Python even when both are installed.
+    $tag = "3.13"
+    if ($installedArchitectures["Python.Python.3.13"] -eq "arm64") {
+        $tag += "-arm64"
+    }
+    $pythonPath = $null
+    foreach ($root in @("HKCU:\Software", "HKLM:\Software")) {
+        $key = "$root\Python\PythonCore\$tag\InstallPath"
+        if (Test-Path $key) {
+            $pythonPath = (Get-ItemProperty -Path $key -ErrorAction Stop).ExecutablePath
+            if ($pythonPath) { break }
+        }
+    }
+    if (-not $pythonPath -or -not (Test-Path $pythonPath)) {
+        throw "Python $tag was not registered. Reopen PowerShell after installation and verify Python's PEP 514 registration."
+    }
 
+    Invoke-SetupCommand -Command $pythonPath -Arguments (@("-m", "pip", "install", "--upgrade") + $pipPackages)
+}
+
+if (-not $architecture) {
+    $architecture = Get-NativeArchitecture
+}
+
+if ($prepOS -and ($tools -or $userTools -or ($ittools -ne "no") -or $dev -or $devTools -or
+        ($docker -ne "no") -or $clis -or ($vsCode -ne "no") -or ($otherIde -ne "no") -or $prettyPrompt)) {
+    throw "Run -prepOS separately, restart Windows, then run with the other tool switches."
+}
+
+if ($prepOS) {
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name "ConsolePrompting" -Value $true
+    Install-PackageGroup -Name "PrepOS"
     RefreshEnvPath
 
-    winget install --source winget --silent --id GitHub.GitLFS
+    Enable-WindowsOptionalFeature -FeatureName NetFx4-AdvSrvs -Online -NoRestart -ErrorAction Stop
+    Enable-WindowsOptionalFeature -FeatureName NetFx4Extended-ASPNET45 -Online -NoRestart -ErrorAction Stop
+    Enable-WindowsOptionalFeature -FeatureName WCF-Services45 -Online -NoRestart -ErrorAction Stop
+    Enable-WindowsOptionalFeature -FeatureName WCF-TCP-PortSharing45 -Online -NoRestart -ErrorAction Stop
+    if ($hyperv -or (-not $noWsl)) {
+        Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart -ErrorAction Stop
+    }
+    if (-not $noWsl) {
+        Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart -ErrorAction Stop
+        Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart -ErrorAction Stop
+    }
+    if ($hyperv) {
+        Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart -ErrorAction Stop
+        Enable-WindowsOptionalFeature -FeatureName Containers -Online -NoRestart -ErrorAction Stop
+    }
+    Write-Warning "OS preparation completed. Restart Windows before installing tools."
+    return
+}
 
+if ($tools) {
+    Install-PackageGroup -Name "Tools"
+}
+
+if ($userTools) {
+    Install-PackageGroup -Name "UserTools"
+    if (-not $userToolsSkipPersonal) {
+        Install-PackageGroup -Name "Personal"
+    }
+}
+
+if ($ittools -in @("all", "basic")) {
+    Install-PackageGroup -Name "ITBasic"
+    if (-not $noWsl) {
+        Install-PackageGroup -Name "WSL"
+    }
+    if ($architecture -eq "x64") {
+        Install-PackageGroup -Name "Virtualization"
+    }
+    else {
+        Write-Warning "Skipping Vagrant on ARM64: an emulated CLI does not make x64 VM boxes/providers compatible."
+    }
+}
+if ($ittools -eq "all") {
+    Install-PackageGroup -Name "ITAll"
+}
+
+if ($devTools) {
+    Install-PackageGroup -Name "DevTools"
+    RefreshEnvPath
+    foreach ($extension in $devToolsCodeExtensions) {
+        Invoke-SetupCommand -Command "code" -Arguments @("--install-extension", $extension)
+    }
+}
+
+if ($docker -eq "cli") {
+    Install-PackageGroup -Name "DockerCLI"
+}
+elseif ($docker -eq "desktop") {
+    Install-PackageGroup -Name "DockerDesktop"
+    RefreshEnvPath
+}
+
+if ($dev) {
+    Install-PackageGroup -Name "Dev"
+    RefreshEnvPath
+    Install-PythonPackages
+    foreach ($package in $npmPackages) {
+        Invoke-SetupCommand -Command "npm.cmd" -Arguments @("install", "-g", $package)
+    }
+
+    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1 -ErrorAction Stop) } -AddNetfx"
+}
+
+if ($clis) {
+    Install-PackageGroup -Name "CLIs"
+    RefreshEnvPath
+    foreach ($extension in (Get-Content "$PSScriptRoot\az-cli.extensions" -ErrorAction Stop)) {
+        Invoke-SetupCommand -Command "az.cmd" -Arguments @("extension", "add", "--name", $extension)
+    }
+    Install-ModuleGroup -Name "Preparation"
+    Install-ModuleGroup -Name "CLIs"
+}
+
+if ($vsCode -in @("plain", "full")) {
+    Install-PackageGroup -Name "VSCode"
+    RefreshEnvPath
+    if ($vsCode -eq "full") {
+        foreach ($extension in (Get-Content "$PSScriptRoot\vscode.extensions" -ErrorAction Stop)) {
+            Invoke-SetupCommand -Command "code" -Arguments @("--install-extension", $extension)
+        }
+    }
+}
+
+if ($otherIde -in @("all", "intelliJ")) {
+    Install-PackageGroup -Name "IntelliJ"
+}
+
+if ($prettyPrompt) {
+    Install-ModuleGroup -Name "Preparation"
+    Install-ModuleGroup -Name "PrettyPrompt"
+    Install-PackageGroup -Name "PrettyPrompt"
     RefreshEnvPath
 
-    # Install Chocolatey through winget
-    winget install --source winget --silent --id Chocolatey.Chocolatey
-
-    # Install Windows Features
-    Enable-WindowsOptionalFeature -FeatureName NetFx4-AdvSrvs -Online -NoRestart
-    Enable-WindowsOptionalFeature -FeatureName NetFx4Extended-ASPNET45 -Online -NoRestart
-    Enable-WindowsOptionalFeature -FeatureName WCF-Services45 -Online -NoRestart
-    Enable-WindowsOptionalFeature -FeatureName WCF-TCP-PortSharing45 -Online -NoRestart
-
-    if ( $hyperv -or (-not $noWsl) ) {
-        Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart
+    if (-not (Test-Path $PROFILE)) {
+        $profileDirectory = Split-Path -Parent $PROFILE
+        $null = New-Item -ItemType Directory -Path $profileDirectory -Force -ErrorAction Stop
+        $null = New-Item -ItemType File -Path $PROFILE -ErrorAction Stop
     }
-
-    if ( -not $noWsl ) {
-        Enable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online -NoRestart
+    $profileContent = Get-Content -Raw -Path $PROFILE -ErrorAction Stop
+    if ([string]::IsNullOrEmpty($profileContent)) { $profileContent = "" }
+    if (-not $profileContent.Contains("posh-git")) {
+        Add-Content -Path $PROFILE -Value 'Import-Module posh-git' -ErrorAction Stop
     }
-
-    if ( $hyperv ) {
-        Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart
-        Enable-WindowsOptionalFeature -FeatureName Containers -Online -NoRestart
+    if (-not $profileContent.Contains("shellName")) {
+        Add-Content -Path $PROFILE -Value '$shellName = $(oh-my-posh get shell)' -ErrorAction Stop
     }
-
-    Write-Information ""
-    Write-Information "Installation of OS components completed, please restart your computer once ready!"
-    Write-Information ""
-
-    Exit
-}
-
-
-#
-# [tools] Tools needed on every machine
-#
-
-if ( $tools ) {
-
-    winget install --source winget --silent 1password
-
-    winget install --source winget --silent KeePassXCTeam.KeePassXC
-
-    winget install --source msstore --silent --accept-package-agreements "Microsoft PowerToys"
-
-    winget install --source winget --silent 7zip
-
-    winget install --source msstore --silent --accept-package-agreements "Adobe Acrobat Reader DC"
-
-    winget install --source winget --silent Google.Chrome
-
-}
-
-
-#
-# [userTools] Tools only needed for end-user related machines (not machines focused on dev-only)
-#
-if ( $userTools ) {
-
-    # Removed, included in latest Windows and Office
-    # winget install --source winget --silent "Microsoft Teams"
-    
-    winget install --source msstore --silent --accept-package-agreements "ZOOM Cloud Meetings"
-
-    # Removed, do not really need it for now
-    # winget install --source msstore --silent --accept-package-agreements "Slack"
-
-    winget install --source msstore --silent --accept-package-agreements Rufus
-
-    if ( -not $userToolsSkipPersonal ) {
-
-        winget install --source winget --silent "OpenWhisperSystems.Signal"
-    
-        winget install --source msstore --silent --accept-package-agreements "WhatsApp Desktop"
-    
-        winget install --source msstore --silent --accept-package-agreements "9NZTWSQNTD0S" # Telegram Desktop
-    
-        winget install --source msstore --silent --accept-package-agreements "Messenger"
-
-        winget install --source winget --silent --id "calibre.calibre"
-
-        # Store apps which I use on personal devices or personal+work devices, only (but not on pure work VMs)
-
-        winget install --source winget --silent "CrystalDiskMark"
-
-        winget install --source msstore --silent --accept-package-agreements "Cinebench"
-    
-        winget install --source msstore --silent --accept-package-agreements "Netflix"
-        
-        winget install --source msstore --silent --accept-package-agreements "Amazon Prime Video for Windows"
-    
-        winget install --source msstore --silent --accept-package-agreements "Disney+"
-    
-        winget install --source msstore --silent --accept-package-agreements "Spotify Music"
-
+    if (-not $profileContent.Contains("oh-my-posh")) {
+        Add-Content -Path $PROFILE -Value 'oh-my-posh init $shellName --config "$env:POSH_THEMES_PATH\iterm2.omp.json" | Invoke-Expression' -ErrorAction Stop
     }
-
-    # Store Apps which I use on all machines a regular basis
-
-    winget install --source msstore --silent --accept-package-agreements "QuickLook"
-
-    winget install --source msstore --silent --accept-package-agreements "Ico Converter"
-
-    winget install --source msstore --silent --accept-package-agreements "Adobe Photoshop Express: Image Editor, Adjustments, Filters, Effects, Borders"
-
-    winget install --source msstore --silent --accept-package-agreements "FeedLab"
-
-    winget install --source msstore --silent --accept-package-agreements "MSN Money"
-
-    winget install --source msstore --silent --accept-package-agreements "Microsoft News"
-
-    winget install --source msstore --silent --accept-package-agreements "MSN Weather"
-
-    winget install --source msstore --silent --accept-package-agreements "Speedtest by Ookla"
-
-    winget install --source msstore --silent --accept-package-agreements "9WZDNCRD2G0J" # Microsoft Sway
-
-}
-
-
-#
-# [ittools] IT-oriented tools
-#
-if ( ($ittools -eq "all") -or ($ittools -eq "basic") ) {
-    
-    winget install --source winget --silent --id GitHub.cli
-      
-    winget install --source winget --silent "Microsoft.PowerShell"
-    
-    winget install --source msstore --silent --accept-package-agreements "Subnet Manager"
-    
-    winget install --source msstore --silent --accept-package-agreements "IP Calculator"
-    
-    if ( -not $noWsl ) {
-        # Install WSL Kernel and then Distributions
-        Invoke-WebRequest https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile "$env:TEMP\wsl_update_x64.msi"
-        msiexec /i "$env:TEMP\wsl_update_x64.msi" /passive
-        
-        winget install --source msstore --silent --accept-package-agreements "Ubuntu"
-
-        # Used for pipe relaying that enables re-using Windows ssh-agent on WSL2
-        winget install --silent --source winget --id jstarks.npiperelay
-
-        # Used for USBIP on WSL2
-        winget install --source winget --silent "dorssel.usbipd-win"
+    foreach ($font in $promptFonts) {
+        Invoke-SetupCommand -Command "oh-my-posh" -Arguments @("font", "install", $font)
     }
-    
-    winget install --source winget --silent --id GnuPG.Gpg4win
-
-    winget install --source winget --silent --id Hashicorp.Vagrant
-    
-    winget install --source winget --silent --id RaspberryPiFoundation.RaspberryPiImager
-
-}
-
-if ( $ittools -eq "all" ) {
-
-    winget install --source winget --silent --id cURL.cURL
-    
-    winget install --source winget --silent --id GnuWin32.Grep
-    
-    winget install --source winget --silent --id mbuilov.sed
-    
-    winget install --source winget --silent --id jftuga.less
-    
-    winget install --source winget --silent --id jqlang.jq
-
-    winget install --source winget --silent --id ShiningLight.OpenSSL.Light
-
-    winget install --source winget --silent --id Microsoft.Sysinternals
-
-    winget install --source winget --silent --id AgileBits.1Password.CLI
-    
-    winget install --source winget --silent --id Genymobile.scrcpy
-    
-    # One of the best USB Bootable drive creation tools available
-    # https://github.com/ventoy/Ventoy
-    winget install --source winget --silent --id Ventoy.Ventoy
-}
-
-
-#
-# [devTools] All tools needed for development
-#
-if ( $devTools ) {
-
-    winget install --source winget --silent "Microsoft PowerBI Desktop"
-
-    winget install --source winget --silent "GitExtensionsTeam.GitExtensions"
-
-    winget install --source winget --silent "Microsoft.AzureDataStudio"
-
-    winget install --source winget --silent "Microsoft.AzureStorageExplorer"
-
-    winget install --source msstore --silent --accept-package-agreements "Cosmos DB Studio"
-
-    winget install --source winget --silent "3T.Robo3T"
-    
-    winget install --source winget --silent "ILSpy"
-    
-    winget install --source winget --silent "RicoSuter.NSwagStudio" 
-
-    winget install --source winget --silent --id "qishibo.AnotherRedisDesktopManager"
-
-    winget install --source winget --silent --accept-package-agreements "thomasnordquist.MQTT-Explorer"
-    
-    winget install --source msstore --silent --accept-package-agreements "Nightingale REST Client"
-
-    winget install --source msstore --silent --accept-package-agreements "9N278KMPHTRW" # SQLit
-
-    winget install --source msstore --silent --accept-package-agreements "9PGCV4V3BK4W" # DevToys
-
-    winget install --source winget --silent --id paolosalvatori.ServiceBusExplorer
-    
-    winget install --source winget --silent --id DEVCOM.JMeter
-
-}
-
-
-#
-# [docker] Docker, either CLIs only or with full Docker for Desktop
-#
-if ( $docker -eq "cli" ) {
-
-    winget install --source winget --silent --id Docker.DockerCLI
-    winget install --source winget --silent --id Docker.DockerCompose
-
-}
-elseif ( $docker -eq "desktop" ) {
-
-    winget install --source winget --silent "Docker.DockerDesktop"
-
-    RefreshEnvPath
-
-}
-
-
-#
-# [dev] Developer Tools needed on every dev-machine
-#
-if ( $dev ) {
-
-    # Removed, running in container
-    # winget install --source winget --silent "Microsoft.AzureStorageEmulator"
-
-    winget install --source winget --silent "Microsoft.AzureFunctionsCoreTools"
-
-    # Removed, running in container
-    # winget install --source winget --silent "Microsoft.AzureCosmosEmulator"
-
-    winget install --id "Microsoft.dotnet.SDK.8"
-
-    winget install --id "Microsoft.dotnet.SDK.9"
-    
-    winget install --source winget --silent "Microsoft.OpenJDK.16"
-
-    winget install --source winget --silent "GoLang.Go"
-
-    winget install --source winget --silent "Python.Python.3.11"
-
-    # Reference : https://pypi.org/project/autopep8/
-    python -m pip install --upgrade autopep8
-
-    # Removed, not doing Scala for now
-    # winget install --source winget --silent "Scala.Scala.2"
-
-    # Removed, not doing Scala for now
-    # winget install --source winget --silent "sbt.sbt"
-
-    # Replaced with nvm for Windows
-    # winget install --source winget --silent "OpenJS.NodeJS"
-    winget install --source winget --silent --id "CoreyButler.NVMforWindows"
-
-    RefreshEnvPath
-
-    # Workaround for RefreshEnvPath not working properly after nvm winget install
-    $env:PATH = "$env:PATH;$env:USERPROFILE\AppData\Local\nvm"
-
-    nvm install lts
-    nvm use lts
-
-    npm install -g moment
-
-    npm install -g bower
-
-    # Removed due to security issues/vulnerabilities
-    # npm install -g gulp
-    
-    npm install -g autorest        # try with latest instead of @3.0.6187
-
-    npm install -g swagger-tools   # try with latest instead of @0.10.4
-
-    npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false
-
-    # Dotnet artifacts credential provider for .NET Core and .NET Framework.
-    # Note: assumes VS 2019 or dotnet has been installed on the system.
-    # Details: https://github.com/Microsoft/artifacts-credprovider
-    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
-
-}
-
-
-#
-# [clis] Command Line Interfaces
-#
-if ( $clis ) {
-
-    winget install --source winget --silent --id  Microsoft.AzureCLI
-    $env:PATH = "$env:PATH;$env:ProgramFiles\Microsoft SDKs\Azure\CLI2\wbin\"
-    $azcliext = Get-Content "$originalExecPath\az-cli.extensions"
-    $azcliext | ForEach-Object { az extension add --name $_ }
-
-    winget install --source winget --silent --id  Microsoft.Bicep
-
-    winget install --source winget --silent --id Microsoft.Azd
-
-    winget install --source winget --silent --id Microsoft.Azure.DataCLI
-
-    winget install --source winget --silent --id Amazon.AWSCLI
-
-    PreparePowerShell
-
-    Install-Module -Name Az -AllowClobber -Force
-
-    Install-Module -Name AzureAD -Force -SkipPublisherCheck
-
-    choco install ARMClient --force --force-dependencies
-    
-    winget install --source winget --silent --id Microsoft.NuGet
-
-    winget install --source winget --silent --id Kubernetes.kubectl
-
-    winget install --source winget --silent --id Helm.Helm
-
-    winget install --source winget --silent --id RedHat.OpenShift-Client
-
-}
-
-
-#
-# Visual Studio Code Extensions
-#
-if ( ($vsCode -eq "plain") -or ($vsCode -eq "full") ) {
-
-    # First install Visual Studio Code
-    winget install --source winget --silent "Microsoft.VisualStudioCode"
-
-    # Refresh the Path
-    RefreshEnvPath
-
-    if ( $vsCode -eq "full" ) {
-        # Start installing all extensions
-        $vsCodeExtensions = Get-Content "$originalExecPath\vscode.extensions"
-        $vsCodeExtensions | ForEach-Object { code --install-extension $_ }
-    }
-}
-
-
-#
-# [installOtherIde] Installing Eclipse and/or IntelliJ if required
-#
-if (($otherIde -eq "all") -or ($otherIde -eq "intelliJ")) {
-
-    winget install --source winget --silent "JetBrains.IntelliJIDEA.Community"
-
-}
-
-
-#
-# Installing a pretty prompt for PowerShell
-#
-if ( $prettyPrompt ) {
-
-    PreparePowerShell
-
-    Write-Information "Installing posh-git...."
-    Install-Module -Name posh-git -Force
-    Write-Information "Installing oh-my-posh..."
-    winget install --silent --source winget --id JanDeDobbeleer.OhMyPosh
-    Write-Information "Installing PSReadLine..."
-    Install-Module -Name PSReadLine -SkipPublisherCheck -Force
-
-    RefreshEnvPath
-
-    # Then write to the PowerShell Profile
-    if ( ! [System.IO.File]::Exists($PROFILE) ) {
-        $f = [System.IO.File]::CreateText($PROFILE)
-        $f.Close()
-    }
-
-    # A bit hacky, but this is a bit of spare-time, hence limited time to optimize:)
-    $profileContent = Get-Content -Raw -Path $PROFILE
-    if ( [System.String]::IsNullOrEmpty($profileContent) ) { $profileContent = "" }
-    if ( ! $profileContent.Contains("posh-git") ) { Add-Content -Path $PROFILE -Value 'Import-Module posh-git' }
-    if ( ! $profileContent.Contains("shellName") ) { Add-Content -Path $PROFILE -Value '$shellName = $(oh-my-posh get shell)' }
-    if ( ! $profileContent.Contains("oh-my-posh") ) { Add-Content -Path $PROFILE -Value 'oh-my-posh init $shellName --config "$env:POSH_THEMES_PATH\iterm2.omp.json" | Invoke-Expression' }
-
-    # Install the fonts with oh-my-posh
-    oh-my-posh font install Meslo
-    oh-my-posh font install CascadiaCode
 }
