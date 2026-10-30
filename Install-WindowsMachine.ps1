@@ -41,7 +41,7 @@ $packageGroups = @{
             "KeePassXCTeam.KeePassXC"
             "Microsoft.PowerToys"
             "7zip.7zip"
-            "Google.Chrome"
+            #"Google.Chrome"
         )
         Store = @("XPDP273C0XHQH2") # Adobe Acrobat Reader DC
     }

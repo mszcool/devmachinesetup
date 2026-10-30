@@ -4,6 +4,81 @@ Scripts for setting up development machines. Windows setup uses WinGet, with
 PowerShell Gallery modules, npm globals, pip packages, and editor extensions
 installed separately.
 
+## Ubuntu usage
+
+[Install-Ubuntu.sh](Install-Ubuntu.sh) detects native ARM64 (`aarch64`/`arm64`)
+or x64 (`x86_64`/`amd64`) and WSL. Kernel and Debian package architectures must
+agree; Linux x64 emulation on ARM64 is not configured. `--noWsl` disables
+WSL-specific integration. The release guard accepts Ubuntu 22.04, 24.04, and
+26.04; vendor repository availability still depends on the selected release.
+Run as your normal user with sudo access, not as root.
+
+```bash
+bash Install-Ubuntu.sh --baseline --python --nodejs --java openjdk --dotnetcore 10 --clis
+OPENJDK_VERSION=17 NODE_VERSION='lts/*' bash Install-Ubuntu.sh --java openjdk --nodejs
+```
+
+The tool-group switches remain available through `--help`. Configuration is
+optional and supplied through environment variables:
+
+| Variable / option | Default / purpose |
+| --- | --- |
+| `OPENJDK_VERSION`, `MSOPENJDK_VERSION` | `21`; JDK major version for the selected Java vendor |
+| `NVM_VERSION`, `NODE_VERSION` | `v0.40.3`, `lts/*` |
+| `GO_VERSION` | Latest stable Go version from upstream metadata; overrides include the `go` prefix |
+| `KUBECTL_VERSION`, `HELM_VERSION` | Latest upstream release; overrides include the `v` prefix |
+| `GO_DOWNLOAD_URL`, `JMETER_DOWNLOAD_URL` | Optional SDK/JMeter tarball URLs; JMeter defaults to 5.6.3 |
+| `MSOPENJDK_DOWNLOAD_URL` | Optional native Microsoft JDK tarball; otherwise Microsoft's latest archive for the selected major |
+| `POWERSHELL_DOWNLOAD_URL`, `OPENSHIFT_DOWNLOAD_URL` | Optional native Linux tarballs instead of upstream release selection |
+| `ARDUINO_IDE_DOWNLOAD_URL` | Optional Linux x64 IDE 2 ZIP; otherwise latest upstream release |
+| `WINDOWS_USER_HOME` | Optional Linux-form Windows home path for Vagrant WSL integration |
+| `--dotnetcore 8`, `10`, `all` | Native user-local SDKs; `all` installs both LTS lines, bare `--dotnetcore` defaults to 10 |
+
+Download overrides must match the detected architecture. User-local tool paths
+are persisted in `~/.config/dev-machine/env.sh`, loaded by both `~/.profile`
+and `~/.bashrc` for login and interactive Bash sessions. Open a new Bash session
+after installation, or run `source ~/.profile`; a child installer cannot change
+its parent shell's environment. .NET 8 is retained for
+compatibility but reaches end of support on November 10, 2026; prefer .NET 10.
+Go, .NET, PowerShell, Kubernetes, Helm, and OpenShift no longer use fixed x64
+archives. Docker uses its current CLI instead of DVM and Docker 17/18.
+
+Retired Skype, Teams Linux, Azure Data Studio, Dev Spaces, Oracle's discontinued
+installer PPA, .NET 3.1/6/7, `dotnet-format`, `swagger-tools`, and obsolete
+SSL/glibc compatibility downloads are removed. Legacy Moment/Bower globals,
+GitExtensions/Service Bus Explorer under Mono, and ARM-incompatible armclient-go
+are omitted. VS Code with MSSQL replaces Azure Data Studio. TeX Live remains
+instead of the x64-only MiKTeX repository. Arduino 1.x is replaced by IDE 2 on
+x64; ARM64 skips IDE 2 because no official native Linux binary is published.
+
+ARM64 explicitly skips the x64-only 1Password desktop, Spotify, Slack, Storage
+Explorer, MQTT Explorer, and Edge distributions. Vagrant is installed only on
+x64 when a package exists in the configured APT repositories. Telegram,
+Remmina, IntelliJ, and Postman retain their native Snap installation paths;
+Snap requires a functioning snapd/systemd setup, including in WSL.
+
+These are provisioning changes, not uninstall/migration steps: existing retired
+packages, repositories, DVM shell entries, and SDKs are not removed automatically.
+No corporate feed overrides are applied. An Ubuntu 26.04 ARM64/WSL provisioning
+run exposed the issues below. Focused checks were run for these fixes, but the
+revised full installation and native x64 provisioning have not been rerun.
+
+| ID | Installation behavior |
+| --- | --- |
+| F1 | Ruby, NVM/Node, .NET, PowerShell and downloaded CLI paths persist for both Bash startup modes without duplicating new settings. |
+| F2 | `--java msftjdk` uses Microsoft's native JDK archive rather than a release-specific APT package; persists `JAVA_HOME` and checks `javac`. |
+| F3 | Ubuntu 26.04 uses `libxml2-16`; 22.04/24.04 retain `libxml2`. |
+| F4 | Optional Azure `alias` extension is omitted; an existing copy is removed only if its help command fails. Healthy copies are preserved. |
+| F5 | Krew plugins install through `kubectl krew`, not a nonexistent standalone `krew` command. |
+| F6 | AWS installs use `--update`, verified against the downloaded installer on blank and already-installed temporary directories. |
+| F7 | Vagrant remains an explicit ARM64 skip, not an installation failure. |
+| F8 | Unhandled command/pipeline failures are summarized at exit and produce status 1, even if later commands succeed. Fatal guarded downloads still stop immediately. |
+
+.NET global tools use `dotnet tool update`, which also installs missing tools,
+so repeating setup does not fail merely because a tool already exists.
+Installer output distinguishes intentional skips from failed commands. A success
+status means no command failure was recorded, not that every tool was audited.
+
 ## Windows usage
 
 Run from an elevated, 64-bit Windows PowerShell 5.1 or PowerShell 7 session.

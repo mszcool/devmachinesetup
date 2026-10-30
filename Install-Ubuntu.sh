@@ -5,8 +5,8 @@
 # --intellij
 # --scala
 # --nodejs
-# --dotnetcore 2.1|none
-# --java default|openjdk|oraclejdk|none
+# --dotnetcore 8|10|none|all
+# --java default|openjdk|msftjdk|none
 # 
 # ---
 # Note: for quality checks, this is using super-linter from GitHub
@@ -18,8 +18,20 @@
 
 show_help()  {
 	echo "Automatically install stuff on a typical Linux Developer Machine (Ubuntu-based)!"
-	echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|oraclejdk|msftjdk|none --dotnetcore 3|6|7|none|all --homebrew --devTools --prompt --wslUsbSupport --wslSshPassthrough --noWsl"
+	echo "Usage: Install-Ubuntu.sh --enduser --baseline --python --sysstat --sshsrv --docker --clis --ruby --golang --scala --nodejs --java default|openjdk|msftjdk|none --dotnetcore 8|10|none|all --homebrew --devTools --prompt --wslUsbSupport --wslSshPassthrough --noWsl"
+	echo "Architecture is detected automatically (native ARM64 or x64); WSL is detected automatically."
+	echo "Optional environment: OPENJDK_VERSION=21 MSOPENJDK_VERSION=21 NVM_VERSION=v0.40.3 NODE_VERSION=lts/* GO_VERSION=go1.x.y"
+	echo "Optional versions: KUBECTL_VERSION HELM_VERSION; download URLs: GO_DOWNLOAD_URL MSOPENJDK_DOWNLOAD_URL JMETER_DOWNLOAD_URL POWERSHELL_DOWNLOAD_URL OPENSHIFT_DOWNLOAD_URL ARDUINO_IDE_DOWNLOAD_URL"
 }
+
+if [ "$EUID" -eq 0 ]; then
+	if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != root ]; then
+		echo "Running user-local setup as $SUDO_USER; system packages will still use sudo."
+		exec sudo -H -u "$SUDO_USER" -- bash "${BASH_SOURCE[0]}" "$@"
+	fi
+	echo "Run this script from a regular user account with sudo access, not directly as root." >&2
+	exit 1
+fi
 
 instEnduser=0
 instBase=0
@@ -37,9 +49,88 @@ instRuby=0
 instGoLang=0
 instDevTools=0
 instHomebrew=0
-isWsl=1
+isWsl=0
+if [ -n "${WSL_DISTRO_NAME:-}" ] || grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
+	isWsl=1
+fi
 instWslUsbSupport=0
 instWslSshPassthrough=0
+scriptDir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+case $(uname -m) in
+	x86_64|amd64) architecture=amd64; awsArchitecture=x86_64; runtimeArchitecture=x64 ;;
+	aarch64|arm64) architecture=arm64; awsArchitecture=aarch64; runtimeArchitecture=arm64 ;;
+	*) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+if [ "$(dpkg --print-architecture)" != "$architecture" ]; then
+	echo "Kernel and Ubuntu package architectures differ; use a native ARM64 or x64 Ubuntu environment." >&2
+	exit 1
+fi
+openjdkVersion=${OPENJDK_VERSION:-21}
+msopenjdkVersion=${MSOPENJDK_VERSION:-21}
+nvmVersion=${NVM_VERSION:-v0.40.3}
+nodeVersion=${NODE_VERSION:-lts/*}
+
+install_x64_snap() {
+	if [ "$architecture" = amd64 ]; then
+		sudo snap install "$@"
+	else
+		echo "Skipping $1: the configured Snap has no native ARM64 build." >&2
+	fi
+}
+
+configure_docker_repository() {
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /usr/share/keyrings/docker.asc >/dev/null || return
+	echo "deb [arch=$architecture signed-by=/usr/share/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list || return
+	sudo apt update
+}
+
+persist_shell_setting() {
+	local setting=$1
+	local environmentFile="$HOME/.config/dev-machine/env.sh"
+	local startupFile
+	mkdir -p "$(dirname "$environmentFile")" || return
+	touch "$environmentFile" "$HOME/.bashrc" "$HOME/.profile" || return
+	if ! grep -Fqx -- "$setting" "$environmentFile"; then
+		printf '%s\n' "$setting" >> "$environmentFile" || return
+	fi
+	for startupFile in "$HOME/.bashrc" "$HOME/.profile"; do
+		if ! grep -Fqx '. "$HOME/.config/dev-machine/env.sh"' "$startupFile"; then
+			printf '\n%s\n' '. "$HOME/.config/dev-machine/env.sh"' >> "$startupFile" || return
+		fi
+	done
+}
+
+add_user_path() {
+	local directory=$1
+	local setting
+	case ":$PATH:" in
+		*":$directory:"*) ;;
+		*) export PATH="$directory:$PATH" ;;
+	esac
+	printf -v setting 'case ":$PATH:" in *:%q:*) ;; *) export PATH=%q:"$PATH" ;; esac' "$directory" "$directory"
+	persist_shell_setting "$setting"
+}
+
+record_install_failure() {
+	local status=$1
+	local line=$2
+	local command=$3
+	printf 'Line %s (exit %s): %s\n' "$line" "$status" "$command" >> "$failureLog"
+	printf 'FAILED at line %s (exit %s): %s\n' "$line" "$status" "$command" >&2
+}
+
+finish_install() {
+	local status=$1
+	trap - EXIT ERR
+	if [ -s "$failureLog" ] || [ "$status" -ne 0 ]; then
+		echo "Installation incomplete. Recorded failures:" >&2
+		cat "$failureLog" >&2
+		rm -f "$failureLog"
+		exit 1
+	fi
+	rm -f "$failureLog"
+	echo 'Installation completed without recorded command failures. Open a new Bash session or run: source ~/.profile'
+}
 
 while :; do
 	case $1 in
@@ -100,7 +191,7 @@ while :; do
 				instDotNetCore="$2"
 				shift
 			else
-				instDotNetCore="7"
+				instDotNetCore="10"
 			fi
 			;;
 		--homebrew)
@@ -125,14 +216,32 @@ while :; do
 	shift
 done
 
+case $instDotNetCore in
+	8|10|none|all) ;;
+	*) echo "Unsupported .NET selection: $instDotNetCore. Use 8, 10, all, or none; 3.1/6/7 are retired." >&2; exit 1 ;;
+esac
+case $instJava in
+	default|openjdk|msftjdk|none) ;;
+	*) echo "Unsupported Java selection: $instJava. The Oracle installer PPA is discontinued." >&2; exit 1 ;;
+esac
 
 #
 # Check Ubuntu Version
 #
-ver=$(lsb_release -r | cut -f 2)
-if [ "$ver" != "16.04" ] && [ "$ver" != "18.04" ] && [ "$ver" != "20.04" ] && [ "$ver" != "22.04" ] && [ "$ver" != "24.04" ]; then 
-	echo "Only Ubuntu 16.04, 18.04, 20.04, 22.04, 24.04 have been tested!"
-	exit 
+ver=$(lsb_release -rs)
+case $ver in
+	22.04|24.04|26.04) ;;
+	*) echo "Use Ubuntu 22.04, 24.04, or 26.04; older releases need legacy installation paths." >&2; exit 1 ;;
+esac
+
+failureLog=$(mktemp) || exit 1
+set -o pipefail
+trap 'record_install_failure "$?" "$LINENO" "$BASH_COMMAND"' ERR
+trap 'finish_install "$?"' EXIT
+
+if [ $((instEnduser + instBase + instPrompt + instPython + instSysstat + instSshServer + instDockerEngine + instCLIs + instNodeJs + instScala + instRuby + instGoLang + instDevTools + instHomebrew + instWslUsbSupport + instWslSshPassthrough)) -gt 0 ] || [ "$instDotNetCore" != none ] || [ "$instJava" != none ]; then
+	sudo apt update
+	sudo apt install -y ca-certificates curl wget gnupg unzip jq git xz-utils software-properties-common
 fi
 
 
@@ -144,9 +253,6 @@ if [ $instBase == 1 ]; then
 	sudo apt update
 	sudo apt -y upgrade 
 
-	# Known bug in Ubuntu 16.04 with missing package for GTK 
-	sudo apt install -y gtk2-engines-pixbuf
-
 	sudo apt install -y tmux
 	sudo apt install -y debconf-utils
 	sudo apt install -y net-tools
@@ -156,20 +262,7 @@ if [ $instBase == 1 ]; then
 	
 	# Packages needed for USBIPD for USB support in WSL 2
 	# https://devblogs.microsoft.com/commandline/connecting-usb-devices-to-wsl/
-	sudo apt install -y linux-tools-5.4.0-77-generic hwdata   
-
-	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D6BC243565B2087BC3F897C9277A7293F59E4889
-	if [ "$ver" == "16.04" ]; then
-		echo "deb http://miktex.org/download/ubuntu xenial universe" | sudo tee /etc/apt/sources.list.d/miktex.list
-	elif [ "$ver" == "18.04" ]; then
-		echo "deb http://miktex.org/download/ubuntu bionic universe" | sudo tee /etc/apt/sources.list.d/miktex.list
-	elif [ "$ver" == "20.04" ]; then
-		echo "deb [arch=amd64] http://miktex.org/download/ubuntu focal universe" | sudo tee /etc/apt/sources.list.d/miktex.list
-	elif [ "$ver" == "22.04" ]; then
-		echo "deb [arch=amd64] http://miktex.org/download/ubuntu jammy universe" | sudo tee /etc/apt/sources.list.d/miktex.list
-	fi 
-	sudo apt update
-	sudo apt install -y miktex
+	sudo apt install -y hwdata
 
 	sudo apt install -y ffmpeg
 	sudo apt install -y mencoder
@@ -184,21 +277,33 @@ if [ $instBase == 1 ]; then
 	
 	sudo apt install -y jq
 	sudo apt install -y zlib1g-dev
-	sudo apt install -y libxml2
+	if [ "$ver" = 26.04 ]; then
+		sudo apt install -y libxml2-16
+	else
+		sudo apt install -y libxml2
+	fi
 	sudo apt install -y build-essential
 
 	sudo apt install -y pandoc
 	sudo apt install -y texlive-latex-recommended
 
 	sudo apt install -y ansible
-	sudo apt install -y vagrant
-	if [ $isWsl == 1 ]; then
-		vagrantExportIsHere=$(grep "VAGRANT_DEFAULT_PROVIDER" ~/.profile)
-		if [ ! "$promptIsThere" ]; then
+	if [ "$architecture" = arm64 ]; then
+		echo "Skipping Vagrant: no official native Linux ARM64 package is available." >&2
+	elif apt-cache show vagrant >/dev/null 2>&1; then
+		sudo apt install -y vagrant
+	else
+		echo "Skipping Vagrant: no native package in the configured APT repositories." >&2
+	fi
+	if [ $isWsl == 1 ] && command -v vagrant >/dev/null 2>&1; then
+		vagrantExportIsHere=$(grep "VAGRANT_DEFAULT_PROVIDER" ~/.profile 2>/dev/null || true)
+		if [ ! "$vagrantExportIsHere" ]; then
 			# shellcheck disable=SC1090
-			echo "export VAGRANT_DEFAULT_PROVIDER=\"hyperv\"" >> ~/.profile
+			printf 'export VAGRANT_DEFAULT_PROVIDER="%s"\n' "${VAGRANT_DEFAULT_PROVIDER:-hyperv}" >> ~/.profile
 			echo "export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS=1" >> ~/.profile
-			echo "export VAGRANT_WSL_WINDOWS_ACCESS_USER_HOME_PATH=\"/mnt/c/Users/marioszp\"" >> ~/.profile
+			if [ -n "${WINDOWS_USER_HOME:-}" ]; then
+				printf 'export VAGRANT_WSL_WINDOWS_ACCESS_USER_HOME_PATH=%q\n' "$WINDOWS_USER_HOME" >> ~/.profile
+			fi
 		fi
 	fi
 
@@ -215,7 +320,7 @@ if [[ "$instWslSshPassthrough" == "1" && "$isWsl" == "1" ]]; then
 
 	# Now update ~/.profile with the respective file contents.
 	# shellcheck disable=SC1090
-	sshPassthroughIsThere=$(grep "# mszcool ssh wsl2 sharing" ~/.profile)
+	sshPassthroughIsThere=$(grep "# mszcool ssh wsl2 sharing" ~/.profile 2>/dev/null || true)
 	if [ ! "$sshPassthroughIsThere" ]; then
 		# Append the lines to the file
 		cat <<- EOL | tee -a ~/.profile
@@ -256,14 +361,8 @@ if [ $instWslUsbSupport == 1 ]; then
 	# USBIP support enablement for WSL2
 	if [ $isWsl == 1 ]; then
 		# Following new instructions per https://github.com/dorssel/usbipd-win/wiki/WSL-support
-		sudo apt install linux-tools-virtual hwdata
-		sudo update-alternatives --install /usr/local/bin/usbip usbip `ls /usr/lib/linux-tools/*/usbip | tail -n1` 20
-		
-		#echo "Now update the sudoers secure path to include Defaults secure_path=\"/usr/lib/linux-tools/5.4.0-77-generic:/usr/local/sbin:...\""
-		#read -p "Press ENTER to continue..." </dev/tty
-		#sudo visudo
-
-		echo "Now you can run \"usbipd wsl attach --busid <busid>\" on Windows to attach a device"
+		echo "Use a current WSL kernel and usbipd-win on Windows; current usbipd-win needs no separate Linux USB/IP tools."
+		echo "Run \"usbipd bind --busid <busid>\" as Windows administrator, then \"usbipd attach --wsl --busid <busid>\"."
 		#read -p "Press ENTER to continue..." </dev/tty
 	else
 		echo "Please don't use the --noWsl switch if you want to install this! This is a safety-belt if that script is used for automated install on servers!"
@@ -293,31 +392,22 @@ fi
 #
 if [ $instEnduser == 1 ]; then
 	
-	sudo snap install --edge 1password
-	sudo snap install spotify
+	install_x64_snap 1password
+	install_x64_snap spotify
 	
-	wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-	sudo dpkg -i google-chrome-stable_current_amd64.deb
+	curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | sudo tee /usr/share/keyrings/google-chrome.asc >/dev/null
+	echo "deb [arch=$architecture signed-by=/usr/share/keyrings/google-chrome.asc] https://dl.google.com/linux/chrome/deb stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+	sudo apt update
+	sudo apt install -y google-chrome-stable
 	
 	sudo snap install telegram-desktop
-	sudo snap install whatsapp-for-linux  
-	sudo snap install skype
-	
-	sudo snap install --classic slack
-	
-	curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB3E94ADBE1229CF
-	echo "deb [arch=amd64] https://packages.microsoft.com/repos/ms-teams stable main" | sudo tee /etc/apt/sources.list.d/teams.list
-	sudo apt update
-	sudo apt install -y teams
-
-	sudo snap install unofficial-webapp-office
+	install_x64_snap slack --classic
 	
 	sudo apt install -y calibre   
 	
 	sudo snap install remmina
 	
-	sudo sudo apt install -y mate-system-monitor
+	sudo apt install -y mate-system-monitor
 	
 	sudo ufw enable
 	sudo systemctl enable ufw
@@ -360,14 +450,8 @@ if [ $instDockerEngine == 1 ]; then
 			gnupg-agent \
 			software-properties-common
 
-	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-	
-	sudo apt-key fingerprint 0EBFCD88
-	
-	sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-	
-	sudo apt update
-	sudo apt install -y docker-ce containerd.io	# Not installing docker-ce-cli because of using dvm for that
+	configure_docker_repository
+	sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 	
 	# groupadd was not needed after the installation
 	#sudo groupadd docker
@@ -375,7 +459,7 @@ if [ $instDockerEngine == 1 ]; then
 
 	# Also add the service start to the profile in case of WSL
 	if [ $isWsl == 1 ]; then
-		dockerEntryExists=$(cat ~/.profile | grep "# mszcool docker setup")
+		dockerEntryExists=$(grep "# mszcool docker setup" ~/.profile 2>/dev/null || true)
 		if [ ! "$dockerEntryExists" ]; then
 			echo "# mszcool docker setup" >> ~/.profile
 			echo "if service docker status 2>&1 | grep -q \"is not running\"; then" >> ~/.profile
@@ -396,22 +480,21 @@ if [ $instPython == 1 ]; then
 	sudo apt install -y python3-venv
 	#sudo rm /usr/bin/python
 	#sudo ln /usr/bin/python3 /usr/bin/python
-	sudo -H python3 -m pip install --upgrade pip
 
 	# Create a default virtual environment
-	existspythondefault=$(grep "source ~/pythonvenv/default/bin/activate" ~/.profile)
+	existspythondefault=$(grep "source ~/pythonvenv/default/bin/activate" ~/.profile 2>/dev/null || true)
+	if [ ! -x "$HOME/pythonvenv/default/bin/python" ]; then
+		mkdir -p ~/pythonvenv
+		python3 -m venv ~/pythonvenv/default || exit 1
+	fi
 	if [ "$existspythondefault" == "" ]; then
-	   mkdir ~/pythonvenv
-	   python3 -m venv ~/pythonvenv/default
 	   echo "# mszcool default pyhton environment" >> ~/.profile
 	   echo "source ~/pythonvenv/default/bin/activate" >> ~/.profile
-	   source ~/.profile
-	else
-	   # Ensure packages are installed in default environment, only
-	   source ~/pythonvenv/default/bin/activate
 	fi
+	source ~/pythonvenv/default/bin/activate || exit 1
 	
 	# Now install packages into that default virtual environment
+	python3 -m pip install --upgrade pip
 	pip3 install numpy
 	pip3 install pytest
 	pip3 install mock
@@ -428,19 +511,12 @@ fi
 if [ $instRuby == 1 ]; then
 	# Ruby and Jekyll for GitHub Pages
 
-	sudo apt install -y ruby-full
+	sudo apt install -y ruby-full build-essential zlib1g-dev
 
-	# shellcheck disable=SC1090
-	{
-		echo "# Install Ruby Gems to ~/gems"
-		echo "export GEM_HOME=\"$HOME/gems\"" 
-		echo "export PATH=\"\$HOME/gems/bin:\$PATH\""
-	} >> ~/.bashrc
-
-	# shellcheck disable=SC1090
-	source ~/.bashrc
-
-	sudo gem install jekyll bundler
+	export GEM_HOME="$HOME/gems"
+	persist_shell_setting 'export GEM_HOME="$HOME/gems"'
+	add_user_path "$GEM_HOME/bin"
+	gem install jekyll bundler
 fi
 
 
@@ -448,12 +524,13 @@ fi
 # Installing Go Language
 #
 if [ $instGoLang == 1 ]; then
-	wget -O go.tar.gz https://go.dev/dl/go1.17.5.linux-amd64.tar.gz
-	mkdir ~/go
-	tar -xvf go.tar.gz -C ~/
-	echo "export PATH=\"\$PATH:~/go/bin\"" >> ~/.profile
-	rm ~/go.tar.gz
-	source ~/.profile
+	goVersion=${GO_VERSION:-$(curl -fsSL 'https://go.dev/dl/?mode=json' | jq -er 'map(select(.stable))[0].version')}
+	goArchive=$(mktemp)
+	wget -O "$goArchive" "${GO_DOWNLOAD_URL:-https://go.dev/dl/${goVersion}.linux-${architecture}.tar.gz}" || exit 1
+	mkdir -p "$HOME/.local/lib/go/$goVersion"
+	tar -xzf "$goArchive" -C "$HOME/.local/lib/go/$goVersion" --strip-components=1 || exit 1
+	rm "$goArchive"
+	add_user_path "$HOME/.local/lib/go/$goVersion/bin"
 fi
 
 
@@ -462,30 +539,27 @@ fi
 #
 case $instJava in
 	openjdk)
-		sudo apt-get install -y openjdk-8-jdk
+		sudo apt-get install -y "openjdk-${openjdkVersion}-jdk"
 		# Set JAVA_HOME as an environment variable for the entire system
-		echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" | sudo tee /etc/profile.d/set_java_home.sh
+		echo "export JAVA_HOME=/usr/lib/jvm/java-${openjdkVersion}-openjdk-${architecture}/" | sudo tee /etc/profile.d/set_java_home.sh
 		sudo chmod +x /etc/profile.d/set_java_home.sh
-		# Bug in OpenJDK 9 with missing directory for security classes
-		# https://github.com/docker-library/openjdk/issues/101
-		sudo ln -s "$JAVA_HOME/lib" "$JAVA_HOME/conf"
-		;;
-
-	oraclejdk)
-		sudo add-apt-repository -y ppa:webupd8team/java
-		sudo apt update
-		echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
-		echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
-		sudo apt install -y oracle-java8-installer
 		;;
 	
 	msftjdk)
-		ubuntu_release=`lsb_release -rs`
-		wget https://packages.microsoft.com/config/ubuntu/${ubuntu_release}/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-		sudo dpkg -i packages-microsoft-prod.deb
-		sudo apt install -y apt-transport-https
-		sudo apt update
-		sudo apt install -y msopenjdk-17
+		jdkArchiveArchitecture=$runtimeArchitecture
+		if [ "$architecture" = arm64 ]; then
+			jdkArchiveArchitecture=aarch64
+		fi
+		jdkArchive=$(mktemp)
+		curl -fL "${MSOPENJDK_DOWNLOAD_URL:-https://aka.ms/download-jdk/microsoft-jdk-${msopenjdkVersion}-linux-${jdkArchiveArchitecture}.tar.gz}" -o "$jdkArchive" || exit 1
+		export JAVA_HOME="$HOME/.local/lib/msopenjdk/$msopenjdkVersion"
+		mkdir -p "$JAVA_HOME"
+		tar -xzf "$jdkArchive" -C "$JAVA_HOME" --strip-components=1 || exit 1
+		rm "$jdkArchive"
+		"$JAVA_HOME/bin/javac" -version || exit 1
+		printf -v javaHomeSetting 'export JAVA_HOME=%q' "$JAVA_HOME"
+		persist_shell_setting "$javaHomeSetting"
+		add_user_path "$JAVA_HOME/bin"
 		;;
 
 	default)
@@ -503,11 +577,9 @@ if [ "$instJava" != "none" ]; then
 	sudo apt install -y maven
 
 	# JMeter which relies on Java
-	currentPath=$PWD
-	cd ~/
-	mkdir ~/jmeter
-	wget -O apache-jmeter.tgz https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz
-	tar -xvf ~/apache-jmeter.tgz -C ~/jmeter
+	mkdir -p "$HOME/jmeter"
+	wget -O "$HOME/apache-jmeter.tgz" "${JMETER_DOWNLOAD_URL:-https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-5.6.3.tgz}"
+	tar -xvf "$HOME/apache-jmeter.tgz" -C "$HOME/jmeter"
 
 fi
 
@@ -516,9 +588,8 @@ fi
 # Installing Scala SBT with package manager
 #
 if [ $instScala == 1 ]; then
-	#echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-	echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
-	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
+	curl -fsSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823' | sudo tee /usr/share/keyrings/sbt.asc >/dev/null
+	echo "deb [signed-by=/usr/share/keyrings/sbt.asc] https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
 	sudo apt update
 	sudo apt-get install -y apt-transport-https curl gnupg
 	sudo apt install -y sbt
@@ -529,31 +600,23 @@ fi
 # NodeJS Installation with NVM
 #
 if [ $instNodeJs == 1 ]; then
-	curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+	nvmInstaller=$(mktemp)
+	curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${nvmVersion}/install.sh" -o "$nvmInstaller" || exit 1
+	bash "$nvmInstaller" || exit 1
+	rm "$nvmInstaller"
 	export NVM_DIR="$HOME/.nvm"
 	# shellcheck disable=SC1090
-	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"	# Loading NVM into the current session
+	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" || exit 1
 	# shellcheck disable=SC1090
-	[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # Loading nvm bash_completion
-
-	# shellcheck disable=SC1090
-	source ~/.profile
-
-	nvm install --lts	# Install the latest LTS build of Node
-	npm install -g moment
-	npm install -g bower        # Consider replacing with WebPack, Yarn or Parcel 
-	npm install -g gulp
-	npm install -g autorest@3.0.6187
-	npm install -g swagger-tools@0.10.4
-	
-	# This particular version 3.0.6187 of autorest depends on libssl1.0, hence on Ubuntu 20.04 need to install this version of the library, as well
-	if [ "$ver" == "20.04" ]; then
-		wget -O libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb http://security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb
-		wget -O multiarch-support_2.19-18+deb8u10_amd64.deb http://ftp.de.debian.org/debian/pool/main/g/glibc/multiarch-support_2.19-18+deb8u10_amd64.deb
-
-		sudo dpkg -i multiarch-support_2.19-18+deb8u10_amd64.deb
-		sudo dpkg -i libssl1.0.0_1.0.1t-1+deb8u12_amd64.deb
+	if [ -s "$NVM_DIR/bash_completion" ]; then
+		\. "$NVM_DIR/bash_completion"
 	fi
+
+	nvm install "$nodeVersion" || exit 1
+	persist_shell_setting 'export NVM_DIR="$HOME/.nvm"'
+	persist_shell_setting 'if [ -s "$NVM_DIR/nvm.sh" ]; then . "$NVM_DIR/nvm.sh"; fi'
+	npm install -g gulp
+	npm install -g autorest
 fi
 
 
@@ -561,89 +624,42 @@ fi
 # Installing .Net core runtimes
 #
 if [ "$instDotNetCore" != "none" ]; then
-	curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-	sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+	sudo apt install -y libicu-dev libssl-dev zlib1g
+	dotnetInstaller=$(mktemp)
+	curl -fsSL https://dot.net/v1/dotnet-install.sh -o "$dotnetInstaller" || exit 1
+	case $instDotNetCore in
+		all) dotnetChannels=(8.0 10.0); toolMajor=10 ;;
+		*) dotnetChannels=("$instDotNetCore.0"); toolMajor=$instDotNetCore ;;
+	esac
+	for dotnetChannel in "${dotnetChannels[@]}"; do
+		bash "$dotnetInstaller" --channel "$dotnetChannel" --architecture "$runtimeArchitecture" --install-dir "$HOME/.dotnet" || exit 1
+	done
+	rm "$dotnetInstaller"
+	export DOTNET_ROOT="$HOME/.dotnet"
+	persist_shell_setting 'export DOTNET_ROOT="$HOME/.dotnet"'
+	add_user_path "$DOTNET_ROOT"
+	add_user_path "$DOTNET_ROOT/tools"
+	add_user_path "$HOME/.local/bin"
 
-	wget -q "https://packages.microsoft.com/config/ubuntu/$ver/packages-microsoft-prod.deb"
-	
-	# Add preference for Microsoft packages to avoid conflict of dotnet core packages from Ubuntu repo
-	# Per Stackoverflow https://stackoverflow.com/questions/73753672/a-fatal-error-occurred-the-folder-usr-share-dotnet-host-fxr-does-not-exist
-	# shellcheck disable=SC1090
-	sudo touch /etc/apt/preferences.d/microsoft-dotnet.pref
-	{
-	    printf "Package: *\n"
-	    printf "Pin: origin \"packages.microsoft.com\"\n"
-	    printf "Pin-Priority: 1001"
-	} | sudo tee /etc/apt/preferences.d/microsoft-dotnet.pref
-	
-	sudo dpkg -i packages-microsoft-prod.deb
-	rm packages-microsoft-prod.deb
-	
-	# Needed on Ubuntu 18.04 in WSL
-	if [ "$ver" == "18.04" ]; then
-		sudo add-apt-repository -y "deb http://security.ubuntu.com/ubuntu xenial-security main"
-		sudo apt update 
-		sudo apt install -y libicu55
-	fi
+	powershellUrl=${POWERSHELL_DOWNLOAD_URL:-$(curl -fsSL https://api.github.com/repos/PowerShell/PowerShell/releases/latest | jq -er --arg arch "$runtimeArchitecture" '.assets[] | select(.name | endswith("-linux-" + $arch + ".tar.gz")) | .browser_download_url')}
+	powershellArchive=$(mktemp)
+	powershellDir="$HOME/.local/lib/powershell/$runtimeArchitecture"
+	curl -fL "$powershellUrl" -o "$powershellArchive" || exit 1
+	mkdir -p "$powershellDir" "$HOME/.local/bin"
+	tar -xzf "$powershellArchive" -C "$powershellDir" || exit 1
+	chmod +x "$powershellDir/pwsh"
+	ln -sfn "$powershellDir/pwsh" "$HOME/.local/bin/pwsh"
+	rm "$powershellArchive"
 
-	sudo add-apt-repository -y universe
-	sudo apt update
-	sudo apt install -y apt-transport-https
-	sudo apt update
-fi
-
-case $instDotNetCore in
-	3)
-		sudo apt install -y dotnet-sdk-3.1
-		# Alternatively
-		#dotnet tool install -g powershell
-		#echo "export PATH=\"\$HOME/.dotnet/tools:\$PATH\"" >> ~/.profile
-		# shellcheck disable=SC1090
-		source ~/.profile
-		;;
-	
-	6)
-		sudo apt install -y dotnet-sdk-6.0
-		;;
-
-	7)
-		sudo apt install -y dotnet-sdk-7.0
-		;;
-	8)
-		sudo apt install -y dotnet-sdk-8.0
-		;;
-
-	all)
-		sudo apt install -y dotnet-sdk-3.1
-		sudo apt install -y dotnet-sdk-6.0
-		sudo apt install -y dotnet-sdk-7.0
-		sudo apt install -y dotnet-sdk-8.0
-                ;;
-
-	none)
-		;;
-esac
-
-if [ "$instDotNetCore" != "none" ]; then
-	# PowerShell for the .NET Developer
-	sudo apt install -y powershell
-	
-	# Dotnet Core Tools
-	dotnet tool install --global dotnet-ef
-	dotnet tool install --global dotnet-trace
-	dotnet tool install --global dotnet-dump
-	dotnet tool install --global dotnet-counters
-	dotnet tool install --global dotnet-gcdump
-	dotnet tool install --global dotnet-format
-	dotnet tool install --global dotnet-aspnet-codegenerator
-	dotnet tool install --global dotnet-ildasm
-	dotnet tool install --global Microsoft.dotnet-openapi
-	dotnet tool install --global Swashbuckle.AspNetCore.Cli
-	dotnet tool install --global NSwag.ConsoleCore
-
-	# Credential Artifact Provider
-	# From https://github.com/Microsoft/artifacts-credprovider
 	wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
+	dotnet tool update --global dotnet-ef --version "$toolMajor.*"
+	dotnet tool update --global dotnet-trace
+	dotnet tool update --global dotnet-dump
+	dotnet tool update --global dotnet-counters
+	dotnet tool update --global dotnet-gcdump
+	dotnet tool update --global dotnet-aspnet-codegenerator --version "$toolMajor.*"
+	dotnet tool update --global Swashbuckle.AspNetCore.Cli
+	dotnet tool update --global NSwag.ConsoleCore
 fi
 
 
@@ -653,94 +669,79 @@ fi
 if [ $instCLIs == 1 ]; then
 
 	# All goes into CLIs if not installed via package
-	mkdir ~/clis
-	existsclis=$(grep "$HOME/clis" ~/.profile)
-	if [ "$existsclis" == "" ]; then
-		# shellcheck disable=SC1090
-		echo "export PATH=\"\$HOME/clis:\$PATH\"" >> ~/.profile
-		# shellcheck disable=SC1090
-		source ~/.profile
-	fi
+	mkdir -p "$HOME/clis"
+	add_user_path "$HOME/clis"
 
 	# Install Azure CLI and plug-ins
 	sudo apt update
-	sudo apt install ca-certificates curl apt-transport-https lsb-release gnupg
+	sudo apt install -y ca-certificates curl apt-transport-https lsb-release gnupg
 	curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
 	AZ_REPO=$(lsb_release -cs)
-	echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
+	echo "deb [arch=$architecture] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
 	sudo apt update
-	sudo apt install azure-cli
+	sudo apt install -y azure-cli
+	if az extension show --name alias >/dev/null 2>&1 && ! az alias --help >/dev/null 2>&1; then
+		echo "Removing broken optional Azure CLI alias extension."
+		az extension remove --name alias
+	fi
 	
-	dos2unix az-cli.extensions
-	while read -r azext; do 
-		az extension add --name "$azext"
-	done < az-cli.extensions
+	while IFS= read -r azext || [ -n "$azext" ]; do
+		azext=${azext%$'\r'}
+		if [ -n "$azext" ]; then
+			az extension add --name "$azext"
+		fi
+	done < "$scriptDir/az-cli.extensions"
 
 	# Install other cloud provider CLIs
-	curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "~/clis/awscliv2.zip"
-	unzip -d ~/clis/ ~/clis/awscliv2.zip
-	sudo ~/clis/aws/install
+	curl -fL "https://awscli.amazonaws.com/awscli-exe-linux-${awsArchitecture}.zip" -o "$HOME/clis/awscliv2.zip" || exit 1
+	unzip -o -d ~/clis/ ~/clis/awscliv2.zip
+	sudo ~/clis/aws/install --update
 	rm ~/clis/awscliv2.zip
 
-	# Install Docker CLI
-	#curl -L "https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz" | tar -xz
-	#mv ./docker/* ~/clis
-	#rm ./docker -R
-	curl -sL https://howtowhale.github.io/dvm/downloads/latest/install.sh | sh
-	# shellcheck disable=SC1090
-	echo "source ~/.dvm/dvm.sh" >> ~/.bashrc
-	# shellcheck disable=SC1090
-	source ~/.dvm/dvm.sh
-	dvm install 17.12.1-ce
-	dvm install 18.09.6
+	if [ "$instDockerEngine" != 1 ]; then
+		configure_docker_repository
+		sudo apt install -y docker-ce-cli docker-buildx-plugin docker-compose-plugin
+	fi
 
 	# Latest kubectl
-	kubeversion=$(curl -s "https://storage.googleapis.com/kubernetes-release/release/stable.txt")
-	wget -O ~/clis/kubectl "https://storage.googleapis.com/kubernetes-release/release/$kubeversion/bin/linux/amd64/kubectl"
+	kubeversion=${KUBECTL_VERSION:-$(curl -fsSL https://dl.k8s.io/release/stable.txt)}
+	wget -O ~/clis/kubectl "https://dl.k8s.io/release/$kubeversion/bin/linux/$architecture/kubectl" || exit 1
 	chmod +x ~/clis/kubectl
 	
 	# Krew extension manager
-	curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.tar.gz"
-	tar zxvf krew.tar.gz
-	mv krew* ~/clis
-	KREW=~/clis/krew-"$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm.*$/arm/')"
-	"$KREW" install krew
-	cp "$KREW" ./krew
-	echo "export PATH=\"${KREW_ROOT:-$HOME/.krew}/bin:$PATH\"" >> ~/.profile
-	# shellcheck disable=SC1090
-	source ~/.profile
+	krewDir=$(mktemp -d)
+	curl -fL "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew-linux_${architecture}.tar.gz" -o "$krewDir/krew.tar.gz" || exit 1
+	tar -xzf "$krewDir/krew.tar.gz" -C "$krewDir" || exit 1
+	"$krewDir/krew-linux_$architecture" install krew || exit 1
+	rm -r "$krewDir"
+	add_user_path "${KREW_ROOT:-$HOME/.krew}/bin"
 	# Install the plug-ins
-	krew install krew
-	krew install exec-as
+	kubectl krew install exec-as
 	
 	# Helm CLI
-	# curl -L "https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz" | tar -zx
-	# mv ./linux-amd64/* ~/clis
-	# rm ./linux-amd64 -R
-	curl -L https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+	helmVersion=${HELM_VERSION:-$(curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | jq -er .tag_name)}
+	helmDir=$(mktemp -d)
+	curl -fL "https://get.helm.sh/helm-${helmVersion}-linux-${architecture}.tar.gz" -o "$helmDir/helm.tar.gz" || exit 1
+	tar -xzf "$helmDir/helm.tar.gz" -C "$helmDir" || exit 1
+	install -m 755 "$helmDir/linux-$architecture/helm" "$HOME/clis/helm"
+	rm -r "$helmDir"
 
 	# Cloud Foundry CLI
-	curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx
-	mv cf ~/clis
+	curl -fsSL https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo tee /usr/share/keyrings/cloudfoundry.asc >/dev/null
+	echo "deb [arch=$architecture signed-by=/usr/share/keyrings/cloudfoundry.asc] https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry.list
+	sudo apt update
+	sudo apt install -y cf8-cli
 
 	# OpenShift CLI
-	curl -L "https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz" | tar -zx
-	mv ./openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/* ~/clis 
-	
-	# Remove Temporary files
-	rm ./LICENSE
-	rm ./NOTICE
-	rm ./openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit -r
-
-	# armclient GO-version for Linux
-	curl -sL https://github.com/yangl900/armclient-go/releases/download/v0.2.3/armclient-go_linux_64-bit.tar.gz | tar xz
-	mv armclient ~/clis
-	rm ./LICENSE
+	openshiftArchive=$(mktemp)
+	curl -fL "${OPENSHIFT_DOWNLOAD_URL:-https://mirror.openshift.com/pub/openshift-v4/${awsArchitecture}/clients/ocp/stable/openshift-client-linux.tar.gz}" -o "$openshiftArchive" || exit 1
+	tar -xzf "$openshiftArchive" -C "$HOME/clis" oc || exit 1
+	rm "$openshiftArchive"
 
 	# Install the 1Password CLI
 	# 1. Add the 1Password APT repository key
 	curl -sS https://downloads.1password.com/linux/keys/1password.asc | \
-	  sudo gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg
+	  sudo gpg --batch --yes --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg
 	# 2. Add the repository
 	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" | \
 	  sudo tee /etc/apt/sources.list.d/1password-cli.list
@@ -750,135 +751,104 @@ if [ $instCLIs == 1 ]; then
 	  sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol
 	sudo mkdir -p /usr/share/debsig/keyrings/AC2D62742012EA22
 	curl -sS https://downloads.1password.com/linux/keys/1password.asc | \
-	  sudo gpg --dearmor --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
+	  sudo gpg --batch --yes --dearmor --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg
 	# 4. Install
-	sudo apt update && sudo apt install -y 1password-cli
+	sudo apt update
+	sudo apt install -y 1password-cli
 
 fi
 
 
 #
-# Installing cloud tools such as Azure Data Studio etc.
+# Installing development tools
 #
 if [ $instDevTools == 1 ]; then
 
-	# Switch to the home directory
-	currentPath=$PWD
-	cd ~/
-	if [ ! -d "$HOME/tools" ]; then
-		mkdir ~/tools
-	fi
-
-	# .NET Mono (needed for some dev tools)
-	sudo apt install -y gnupg ca-certificates
-	sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-	echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-	sudo apt update
-	sudo apt install -y mono-devel
-	
-	# GitExtensions
+	mkdir -p "$HOME/tools"
 	sudo apt install -y kdiff3
-	wget -O "gitextensions.zip" "https://github.com/gitextensions/gitextensions/releases/download/v2.51.05/GitExtensions-2.51.05-Mono.zip"
-	if [ -d "$HOME/tools/gitextensions" ]; then
-		rm -R ~/tools/gitextensions
-	fi
-	unzip gitextensions.zip -d ~/tools
-	mv ~/tools/GitExtensions ~/tools/gitextensions
-	cd ~/
-	cp ~/tools/gitextensions/Plugins/Newtonsoft.Json.dll ~/tools/gitextensions
-	chmod u+x ~/tools/gitextensions/gitext.sh
-	rm -f gitextensions.zip
 	
 	# Redis Tools incl. CLI
 	sudo apt install -y redis-tools
 
 	# Ngrok redirection tool
-	curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null &&
-			  echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list &&
-			  sudo apt update && sudo apt install ngrok
+	curl -fsSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /usr/share/keyrings/ngrok.asc >/dev/null
+	echo "deb [arch=$architecture signed-by=/usr/share/keyrings/ngrok.asc] https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+	sudo apt update
+	sudo apt install -y ngrok
 
 	# Some tools are installed differently in WSL or are not needed as available on Windows    
 	if [ $isWsl == 0 ]; then
 
 		# Install Microsoft Edge
-		wget -qO ~/edge.deb https://go.microsoft.com/fwlink?linkid=2149051
-		sudo dpkg -i ~/edge.deb
-		rm ~/edge.deb
-		sudo apt -y --fix-broken install
+		if [ "$architecture" = amd64 ]; then
+			wget -O "$HOME/edge.deb" 'https://go.microsoft.com/fwlink?linkid=2149051'
+			sudo apt install -y "$HOME/edge.deb"
+			rm "$HOME/edge.deb"
+		else
+			echo "Skipping Edge: no native Linux ARM64 package is published." >&2
+		fi
 
 		# Visual Studio Code
-		sudo snap install --classic code 
-		#sudo snap install --classic code-insiders
+		curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /usr/share/keyrings/vscode.asc >/dev/null
+		echo "deb [arch=$architecture signed-by=/usr/share/keyrings/vscode.asc] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list
+		sudo apt update
+		sudo apt install -y code
 
 		# Start installing all extensions
-		dos2unix vscode.extensions
-		while read -r vscodeext; do 
-			code --install-extension "$vscodeext"
-		done < vscode.extensions
+		while IFS= read -r vscodeext || [ -n "$vscodeext" ]; do
+			vscodeext=${vscodeext%$'\r'}
+			if [ -n "$vscodeext" ]; then
+				code --install-extension "$vscodeext"
+			fi
+		done < "$scriptDir/vscode.extensions"
+		code --install-extension ms-mssql.mssql
 
 		# IntelliJ IDEA Community
-		sudo snap install intellij-idea-community --classic --edge
-
-		# Azure Data Studio
-		wget -O ~/azuredatastudio-linux.deb https://go.microsoft.com/fwlink/?linkid=2138508
-		sudo dpkg -i ~/azuredatastudio-linux.deb
-		rm ~/azuredatastudio-linux.deb
+		sudo snap install intellij-idea-community --classic
 
 		# Azure Storage Explorer
-		sudo snap install storage-explorer
-		sudo snap connect storage-explorer:password-manager-service :password-manager-service
+		install_x64_snap storage-explorer
+		if [ "$architecture" = amd64 ]; then
+			sudo snap connect storage-explorer:password-manager-service :password-manager-service
+		fi
 
 		# Postman
 		sudo snap install postman
 
 		# MQTT Explorer
-		sudo snap install mqtt-explorer
-
-		# Arduino IDE
-		sudo snap install arduino
-		sudo usermod -a -G dialout "$USER"
-
-		# Redis Desktop Manager
-		sudo snap install redis-desktop-manager
-
-		# ServiceBusExplorer (should run on Mono)
-		if [ -d "$HOME/tools/servicebusexplorer" ]; then
-			rm -R ~/tools/servicebusexplorer
-		fi
-		mkdir ~/tools/servicebusexplorer
-		wget -O servicebusexplorer.zip $(curl -s https://api.github.com/repos/paolosalvatori/ServiceBusExplorer/releases/latest | grep browser_download_url | cut -d '"' -f 4 | grep .zip)
-		unzip servicebusexplorer.zip -d ~/tools/servicebusexplorer
-		echo "#!/bin/bash" > ~/tools/servicebusexplorer/sbexp.sh
-		echo "DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" >> ~/tools/servicebusexplorer/sbexp.sh
-		echo "mono \"$DIR/ServiceBusExplorer.exe\" \"$@\" &" >> ~/tools/servicebusexplorer/sbexp.sh
-		chmod u+x ~/tools/servicebusexplorer/sbexp.sh
+		install_x64_snap mqtt-explorer
 
 		# Installing the Cascadia code font
-		sudo apt install -y unzip
-		wget -O "cascadiacodepl.zip" "https://github.com/microsoft/cascadia-code/releases/download/v2005.15/CascadiaCode_2005.15.zip"
-		unzip "cascadiacodepl.zip" -d "./cascadiacodepl"
-		sudo mkdir "/usr/local/share/fonts/cascadiacodepl"
-		sudo cp ./cascadiacodepl/ttf/*.ttf /usr/local/share/fonts/cascadiacodepl/
+		sudo apt install -y fonts-cascadia-code
 
 	else
 
 		# Installing tools in WSL for development against WSL filesystem (performance reasons)
 
 		# IntelliJ IDEA
-		sudo add-apt-repository -y ppa:mmk2410/intellij-idea
-		sudo apt -y update
-		sudo apt install -y intellij-idea-community
-
-		# Arduino IDE
-		wget -O ~/arduino.tar.xz https://downloads.arduino.cc/arduino-1.8.15-linux64.tar.xz
-		tar -xvf ~/arduino.tar.xz -C ~/tools/
-		sudo ~/tools/arduino-1.8.15/install.sh
-		rm ~/arduino.tar.xz
+		sudo snap install intellij-idea-community --classic
 
 	fi
 
-	# Switch back to the previous directory
-	cd $PWD
+	if [ "$architecture" = amd64 ]; then
+		arduinoUrl=${ARDUINO_IDE_DOWNLOAD_URL:-$(curl -fsSL https://api.github.com/repos/arduino/arduino-ide/releases/latest | jq -er '.assets[] | select(.name | endswith("Linux_64bit.zip")) | .browser_download_url')}
+		arduinoDir="$HOME/tools/arduino-ide"
+		mkdir -p "$arduinoDir" "$HOME/.local/bin"
+		curl -fL "$arduinoUrl" -o "$arduinoDir/arduino.zip" || exit 1
+		unzip -o "$arduinoDir/arduino.zip" -d "$arduinoDir" || exit 1
+		arduinoExecutable=$(find "$arduinoDir" -type f -name arduino-ide -print -quit)
+		if [ -z "$arduinoExecutable" ]; then
+			echo "Arduino IDE executable missing from archive." >&2
+			exit 1
+		fi
+		chmod +x "$arduinoExecutable"
+		ln -sfn "$arduinoExecutable" "$HOME/.local/bin/arduino-ide"
+		rm "$arduinoDir/arduino.zip"
+		add_user_path "$HOME/.local/bin"
+		sudo usermod -a -G dialout "$USER"
+	else
+		echo "Skipping Arduino IDE 2: no official Linux ARM64 binary; use the Windows host IDE in WSL." >&2
+	fi
 fi
 
 
@@ -888,29 +858,27 @@ fi
 #
 if [ $instPrompt == 1 ]; then
 
-	sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
-	sudo chmod +x /usr/local/bin/oh-my-posh
+	sudo wget "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-$architecture" -O /usr/local/bin/oh-my-posh || exit 1
+	sudo chmod +x /usr/local/bin/oh-my-posh || exit 1
 
-	mkdir ~/.poshthemes
-	wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip
-	unzip ~/.poshthemes/themes.zip -d ~/.poshthemes
+	mkdir -p ~/.poshthemes
+	wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip || exit 1
+	unzip -o ~/.poshthemes/themes.zip -d ~/.poshthemes || exit 1
 	chmod u+rw ~/.poshthemes/*.omp.*
 	rm ~/.poshthemes/themes.zip
-	source ~/.bashrc
+	if [ ! -f "$HOME/.poshthemes/iterm2.omp.json" ]; then
+		echo "Prompt theme missing: $HOME/.poshthemes/iterm2.omp.json" >&2
+		exit 1
+	fi
+
+	promptInit='eval "$(oh-my-posh init bash --config "$HOME/.poshthemes/iterm2.omp.json")"'
+	if ! grep -Fqx "$promptInit" "$HOME/.bashrc" 2>/dev/null; then
+		printf '\n%s\n' '#mszcool_prompt' >> "$HOME/.bashrc"
+		printf '%s\n' 'if [[ $- == *i* ]] && command -v oh-my-posh >/dev/null 2>&1; then' "$promptInit" 'fi' >> "$HOME/.bashrc"
+	fi
+	echo "Prompt configured in ~/.bashrc. Open a new Bash session or run: source ~/.bashrc"
 
 	# Install the fonts with oh-my-posh
 	oh-my-posh font install Meslo
 	oh-my-posh font install CascadiaCode
-	
-	# Next, automatically apply the theme in the profile
-	promptIsThere=$(grep "#mszcool_prompt" ~/.bashrc)
-	if [ ! "$promptIsThere" ]; then
-		# The below did output the name of the bash-script instead of the name of the shell:
-  		# shellName=$(oh-my-posh get shell)
-		# shellcheck disable=SC1090
-		echo "#mszcool_prompt" >> ~/.bashrc
-		oh-my-posh init bash --config "~/.poshthemes/iterm2.omp.json" >> ~/.bashrc
-	fi
-
-	source ~/.bashrc
 fi
